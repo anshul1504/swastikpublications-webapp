@@ -1,0 +1,677 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% block title %}Invoice {{ inv.number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  body{
+    background-color: #ffffff !important;
+  }
+:root{
+  --accent:#ff6a00;
+  --accent-dark:#cc5300;
+  --green:#16a34a;
+  --amber:#d97706;
+  --red:#b91c1c;
+  --indigo:#0f172a;
+  --muted:#6b7280;
+  --border:#e6e9ef;
+  --surface:#ffffff;
+  --font:'Inter', Poppins, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* Layout */
+body { background:#ffffff; }
+.invoice-page { padding:22px 12px; }
+.invoice-wrap {
+  background:var(--surface);
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 18px 56px rgba(15,23,42,0.06);
+  max-width:1100px;
+  margin:0 auto;
+  color:var(--indigo);
+  font-family:var(--font);
+  font-size:14px;
+  box-sizing:border-box;
+}
+
+/* Payment & Refund lists – upgraded */
+.row-flex{
+  display:flex;
+  flex-wrap:wrap;
+  gap:18px;
+  align-items:flex-start;
+}
+
+/* outer card */
+.list-block {
+  background:#ffffff;
+  border:1px solid rgba(15,23,42,0.08);
+  border-radius:10px;
+  padding:12px 14px;
+  box-shadow:0 8px 20px rgba(15,23,42,0.04);
+}
+
+/* header */
+.list-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  margin-bottom:4px;
+}
+.list-title {
+  font-weight:700;
+  font-size:14px;
+  color:var(--indigo);
+}
+.list-total {
+  font-size:12px;
+  color:var(--muted);
+}
+
+/* list body */
+.list {
+  list-style:none;
+  margin:0;
+  padding:0;
+}
+.list li {
+  padding:8px 0;
+  border-top:1px solid #e5e7eb;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+}
+.list li:first-child {
+  border-top:none;
+}
+
+/* left side: amount + meta */
+.list-main {
+  font-size:14px;
+  font-weight:600;
+  color:var(--indigo);
+}
+.list-meta {
+  font-size:12px;
+  color:var(--muted);
+  margin-top:2px;
+}
+
+/* right side: badge + button */
+.list-left{
+  flex:1;
+  min-width:0;
+}
+.list-right{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:4px;
+  margin-left:8px;
+  white-space:nowrap;
+}
+
+/* method / refund badge */
+.list-badge{
+  display:inline-flex;
+  align-items:center;
+  padding:3px 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:600;
+}
+.list-badge-pay{
+  background:rgba(22,163,74,0.08);
+  color:#16a34a;
+}
+.list-badge-refund{
+  background:rgba(239,68,68,0.08);
+  color:#b91c1c;
+}
+
+/* print thoda clean */
+@media print{
+  .list-block{
+    box-shadow:none !important;
+    border-color:#d1d5db !important;
+  }
+  .list-right a.btn{
+    padding:2px 6px !important;
+    font-size:11px !important;
+  }
+}
+
+
+/* Header */
+.inv-header { display:flex; gap:18px; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:14px; flex-wrap:nowrap; }
+.inv-left { display:flex; gap:14px; align-items:center; min-width:0; flex:1 1 auto; }
+.logo-box { width:84px; height:84px; border-radius:6px; overflow:hidden; background:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(15,23,42,0.06); border:1px solid rgba(15,23,42,0.03); }
+.logo-box img { width:100%; height:100%; object-fit:cover; display:block; }
+.company-info { min-width:0; }
+.company-name { font-size:1.06rem; font-weight:800; color:var(--indigo); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.company-sub { color:var(--muted); font-size:13px; margin-top:4px; max-width:480px; word-break:break-word; }
+
+/* invoice meta */
+.inv-meta { flex:0 0 auto; text-align:right; white-space:nowrap; min-width:160px; }
+.inv-label { letter-spacing:0.08em; text-transform:uppercase; font-weight:700; font-size:11px; color:var(--muted); }
+.inv-number { font-size:1.2rem; font-weight:900; color:var(--accent-dark); }
+.inv-meta-line { color:var(--muted); font-size:13px; }
+
+/* status */
+.status-pill { display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:700; border:1px solid rgba(15,23,42,0.04); }
+.status-paid { background:rgba(16,185,129,0.08); color:var(--green); border-color: rgba(16,185,129,0.12); }
+.status-partial { background:rgba(249,115,22,0.06); color:var(--amber); border-color: rgba(249,115,22,0.10); }
+.status-unpaid { background:rgba(239,68,68,0.06); color:var(--red); border-color: rgba(239,68,68,0.10); }
+
+/* Bill/Ship */
+.row { display:flex; gap:18px; flex-wrap:wrap; margin-top:12px; }
+.col { flex:1; min-width:220px; }
+.small-muted { color:var(--muted); font-size:13px; }
+
+/* Table */
+.table-responsive { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; margin-top:18px; border-radius:8px; }
+.table { width:100%; border-collapse:collapse; min-width:0; background:var(--surface); font-size:14px; }
+.table thead th { background: linear-gradient(180deg, #f6f6f6, #f9f9f9); font-weight:800; font-size:13px; color:var(--muted); padding:12px 14px; text-align:left; border-bottom:1px solid var(--border); }
+.table td, .table th { padding:12px 14px; border:1px solid var(--border); vertical-align:middle; }
+.table tbody tr:nth-child(odd) { background: rgba(15,23,42,0.015); }
+.table tbody tr:hover { background: rgba(15,23,42,0.03); }
+.text-right { text-align:right; } .text-center { text-align:center; }
+.table tfoot td { padding:10px 12px; font-weight:700; background:transparent; }
+.table tfoot tr.total-row td { background: linear-gradient(90deg,#0f172a,#0f172a); color:#fff; font-weight:900; }
+
+/* Summary strip below table — fill width, pills share space */
+.summary-strip { display:flex; gap:5px; align-items:stretch; justify-content:stretch; width:100%; margin:18px 0 6px 0; box-sizing:border-box; }
+.summary-pill { flex:1 1 0; padding:14px 16px; text-align:center; border-radius:8px; border-left:1px solid rgba(15,23,42,0.04); background: linear-gradient(180deg, #f6f6f6, #f9f9f9);  display:flex; flex-direction:column; justify-content:center; gap:6px; }
+.summary-pill:first-child { border-left:none; border-top-left-radius:8px; border-bottom-left-radius:8px; }
+.summary-pill:last-child { border-top-right-radius:8px; border-bottom-right-radius:8px; }
+.summary-label { font-size:12px; color:var(--muted); text-transform:uppercase; font-weight:700; }
+.summary-value { font-size:18px; font-weight:900; color:var(--indigo); }
+.pill-paid .summary-value { color:var(--green); }
+.pill-balance .summary-value { color:var(--red); }
+.pill-zero .summary-value { color:#15803d; }
+.pill-refund .summary-value { color:var(--red); }
+
+@media (max-width:768px) { .summary-strip { flex-direction:column; gap:8px; } .summary-pill { border-left:none; border-radius:8px; } }
+
+/* Bank details */
+.bank-card { margin-top:16px; background:var(--surface); border:1px solid rgba(15,23,42,0.05); border-radius:10px; padding:12px; box-sizing:border-box; }
+.bank-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 16px; }
+@media (max-width:900px){ .bank-grid { grid-template-columns:1fr; } }
+.bank-row { display:flex; gap:8px; align-items:center; }
+.bank-label { width:120px; color:var(--muted); font-weight:700; font-size:13px; }
+.bank-value { flex:1; font-weight:700; word-break:break-word; font-size:14px; }
+.bank-value.mono { font-family: ui-monospace, Menlo, Monaco, "Roboto Mono", monospace; }
+
+.bank-controls { display:flex; gap:8px; align-items:center; }
+.btn-copy { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:8px; border:1px solid rgba(15,23,42,0.08); background:linear-gradient(180deg,#fff,#fbfdff); color:var(--indigo); cursor:pointer; font-weight:700; font-size:13px; box-shadow:0 6px 12px rgba(2,6,23,0.04); }
+.btn-copy:hover { transform: translateY(-2px); }
+.btn-toggle { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:8px; border:1px solid rgba(15,23,42,0.06); background:transparent; cursor:pointer; font-weight:700; color:var(--accent-dark); }
+.small-note { color:var(--muted); font-size:13px; margin-top:8px; }
+
+/* Signature — company left, signatory right (aligned) */
+.signature-line-row {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:40px;
+  margin-top:80px;
+  flex-wrap:wrap;
+  page-break-inside:avoid;
+}
+
+.signature-cell {
+  flex:0 0 48%;
+  max-width:48%;
+  text-align:center;
+  box-sizing:border-box;
+}
+
+.signature-right {
+  /* extra future specific styling if needed */
+}
+
+.signature-hr {
+  width:100%;
+  height:1px;
+  background:linear-gradient(90deg, rgba(0,0,0,0.25), rgba(0,0,0,0.25));
+  margin:0 auto 6px auto;
+}
+
+.signature-label {
+  font-weight:700;
+  color:#0f172a;
+  font-size:14px;
+}
+
+.signature-sub {
+  margin-top:2px;
+}
+
+/* Mobile – stack nicely */
+@media (max-width:768px) {
+  .signature-line-row {
+    gap:20px;
+  }
+  .signature-cell {
+    flex:1 1 100%;
+    max-width:100%;
+    text-align:left;
+  }
+}
+
+/* Print – force in one row */
+@media print {
+  .signature-line-row {
+    flex-wrap:nowrap;
+    gap:30px;
+    margin-top:32px;
+  }
+  .signature-cell {
+    flex:0 0 50%;
+    max-width:50%;
+    text-align:center;
+  }
+  .signature-hr {
+    background:#000 !important;
+  }
+}
+
+
+/* print rules */
+@page { size:A4 portrait; margin:12mm 10mm; }
+@media print {
+  .navbar, footer, header, .print-hide, .btn-copy, .btn-toggle, .bank-controls, .actions { display:none !important; visibility:hidden !important; }
+  .invoice-wrap { box-shadow:none !important; margin:0 !important; border-radius:0 !important; padding:8px 6px !important; max-width:100% !important; }
+  .table { width:100% !important; min-width:0 !important; font-size:12px !important; }
+  .table th, .table td { padding:6px 6px !important; white-space:normal !important; }
+  .table tfoot tr.total-row td { background:#111 !important; color:#fff !important; }
+  .summary-strip, .bank-card, .signature-line-row, tr { page-break-inside: avoid !important; }
+  * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
+}
+
+/* responsive tweaks */
+@media (max-width:768px) {
+  .inv-header { flex-direction:column; align-items:flex-start; gap:12px; }
+  .logo-box { width:72px; height:72px; }
+  .inv-meta { text-align:left; width:100%; }
+  .signature-cell { width:100%; text-align:left; }
+  .signature-cell.right { text-align:left; margin-top:12px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="invoice-page">
+  <div class="invoice-wrap">
+
+    <!-- HEADER -->
+    <div class="inv-header" role="banner">
+      <div class="inv-left">
+        <div class="logo-box" aria-hidden="false">
+          {% if inv.company and inv.company.logo %}
+            <img src="{{ inv.company.logo.url }}" alt="{{ inv.company.name }} logo">
+          {% elif inv.logo %}
+            <img src="{{ inv.logo.url }}" alt="Logo">
+          {% else %}
+            <img src="{% static 'images/webfix-logo.png' %}" alt="Logo">
+          {% endif %}
+        </div>
+
+        <div class="company-info">
+          {% if inv.company %}
+            <span class="company-name">{{ inv.company.name }}</span>
+            <div class="company-sub">
+              {% if inv.company.address %}{{ inv.company.address|linebreaksbr }}{% endif %}
+              {% if inv.company.phone %}<div class="small-muted">Phone: {{ inv.company.phone }}</div>{% endif %}
+              {% if inv.company.email %}<div class="small-muted">Email: {{ inv.company.email }}</div>{% endif %}
+            </div>
+          {% else %}
+            <span class="company-name">{{ company_name|default:"The Webfix" }}</span>
+            <div class="company-sub">{{ company_address|default:"" }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="inv-meta" role="complementary" aria-label="Invoice details">
+        <div class="inv-label">Invoice</div>
+        <div class="inv-number">{{ inv.number }}</div>
+        <div class="inv-meta-line">Date: <strong>{{ inv.date|date:"j M, Y" }}</strong></div>
+        {% if inv.due_date %}<div class="inv-meta-line">Due: <strong>{{ inv.due_date|date:"j M, Y" }}</strong></div>{% endif %}
+        <div style="margin-top:8px;">
+          <span class="status-pill
+                 {% if inv.status == 'paid' %}status-paid{% elif inv.status == 'partial' %}status-partial{% else %}status-unpaid{% endif %}">
+            <span class="dot" style="width:8px;height:8px;border-radius:999px;display:inline-block;"></span>
+            {{ inv.get_status_display }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BILL / SHIP -->
+    <div class="row">
+      <div class="col">
+        <strong>Bill To</strong>
+        <div style="margin-top:8px;">
+          {% if inv.customer %}
+            <div><strong>{{ inv.customer.name }}</strong></div>
+            {% if inv.customer.email %}<div class="small-muted">{{ inv.customer.email }}</div>{% endif %}
+            {% if inv.customer.phone %}<div class="small-muted">Phone: {{ inv.customer.phone }}</div>{% endif %}
+          {% else %}
+            <div class="small-muted">—</div>
+          {% endif %}
+          {% if inv.billing_address %}<div class="small-muted" style="margin-top:8px;">{{ inv.billing_address|linebreaksbr }}</div>{% endif %}
+        </div>
+      </div>
+
+      {% if inv.shipping_address %}
+      <div class="col">
+        <strong>Ship To</strong>
+        <div style="margin-top:8px;" class="small-muted">{{ inv.shipping_address|linebreaksbr }}</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ITEMS TABLE -->
+    <div class="table-responsive" style="margin-top:18px;">
+      <table class="table" role="table" aria-label="Invoice items">
+        <thead>
+          <tr>
+            <th>Description</th><th class="text-center">HSN</th>
+            <th class="text-center">Qty</th>
+            <th class="text-right">Rate</th>
+            <th class="text-center">Discount</th>
+            <th class="text-center">Tax</th>
+            <th class="text-right">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for it in inv.items.all %}
+          <tr>
+            <td>
+              <div>{{ it.description }}</div>
+              {% if it.product %}
+                <div class="small text-muted">
+                  {% if it.product.author %}{{ it.product.author }}{% endif %}
+                  {% if it.product.edition %}{% if it.product.author %} · {% endif %}{{ it.product.edition }}{% endif %}
+                  {% if it.product.academic_session %} · {{ it.product.academic_session }}{% endif %}
+                </div>
+              {% endif %}
+            </td>
+            <td class="text-center">{{ it.quantity }}</td>
+            <td class="text-right">₹{{ it.rate|floatformat:2|intcomma }}</td>
+            <td class="text-center">{{ it.discount_percent }}%</td>
+            <td class="text-center">{{ it.product.hsn_code|default:"-" }}</td><td class="text-center">{{ it.tax_rate }}%</td>
+            <td class="text-right">₹{{ it.line_total|floatformat:2|intcomma }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4"></td>
+            <td class="text-right" style="font-weight:700; color:var(--muted);">Subtotal</td>
+            <td class="text-right">₹{{ inv.subtotal|floatformat:2|intcomma }}</td>
+          </tr>
+          <tr>
+            <td colspan="4"></td>
+            <td class="text-right" style="font-weight:700; color:var(--muted);">Discount</td>
+            <td class="text-right">−₹{{ inv.discount_total|floatformat:2|intcomma }}</td>
+          </tr>
+          <tr>
+            <td colspan="4"></td>
+            <td class="text-right" style="font-weight:700; color:var(--muted);">Tax</td>
+            <td class="text-right">₹{{ inv.tax_total|floatformat:2|intcomma }}</td>
+          </tr>
+          <tr class="total-row">
+            <td colspan="4"></td>
+            <td class="text-right" style="font-weight:900;">Grand Total</td>
+            <td class="text-right amount">₹{{ inv.grand_total|floatformat:2|intcomma }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- SUMMARY STRIP (below table) - show only if data present -->
+    {% if inv.grand_total %}
+    <div class="summary-strip" role="status" aria-live="polite" aria-atomic="true">
+      <!-- Grand Total: always shown if present -->
+      <div class="summary-pill pill-main" title="Grand Total">
+        <div class="summary-label">Grand Total</div>
+        <div class="summary-value">₹{{ inv.grand_total|floatformat:2|intcomma }}</div>
+      </div>
+
+      <!-- Paid: only if > 0 -->
+      {% if inv.paid_amount and inv.paid_amount > 0 %}
+      <div class="summary-pill pill-paid" title="Paid">
+        <div class="summary-label">Paid</div>
+        <div class="summary-value">₹{{ inv.paid_amount|floatformat:2|intcomma }}</div>
+      </div>
+      {% endif %}
+
+      <!-- Balance: show if balance_due is not None -->
+      {% if inv.balance_due is not None %}
+      <div class="summary-pill {% if inv.balance_due == 0 %}pill-zero{% else %}pill-balance{% endif %}" title="Balance Due">
+        <div class="summary-label">Balance Due</div>
+        <div class="summary-value">₹{{ inv.balance_due|floatformat:2|intcomma }}</div>
+      </div>
+      {% endif %}
+
+      <!-- Refunded: only if refunds exist -->
+      {% if refunds %}
+      <div class="summary-pill pill-refund" title="Refunded">
+        <div class="summary-label">Refunded</div>
+        <div class="summary-value">₹{{ total_refunded|floatformat:2|intcomma }}</div>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- PAYMENTS / REFUNDS -->
+{% if payments or refunds %}
+<div class="row-flex" style="margin-top:12px;">
+
+  {% if payments %}
+  <div class="col">
+    <div class="list-block">
+      <div class="list-header">
+        <div class="list-title">Payments</div>
+        <div class="list-total">
+          Total: ₹{{ inv.paid_amount|floatformat:2|intcomma }}
+        </div>
+      </div>
+
+      <ul class="list">
+        {% for p in payments %}
+        <li>
+          <div class="list-left">
+            <div class="list-main">
+              ₹{{ p.amount|floatformat:2|intcomma }}
+            </div>
+            <div class="list-meta">
+              {{ p.method }} • {{ p.date|date:"j M, Y" }}{% if p.note %} • {{ p.note }}{% endif %}
+            </div>
+          </div>
+          <div class="list-right">
+            <span class="list-badge list-badge-pay">Payment</span>
+            <!--a href="{% url 'sales:payment_detail' p.id %}" class="btn btn-outline-primary btn-sm">
+              View
+            </a-->
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if refunds %}
+  <div class="col">
+    <div class="list-block">
+      <div class="list-header">
+        <div class="list-title">Refunds</div>
+        <div class="list-total">
+          Total: ₹{{ total_refunded|floatformat:2|intcomma }}
+        </div>
+      </div>
+
+      <ul class="list">
+        {% for r in refunds %}
+        <li>
+          <div class="list-left">
+            <div class="list-main">
+              −₹{{ r.amount|floatformat:2|intcomma }}
+            </div>
+            <div class="list-meta">
+              {{ r.method }} • {{ r.date|date:"j M, Y" }}{% if r.note %} • {{ r.note }}{% endif %}
+            </div>
+          </div>
+          <div class="list-right">
+            <span class="list-badge list-badge-refund">Refund</span>
+            <!--a-- href="{% url 'sales:refund_detail' r.id %}" class="btn btn-outline-primary btn-sm">
+              View
+            </a-->
+            {# Delete intentionally removed as per your request #}
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endif %}
+
+
+    <!-- BANK / PAYMENT DETAILS -->
+    {% if inv.bank_name or inv.account_number or inv.ifsc or inv.upi %}
+    <div class="bank-card">
+      <div class="heading" style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px;">
+        <div>
+          <strong>Bank / Payment Details</strong>
+          <div class="sub small-muted">Bank details for quick transfers and reconciliation</div>
+        </div>
+        <div class="bank-controls" aria-hidden="false">
+          {% if inv.upi %}<button class="btn-copy" onclick="copyText('{{ inv.upi }}')">📲 Copy UPI</button>{% endif %}
+          {% if inv.account_number %}<button class="btn-copy" onclick="copyText('{{ inv.account_number }}')">🔢 Copy Account</button>{% endif %}
+        </div>
+      </div>
+
+      <div class="bank-grid">
+        {% if inv.bank_name %}
+        <div class="bank-row"><div class="bank-label">Account Holder</div><div class="bank-value">{{ inv.bank_name }}</div></div>
+        {% endif %}
+        {% if inv.bank_branch %}
+        <div class="bank-row"><div class="bank-label">Bank / Branch</div><div class="bank-value">{{ inv.bank_branch }}</div></div>
+        {% endif %}
+        {% if inv.account_number %}
+        <div class="bank-row">
+          <div class="bank-label">Account No.</div>
+          <div class="bank-value mono">
+            <span id="acctNumMasked">{% with nums=inv.account_number|stringformat:"s" %}{% if nums|length > 6 %}**** **** {{ nums|slice:"-4:" }}{% else %}{{ nums }}{% endif %}{% endwith %}</span>
+            <span id="acctNumPlain" style="display:none;">{{ inv.account_number }}</span>
+            <button class="btn-toggle" onclick="toggleAcct(event)">Show</button>
+          </div>
+        </div>
+        {% endif %}
+        {% if inv.ifsc %}
+        <div class="bank-row"><div class="bank-label">IFSC</div><div class="bank-value mono">{{ inv.ifsc }}</div></div>
+        {% endif %}
+        {% if inv.upi %}
+        <div class="bank-row"><div class="bank-label">UPI ID</div><div class="bank-value mono">{{ inv.upi }}</div></div>
+        {% endif %}
+        {% if inv.bank_account_type %}
+        <div class="bank-row"><div class="bank-label">Account Type</div><div class="bank-value">{{ inv.bank_account_type }}</div></div>
+        {% endif %}
+        {% if inv.bank_notes %}
+        <div class="bank-row" style="grid-column:1 / -1;"><div class="bank-label">Note</div><div class="bank-value" style="font-weight:600; color:var(--muted);">{{ inv.bank_notes }}</div></div>
+        {% endif %}
+      </div>
+
+      <div class="small-note">Tip: Use Copy to quickly paste account / UPI. "Show" reveals full account number (screen only).</div>
+    </div>
+    {% endif %}
+
+    <!-- TERMS -->
+    {% if inv.terms %}
+    <div class="terms-block small-muted" style="margin-top:16px;">
+      <strong>Terms & Conditions</strong><br>
+      {{ inv.terms|linebreaksbr }}
+    </div>
+    {% endif %}
+
+  <!-- SIGNATURE (company left, signatory right – aligned) -->
+<div class="signature-line-row">
+  <!-- Left: Company -->
+  <div class="signature-cell">
+    <div class="signature-hr"></div>
+    <div class="signature-label">
+      {% if inv.company %}
+        {{ inv.company.name }}
+      {% else %}
+        {{ company_name|default:"The Webfix" }}
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Right: Authorized Signatory -->
+  <div class="signature-cell signature-right">
+    <div class="signature-hr"></div>
+    <div class="signature-label">
+      {% if inv.signatory_name %}
+        {{ inv.signatory_name }}
+      {% else %}
+        Authorized Signatory
+      {% endif %}
+    </div>
+    {% if inv.signatory_name %}
+      <div class="signature-sub small-muted">Authorized Signatory</div>
+    {% endif %}
+  </div>
+</div>
+
+
+    <!-- ACTION BUTTONS (screen only) -->
+    <div class="text-center actions print-hide" style="margin-top:18px;">
+      <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">🖨 Print</button>
+      <a class="btn btn-outline-info btn-sm" href="{% url 'sales:invoice_preview' inv.id %}" target="_blank">👁 Preview</a>
+      <a class="btn btn-primary btn-sm" href="{% url 'sales:invoice_pdf' inv.id %}" target="_blank">⬇ Download PDF</a>
+      <a class="btn btn-outline-dark btn-sm" href="{% url 'sales:invoice_edit' inv.id %}">✏️ Edit</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'sales:invoice_list' %}">← Back</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function copyText(text) {
+  if (!text) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(String(text)).then(()=> showToast('Copied to clipboard')).catch(()=> fallbackCopy(String(text)));
+  } else { fallbackCopy(String(text)); }
+}
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea'); ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px'; document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); showToast('Copied to clipboard'); } catch(e) { alert('Copy failed'); } ta.remove();
+}
+function showToast(msg) {
+  try {
+    let t = document.createElement('div'); t.textContent = msg;
+    Object.assign(t.style, {position:'fixed', right:'16px', bottom:'20px', padding:'8px 12px', background:'#111827', color:'#fff', borderRadius:'8px', zIndex:9999, boxShadow:'0 6px 18px rgba(2,6,23,0.25)'});
+    document.body.appendChild(t); setTimeout(()=> t.remove(), 1400);
+  } catch(e){ if (confirm) alert(msg); }
+}
+function toggleAcct(e) {
+  const btn = e && e.currentTarget ? e.currentTarget : null;
+  const masked = document.getElementById('acctNumMasked');
+  const plain = document.getElementById('acctNumPlain');
+  if(!btn || !masked || !plain) return;
+  if(masked.style.display === 'none') { masked.style.display=''; plain.style.display='none'; btn.textContent='Show'; }
+  else { masked.style.display='none'; plain.style.display=''; btn.textContent='Hide'; }
+}
+</script>
+{% endblock %}

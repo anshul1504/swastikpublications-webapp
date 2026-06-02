@@ -1,0 +1,795 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Create Refund · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root{
+    --primary:#157347;
+    --primary-dark:#0f5c38;
+    --accent:#2563eb;
+    --muted:#4b5563;
+    --text-dark:#111827;
+    --border:#d1d5db;
+    --card-bg:#ffffff;
+    --soft-bg:#f9fafb;
+    --danger:#dc2626;
+    --success:#16a34a;
+  }
+
+  body{
+    background:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    color:var(--text-dark);
+  }
+
+  .refund-page{
+    width:100%;
+    padding:20px 8px 28px;
+  }
+  .refund-container{
+    max-width:1100px;
+    margin:0 auto;
+  }
+
+  /* Header (dashboard style) */
+  .page-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+  .page-heading{
+    font-weight:600;
+    font-size:1.45rem;
+    margin-bottom:2px;
+    color:var(--text-dark);
+  }
+  .page-sub{
+    font-size:13px;
+    color:var(--muted);
+  }
+  .header-actions .btn{
+    border-radius:9px;
+    font-size:0.9rem;
+  }
+  .header-actions .btn-outline-secondary:hover{
+    border-color:var(--accent);
+    color:var(--accent);
+  }
+
+  /* Chips */
+  .chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:10px;
+  }
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:5px 11px;
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+    font-size:11.5px;
+    color:#374151;
+  }
+  .chip strong{
+    font-weight:600;
+  }
+
+  /* Layout: form + sidebar */
+  .refund-layout{
+    display:flex;
+    gap:18px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+  .refund-main{
+    flex:1 1 0;
+    min-width:280px;
+  }
+  .refund-side{
+    flex:0 0 320px;
+    max-width:360px;
+  }
+
+  /* Card */
+  .card-lite{
+    background:var(--card-bg);
+    border-radius:16px;
+    box-shadow:0 10px 30px rgba(15,23,42,0.06);
+    border:1px solid var(--border);
+    padding:18px 18px 16px;
+  }
+
+  .card-header-mini{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    margin-bottom:10px;
+    flex-wrap:wrap;
+  }
+  .card-title{
+    font-size:15px;
+    font-weight:600;
+    color:var(--text-dark);
+  }
+  .card-sub{
+    font-size:12px;
+    color:var(--muted);
+  }
+  .hint-strong{
+    font-size:12px;
+    color:#b91c1c;
+    font-weight:600;
+  }
+
+  /* Form fields */
+  .form-label{
+    font-size:13px;
+    font-weight:500;
+    margin-bottom:4px;
+  }
+  .form-control,
+  .form-select{
+    border-radius:10px;
+    border:1px solid var(--border);
+    font-size:13px;
+  }
+  .form-control:focus,
+  .form-select:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 2px rgba(21,115,71,0.18);
+  }
+  .form-text{
+    font-size:11.5px;
+    color:var(--muted);
+  }
+
+  .invoice-help{
+    font-size:11.5px;
+    color:var(--muted);
+    margin-top:2px;
+  }
+
+  .amount-row{
+    display:flex;
+    gap:8px;
+    align-items:flex-end;
+    flex-wrap:wrap;
+  }
+  .btn-chip{
+    font-size:11.5px;
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .btn-chip:hover{
+    border-color:var(--danger);
+    color:var(--danger);
+    background:#fef2f2;
+  }
+
+  /* Actions */
+  .actions-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:14px;
+    justify-content:flex-end;
+  }
+  .btn{
+    border-radius:10px;
+    font-size:13px;
+  }
+  .btn-danger{
+    background-color:var(--danger);
+    border-color:var(--danger);
+    color:#ffffff;
+  }
+  .btn-danger:hover{
+    background-color:#b91c1c;
+    border-color:#b91c1c;
+  }
+  .btn-outline-secondary:hover{
+    border-color:var(--accent);
+    color:var(--accent);
+  }
+
+  /* Sidebar summary */
+  .summary-title{
+    font-size:13px;
+    font-weight:600;
+    margin-bottom:4px;
+  }
+  .summary-sub{
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:10px;
+  }
+
+  .summary-block{
+    border-radius:12px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+    padding:10px 12px;
+    margin-bottom:10px;
+  }
+  .summary-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--muted);
+    margin-bottom:2px;
+  }
+  .summary-value-main{
+    font-size:15px;
+    font-weight:700;
+    color:var(--text-dark);
+  }
+  .summary-value-sub{
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  .summary-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:6px;
+    margin-top:6px;
+  }
+  .summary-pill{
+    border-radius:10px;
+    background:#ffffff;
+    border:1px solid #e5e7eb;
+    padding:6px 8px;
+    text-align:left;
+  }
+  .summary-pill-label{
+    font-size:11px;
+    color:var(--muted);
+  }
+  .summary-pill-value{
+    font-size:13px;
+    font-weight:700;
+  }
+  .pill-total .summary-pill-value{ color:#0f172a; }
+  .pill-paid .summary-pill-value{ color:var(--success); }
+  .pill-due .summary-pill-value{ color:var(--danger); }
+
+  .status-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 9px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:600;
+  }
+  .status-paid{
+    background:rgba(22,163,74,0.08);
+    color:#15803d;
+  }
+  .status-partial{
+    background:rgba(249,115,22,0.08);
+    color:#c2410c;
+  }
+  .status-unpaid{
+    background:rgba(239,68,68,0.08);
+    color:#b91c1c;
+  }
+
+  .summary-note{
+    font-size:11.5px;
+    color:var(--muted);
+    margin-top:4px;
+  }
+
+  .badge-refund{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:11px;
+    border:1px solid #fecaca;
+    background:#fef2f2;
+    color:#b91c1c;
+  }
+
+  @media(max-width:991.98px){
+    .refund-layout{
+      flex-direction:column;
+    }
+    .refund-side{
+      max-width:100%;
+    }
+  }
+
+  @media(max-width:575.98px){
+    .card-lite{
+      padding:16px 12px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="refund-page">
+  <div class="refund-container">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h3 class="page-heading mb-0">Create Refund</h3>
+        <div class="page-sub">
+          Record a refund against an invoice. This will reduce collected amount and adjust customer balance.
+        </div>
+        <div class="chip-row">
+          <div class="chip">
+            <i class="bi bi-receipt"></i>
+            Invoices available: <strong>{{ invoices|length }}</strong>
+          </div>
+          <div class="chip">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            Refunds appear in payment history & reports.
+          </div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a href="{% url 'sales:refund_list' %}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-arrow-left"></i> Back to Refunds
+        </a>
+      </div>
+    </div>
+
+    <div class="refund-layout">
+
+      <!-- MAIN FORM -->
+      <div class="refund-main">
+        <div class="card-lite">
+          <div class="card-header-mini">
+            <div>
+              <div class="card-title">Refund Details</div>
+              <div class="card-sub">
+                Select invoice, enter refund amount & method. Balance and status will auto-update.
+              </div>
+            </div>
+            <div class="hint-strong">
+              Do not refund more than the amount actually collected.
+            </div>
+          </div>
+
+          <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="row g-3">
+
+<!-- Invoice -->
+<div class="col-12">
+  <label class="form-label" for="id_invoice">Invoice</label>
+  <select name="invoice" id="id_invoice" class="form-select" required>
+    <option value="">Select Invoice</option>
+    {% for inv in invoices %}
+      <option
+        value="{{ inv.id }}"
+        data-number="{{ inv.number }}"
+        data-customer="{% if inv.customer %}{{ inv.customer.name }}{% endif %}"
+        data-total="{{ inv.grand_total|default:0|floatformat:2 }}"
+        data-paid="{{ inv.paid_amount|default:0|floatformat:2 }}"
+        data-due="{{ inv.balance_due|default:0|floatformat:2 }}"
+        data-date="{{ inv.date|date:'Y-m-d' }}"
+        data-status="{{ inv.get_status_display }}"
+      >
+        {{ inv.number }}{% if inv.customer %} — {{ inv.customer.name }}{% endif %}
+        {% if inv.paid_amount %} — Paid ₹{{ inv.paid_amount|floatformat:2|intcomma }}{% endif %}
+      </option>
+    {% endfor %}
+  </select>
+  <div class="invoice-help">
+    Choose the invoice on which the refund should be applied.
+  </div>
+</div>
+
+<!-- Invoice items (populated via AJAX) -->
+<div class="col-12">
+  <div id="items-container" class="card-lite" style="margin-top:12px; display:none;">
+    <div class="card-header-mini">
+      <div>
+        <div class="card-title">Returned items</div>
+        <div class="card-sub">Select items and enter quantities to return (physical stock will be restocked).</div>
+      </div>
+    </div>
+    <div id="items-table-wrap" style="margin-top:8px;"></div>
+  </div>
+</div>
+
+<!-- Invoice items (populated via AJAX) -->
+<div class="col-12">
+  <div id="items-container" class="card-lite" style="margin-top:12px; display:none;">
+    <div class="card-header-mini">
+      <div>
+        <div class="card-title">Returned items</div>
+        <div class="card-sub">Select items and enter quantities to return (physical stock will be restocked).</div>
+      </div>
+    </div>
+    <div id="items-table-wrap" style="margin-top:8px;"></div>
+  </div>
+</div>
+
+
+              <!-- Amount -->
+              <div class="col-md-6">
+                <label class="form-label" for="id_amount">Refund Amount</label>
+                <div class="amount-row">
+                  <div class="flex-grow-1">
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      name="amount"
+                      id="id_amount"
+                      class="form-control"
+                      placeholder="Enter amount to refund"
+                      required
+                    >
+                    <div class="form-text" id="amount_hint">
+                      Max refundable will match invoice paid amount.
+                    </div>
+                  </div>
+                  <button type="button" class="btn-chip" onclick="fillMaxRefund()">
+                    Use max refundable
+                  </button>
+                </div>
+              </div>
+
+              <!-- Method -->
+              <div class="col-md-6">
+                <label class="form-label" for="id_method">Refund Method</label>
+                <input
+                  name="method"
+                  id="id_method"
+                  class="form-control"
+                  value="Refund"
+                  placeholder="e.g. UPI Refund, Bank Transfer"
+                >
+                <div class="form-text">
+                  You can keep it as “Refund” or specify exact channel.
+                </div>
+              </div>
+
+              <!-- Date (optional – backend ignore kare toh bhi safe) -->
+              <div class="col-md-6">
+                <label class="form-label" for="id_date">Date</label>
+                <input
+                  type="date"
+                  name="date"
+                  id="id_date"
+                  class="form-control"
+                >
+                <div class="form-text">
+                  Default is today. Use actual refund date if needed.
+                </div>
+              </div>
+
+              <!-- Note -->
+              <div class="col-12">
+                <label class="form-label" for="id_note">Internal Note</label>
+                <textarea
+                  name="note"
+                  id="id_note"
+                  rows="2"
+                  class="form-control"
+                  placeholder="Reason for refund, reference ID, bank details, etc." required
+                ></textarea>
+                <div class="form-text">
+                  This appears in refund history & statements, not on the customer invoice.
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Actions -->
+            <div class="actions-row">
+              <button class="btn btn-danger" type="submit">
+                <i class="bi bi-arrow-counterclockwise me-1"></i> Create Refund
+              </button>
+              <a href="{% url 'sales:refund_list' %}" class="btn btn-outline-secondary">
+                Cancel
+              </a>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+      <!-- SIDEBAR: LIVE INVOICE SUMMARY -->
+      <div class="refund-side">
+        <div class="card-lite">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <div class="summary-title">Invoice Snapshot</div>
+              <div class="summary-sub">
+                Review totals & amount collected before issuing the refund.
+              </div>
+            </div>
+            <span class="badge-refund d-none d-md-inline-flex">
+              <i class="bi bi-info-circle"></i>
+              Refund reduces “Paid” on this invoice.
+            </span>
+          </div>
+
+          <!-- Number + date + customer -->
+          <div class="summary-block">
+            <div class="summary-label">Invoice</div>
+            <div class="summary-value-main" id="side_inv_number">No invoice selected</div>
+            <div class="summary-value-sub" id="side_inv_meta">
+              Choose an invoice from the left.
+            </div>
+          </div>
+
+          <!-- Status badge -->
+          <div style="margin-bottom:8px;">
+            <span class="status-badge status-unpaid" id="side_status_badge" style="display:none;">
+              <span class="dot" style="width:7px;height:7px;border-radius:999px;background:#ef4444;"></span>
+              <span id="side_status_text">Unpaid</span>
+            </span>
+          </div>
+
+          <!-- Totals -->
+          <div class="summary-grid">
+            <div class="summary-pill pill-total">
+              <div class="summary-pill-label">Total</div>
+              <div class="summary-pill-value" id="side_total">₹0.00</div>
+            </div>
+            <div class="summary-pill pill-paid">
+              <div class="summary-pill-label">Paid</div>
+              <div class="summary-pill-value" id="side_paid">₹0.00</div>
+            </div>
+            <div class="summary-pill pill-due">
+              <div class="summary-pill-label">Due</div>
+              <div class="summary-pill-value" id="side_due">₹0.00</div>
+            </div>
+          </div>
+
+          <div class="summary-note" id="side_note">
+            Max refundable amount should not exceed what the customer has already paid.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function() {
+    const dateInput = document.getElementById('id_date');
+    if (dateInput && !dateInput.value) {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      dateInput.value = `${y}-${m}-${d}`;
+    }
+  })();
+
+  function formatINR(val) {
+    if (val === null || val === undefined || val === '') return '₹0.00';
+    const num = parseFloat(val.toString().replace(/,/g, '')) || 0;
+    return '₹' + num.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+
+  function updateSidebar() {
+    const select = document.getElementById('id_invoice');
+    if (!select) return;
+
+    const opt = select.options[select.selectedIndex];
+    const numberEl = document.getElementById('side_inv_number');
+    const metaEl   = document.getElementById('side_inv_meta');
+    const totalEl  = document.getElementById('side_total');
+    const paidEl   = document.getElementById('side_paid');
+    const dueEl    = document.getElementById('side_due');
+    const noteEl   = document.getElementById('side_note');
+    const statusBadge = document.getElementById('side_status_badge');
+    const statusText  = document.getElementById('side_status_text');
+    const amountHint  = document.getElementById('amount_hint');
+
+    if (!opt || !opt.value) {
+      numberEl.textContent = 'No invoice selected';
+      metaEl.textContent   = 'Choose an invoice from the left.';
+      totalEl.textContent  = '₹0.00';
+      paidEl.textContent   = '₹0.00';
+      dueEl.textContent    = '₹0.00';
+      noteEl.textContent   = 'Max refundable amount should not exceed what the customer has already paid.';
+      statusBadge.style.display = 'none';
+      if (amountHint) { amountHint.textContent = 'Max refundable will match invoice paid amount.'; }
+      document.getElementById('items-container').style.display = 'none';
+      document.getElementById('items-table-wrap').innerHTML = '';
+      return;
+    }
+
+    const num   = opt.dataset.number || opt.text;
+    const cust  = opt.dataset.customer || '';
+    const date  = opt.dataset.date || '';
+    const total = opt.dataset.total || '0';
+    const paid  = opt.dataset.paid || '0';
+    const due   = opt.dataset.due  || '0';
+    const status = opt.dataset.status || '';
+
+    numberEl.textContent = num || 'Invoice';
+    let metaParts = [];
+    if (cust) metaParts.push(cust);
+    if (date) metaParts.push(date);
+    metaEl.textContent = metaParts.join(' • ');
+
+    totalEl.textContent = formatINR(total);
+    paidEl.textContent  = formatINR(paid);
+    dueEl.textContent   = formatINR(due);
+
+    statusBadge.classList.remove('status-paid','status-partial','status-unpaid');
+    statusBadge.style.display = 'inline-flex';
+    statusText.textContent = status || 'Unpaid';
+
+    const statusLower = (status || '').toLowerCase();
+    if (statusLower.includes('paid') && !statusLower.includes('partial')) {
+      statusBadge.classList.add('status-paid');
+    } else if (statusLower.includes('partial')) {
+      statusBadge.classList.add('status-partial');
+    } else {
+      statusBadge.classList.add('status-unpaid');
+    }
+
+    if (noteEl) {
+      noteEl.textContent = 'Current paid: ' + formatINR(paid) + '. Refund should not be higher than this amount.';
+    }
+
+    if (amountHint) {
+      amountHint.textContent = 'Max refundable (current paid): ' + formatINR(paid) + '.';
+    }
+
+    loadInvoiceItems(opt.value);
+  }
+
+  async function loadInvoiceItems(invoiceId) {
+    const wrap = document.getElementById('items-table-wrap');
+    const card = document.getElementById('items-container');
+    wrap.innerHTML = '';
+    if (!invoiceId) {
+      card.style.display = 'none';
+      return;
+    }
+    card.style.display = 'block';
+    wrap.innerHTML = '<div class="form-text">Loading items…</div>';
+
+    try {
+      const resp = await fetch(`/sales/api/invoice-items/${invoiceId}/`);
+      if (!resp.ok) {
+        wrap.innerHTML = '<div class="form-text text-danger">Could not load items.</div>';
+        return;
+      }
+      const data = await resp.json();
+      if (!data.ok) {
+        wrap.innerHTML = '<div class="form-text text-danger">No items found.</div>';
+        return;
+      }
+
+      if (!data.items || data.items.length === 0) {
+        wrap.innerHTML = '<div class="form-text">No invoice line items available for return.</div>';
+        return;
+      }
+
+      let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div class="form-text">Select quantities to return</div><div><button type="button" id="btn_max_qty" class="btn-chip">Use max refundable (by qty)</button></div></div>';
+      html += '<table class="table" style="margin-bottom:0;"><thead><tr><th>Item</th><th>Invoiced</th><th>Returned</th><th style="width:180px">Return qty</th></tr></thead><tbody>';
+      for (const it of data.items) {
+        const maxReturn = it.qty_available_to_return || 0;
+        html += `<tr>
+          <td>${it.description || ''}</td>
+          <td>${it.qty_invoiced}</td>
+          <td>${it.qty_already_returned}</td>
+          <td>
+            <input type="hidden" name="item_id[]" value="${it.invoice_item_id}">
+            <input type="number" name="qty_returned[]" min="0" max="${maxReturn}" value="0" class="form-control qty-return-input" data-rate="${it.rate}" data-max="${maxReturn}">
+            <div class="form-text">rate: ₹${Number(it.rate).toLocaleString('en-IN', {minimumFractionDigits:2})} • max ${maxReturn}</div>
+          </td>
+        </tr>`;
+      }
+      html += '</tbody></table>';
+      wrap.innerHTML = html;
+
+      function recalcAmountFromQtys() {
+        const inputs = document.querySelectorAll('.qty-return-input');
+        let total = 0;
+        inputs.forEach(inp => {
+          const q = parseFloat(inp.value) || 0;
+          const rate = parseFloat(inp.dataset.rate) || 0;
+          total += q * rate;
+        });
+        const amountInput = document.getElementById('id_amount');
+        if (amountInput) amountInput.value = total.toFixed(2);
+      }
+
+      document.querySelectorAll('.qty-return-input').forEach(inp => {
+        inp.addEventListener('input', function() {
+          const max = parseFloat(this.dataset.max) || 0;
+          let val = parseFloat(this.value) || 0;
+          if (val > max) this.value = max;
+          if (val < 0) this.value = 0;
+          recalcAmountFromQtys();
+        });
+      });
+
+      const btnMax = document.getElementById('btn_max_qty');
+      if (btnMax) {
+        btnMax.addEventListener('click', function() {
+          document.querySelectorAll('.qty-return-input').forEach(inp => {
+            const max = parseFloat(inp.dataset.max) || 0;
+            inp.value = max;
+          });
+          recalcAmountFromQtys();
+        });
+      }
+
+      recalcAmountFromQtys();
+
+    } catch (e) {
+      console.error(e);
+      wrap.innerHTML = '<div class="form-text text-danger">Error loading items.</div>';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const select = document.getElementById('id_invoice');
+    if (select) {
+      select.addEventListener('change', updateSidebar);
+      updateSidebar();
+    }
+
+    const form = document.querySelector('form[method="post"]');
+    if (!form) return;
+    form.addEventListener('submit', function(ev) {
+      const opt = document.getElementById('id_invoice').options[document.getElementById('id_invoice').selectedIndex];
+      if (opt && opt.value) {
+        const paidVal = parseFloat((opt.dataset.paid || '0').toString().replace(/,/g,'')) || 0;
+        const amountInput = document.getElementById('id_amount');
+        if (amountInput && amountInput.value) {
+          const requested = parseFloat(amountInput.value) || 0;
+          if (requested > paidVal + 0.005) {
+            ev.preventDefault();
+            alert('Refund amount cannot be greater than invoice paid amount.');
+            return false;
+          }
+        }
+      }
+
+      let hasQty = false;
+      document.querySelectorAll('input[name="qty_returned[]"]').forEach(i => {
+        if (parseFloat(i.value) > 0) hasQty = true;
+      });
+      const amount = parseFloat((document.getElementById('id_amount') && document.getElementById('id_amount').value) || '0') || 0;
+      if (!hasQty && amount <= 0) {
+        ev.preventDefault();
+        alert('Enter refund amount or select at least one returned item qty.');
+        return false;
+      }
+
+      return true;
+    });
+  });
+</script>
+{% endblock %}
+
+

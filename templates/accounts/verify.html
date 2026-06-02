@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Email Verification</h3>
+<p>OTP sent to {{ user.email }} </p>
+
+{% for m in messages %}
+<div class="alert alert-warning">{{ m }}</div>
+{% endfor %}
+
+<form method="post">{% csrf_token %}
+  <label>Enter OTP</label>
+  <input type="text" name="otp" class="form-control mb-3" maxlength="6" required>
+
+  <button class="btn btn-success w-100">Verify</button>
+</form>
+
+<a class="btn btn-link mt-2" href="{% url 'accounts:resend_otp' user.id %}">Resend OTP</a>
+
+{% endblock %}

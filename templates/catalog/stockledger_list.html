@@ -1,0 +1,746 @@
+{# templates/catalog/stockledger_list.html #}
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Stock Ledger · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root{
+    --primary:#157347;
+    --primary-dark:#0f5c38;
+    --accent:#2563eb;
+    --muted:#6b7280;
+    --text-dark:#111827;
+    --border:#e5e7eb;
+    --card-bg:#ffffff;
+    --soft-bg:#f9fafb;
+    --danger:#dc2626;
+  }
+
+  body{
+    background:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    color:var(--text-dark);
+  }
+
+  a{text-decoration:none;color:inherit;}
+
+  .ledger-page{width:100%;}
+  .ledger-container{
+    max-width:1150px;
+    margin:0 auto;
+    padding:18px 8px 32px;
+  }
+
+  /* HEADER */
+  .ledger-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:18px;
+    margin-bottom:16px;
+  }
+  .ledger-heading{
+    font-weight:600;
+    font-size:1.5rem;
+    color:var(--text-dark);
+  }
+  .ledger-sub{
+    font-size:13.5px;
+    color:var(--muted);
+    margin-top:4px;
+  }
+
+  .ledger-meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:10px;
+  }
+  .ledger-chip{
+    font-size:12px;
+    padding:6px 12px;
+    border-radius:999px;
+    background:#eef2ff;
+    color:#1e293b;
+    border:1px solid #e0e7ff;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .ledger-dot{
+    width:6px;
+    height:6px;
+    border-radius:999px;
+    background:#16a34a;
+  }
+
+  .ledger-header-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:flex-end;
+  }
+  .ledger-page .btn{
+    border-radius:9px;
+    font-size:0.9rem;
+    padding:0.45rem 1.05rem;
+  }
+  .btn-primary{
+    background-color:var(--primary);
+    border-color:var(--primary);
+    color:#fff;
+  }
+  .btn-primary:hover{
+    background-color:var(--primary-dark);
+    border-color:var(--primary-dark);
+  }
+  .btn-outline-secondary{
+    border-color:#cbd5f5;
+    color:#374151;
+    background:#fff;
+  }
+  .btn-outline-secondary:hover{
+    border-color:var(--accent);
+    color:var(--accent);
+    background:#eff6ff;
+  }
+  .btn-danger-soft{
+    background:#fef2f2;
+    color:#b91c1c;
+    border:1px solid #fecaca;
+  }
+  .btn-danger-soft:hover{
+    background:#fee2e2;
+    color:#991b1b;
+  }
+  .btn-soft{
+    background:#f3f4f6;
+    border:1px solid #e5e7eb;
+    color:#111827;
+  }
+  .btn-soft:hover{
+    background:#e5e7eb;
+  }
+
+  /* CARD SHELL */
+  .ledger-card{
+    background:var(--card-bg);
+    border-radius:16px;
+    border:1px solid var(--border);
+    padding:0;
+    box-shadow:0 4px 18px rgba(0,0,0,0.03);
+    overflow:hidden;
+  }
+
+  /* FILTERS BLOCK */
+  .filters-shell{
+    padding:14px 18px 10px;
+    background:linear-gradient(to bottom, #f9fafb, #ffffff);
+    border-bottom:1px solid var(--border);
+  }
+
+  .filters-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:10px;
+    margin-bottom:10px;
+  }
+
+  .filters-title{
+    font-size:13px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:#6b7280;
+  }
+
+  .filters-sub{
+    font-size:12px;
+    color:#9ca3af;
+    margin-top:3px;
+  }
+
+  .active-filters{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    justify-content:flex-end;
+  }
+
+  .filter-chip{
+    font-size:11px;
+    padding:4px 8px;
+    border-radius:999px;
+    border:1px solid #d1d5db;
+    background:#ffffff;
+    display:flex;
+    align-items:center;
+    gap:4px;
+    white-space:nowrap;
+  }
+  .filter-chip span{
+    font-weight:500;
+  }
+
+  .filters-row{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    gap:10px;
+    align-items:flex-end;
+    margin-bottom:4px;
+  }
+
+  .filters-left{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:flex-end;
+  }
+
+  .search-bar{
+    position:relative;
+    min-width:230px;
+    max-width:320px;
+  }
+  .search-bar input{
+    border-radius:10px;
+    font-size:0.85rem;
+    padding-left:34px;
+    border:1px solid var(--border);
+  }
+  .search-bar input:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(21,115,71,0.16);
+  }
+  .search-bar i{
+    position:absolute;
+    top:8px;
+    left:10px;
+    color:#9ca3af;
+    font-size:0.9rem;
+  }
+
+  .filter-input{
+    font-size:12.5px;
+    border-radius:10px;
+    padding:6px 10px;
+    border:1px solid #e5e7eb;
+    min-width:120px;
+  }
+
+  .btn-reset{
+    font-size:12px;
+    color:var(--muted);
+    text-decoration:none;
+  }
+  .btn-reset:hover{
+    color:var(--accent);
+    text-decoration:underline;
+  }
+
+  .filters-divider{
+    margin:0;
+    border-top:1px dashed #e5e7eb;
+  }
+
+  /* TABLE */
+  .table-shell{
+    padding:10px 18px 14px;
+  }
+
+  .table-responsive{
+    margin-top:8px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    overflow:auto;
+  }
+  .table{
+    margin-bottom:0;
+  }
+  .table thead th{
+    border-bottom:0;
+    font-weight:600;
+    font-size:11.5px;
+    color:#374151;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    background:var(--soft-bg);
+    position:sticky;
+    top:0;
+    z-index:5;
+    white-space:nowrap;
+  }
+  .table tbody td{
+    font-size:13.5px;
+    vertical-align:middle;
+    color:#1f2937;
+    background:#fff;
+  }
+  .table tbody tr:hover td{
+    background:#f9fafb;
+  }
+
+  .prod-name{font-weight:600;}
+  .prod-sku{font-size:12px;color:var(--muted);}
+
+  .badge-in{
+    background:#dcfce7;
+    color:#166534;
+    border-radius:999px;
+    padding:4px 8px;
+    font-size:12px;
+    font-weight:600;
+  }
+  .badge-out{
+    background:#fef3c7;
+    color:#92400e;
+    border-radius:999px;
+    padding:4px 8px;
+    font-size:12px;
+    font-weight:600;
+  }
+
+  .txn-pill{
+    display:inline-flex;
+    align-items:center;
+    padding:3px 8px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:600;
+  }
+  .txn-in{background:#ecfdf5;color:#166534;}
+  .txn-out{background:#fef2f2;color:#b91c1c;}
+  .txn-adj{background:#eff6ff;color:#1d4ed8;}
+
+  .note-text{
+    font-size:12.5px;
+    color:var(--muted);
+    max-width:260px;
+  }
+
+  .ref-link{
+    font-size:12.5px;
+    color:var(--accent);
+    font-weight:500;
+  }
+
+  .action-btns{
+    display:flex;
+    justify-content:flex-end;
+    gap:6px;
+    flex-wrap:wrap;
+  }
+  .action-btns .btn{
+    border-radius:8px;
+    font-size:0.78rem;
+    padding:5px 9px;
+  }
+
+  /* PAGINATION */
+  .pagination-row{
+    margin-top:12px;
+    padding:0 18px 12px;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    font-size:12.5px;
+    color:var(--muted);
+  }
+  .page-buttons{
+    display:flex;
+    gap:6px;
+    align-items:center;
+  }
+  .page-btn{
+    padding:7px 10px;
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#ffffff;
+    font-size:12px;
+    text-decoration:none;
+    color:#111827;
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+  }
+  .page-btn:hover{
+    background:#f3f4f6;
+  }
+
+  @media (max-width:991.98px){
+    .ledger-header{flex-direction:column;}
+    .ledger-container{padding-inline:8px;}
+    .filters-header{flex-direction:column;align-items:flex-start;}
+    .active-filters{justify-content:flex-start;}
+  }
+  @media (max-width:575.98px){
+    .ledger-card{border-radius:12px;}
+    .filters-shell{padding:12px 12px 8px;}
+    .table-shell{padding:8px 12px 12px;}
+    .filters-row{flex-direction:column;align-items:stretch;}
+    .table-responsive{border-radius:10px;}
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ledger-page">
+  <div class="ledger-container">
+
+    <!-- HEADER -->
+    <div class="ledger-header">
+      <div>
+        <h3 class="ledger-heading mb-0">Stock Ledger</h3>
+        <div class="ledger-sub">
+          Track stock in/out, running balance, transaction type and references.
+        </div>
+
+        <div class="ledger-meta-row">
+          <!-- ENTRIES COUNT -->
+          <div class="ledger-chip">
+            <span class="ledger-dot"></span>
+            Entries:
+            <strong>
+              {% if is_paginated %}
+                {{ page_obj.paginator.count }}
+              {% else %}
+                {{ ledgers|length }}
+              {% endif %}
+            </strong>
+          </div>
+
+          <!-- BALANCE -->
+          <div class="ledger-chip">
+            <span class="ledger-dot" style="background:#3b82f6;"></span>
+            Current balance:
+            <strong>{{ current_balance|default:"0" }}</strong>
+          </div>
+
+          <!-- IN / OUT -->
+          <div class="ledger-chip">
+            <span class="ledger-dot" style="background:#f97316;"></span>
+            In: <strong>{{ total_in|default:"0" }}</strong>
+            ·
+            Out: <strong>{{ total_out|default:"0" }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="ledger-header-actions">
+        <a href="{% url 'catalog:pr_create' %}" class="btn btn-primary btn-sm">
+          <i class="bi bi-plus-lg me-1"></i> New Batch
+        </a>
+
+        {# Export CSV with current filters #}
+        <form method="get" action="{% url 'catalog:stock_ledger_export' %}" class="d-inline">
+          {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+          {% if date_from %}<input type="hidden" name="date_from" value="{{ date_from }}">{% endif %}
+          {% if date_to %}<input type="hidden" name="date_to" value="{{ date_to }}">{% endif %}
+          {% if tx_type %}<input type="hidden" name="tx_type" value="{{ tx_type }}">{% endif %}
+          {% if warehouse_id %}<input type="hidden" name="warehouse" value="{{ warehouse_id }}">{% endif %}
+          <button type="submit" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-filetype-csv me-1"></i> Export CSV
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="ledger-card">
+
+      <!-- FILTERS BLOCK -->
+      <div class="filters-shell">
+        <div class="filters-header">
+          <div>
+            <div class="filters-title">Filters</div>
+            <div class="filters-sub">
+              Refine ledger by search, date range, transaction type and warehouse.
+            </div>
+          </div>
+
+          {% if q or date_from or date_to or tx_type or warehouse_id %}
+            <div class="active-filters">
+              {% if q %}
+                <div class="filter-chip">
+                  <span>Search</span> {{ q }}
+                </div>
+              {% endif %}
+              {% if date_from %}
+                <div class="filter-chip">
+                  <span>From</span> {{ date_from }}
+                </div>
+              {% endif %}
+              {% if date_to %}
+                <div class="filter-chip">
+                  <span>To</span> {{ date_to }}
+                </div>
+              {% endif %}
+              {% if tx_type %}
+                <div class="filter-chip">
+                  <span>Type</span> {{ tx_type|capfirst }}
+                </div>
+              {% endif %}
+              {% if warehouse_id %}
+                {% for w in warehouses %}
+                  {% if warehouse_id == w.id|stringformat:"s" %}
+                    <div class="filter-chip">
+                      <span>Warehouse</span> {{ w.name }}
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="filters-row">
+          <form method="get" class="filters-left">
+            <div class="search-bar">
+              <i class="bi bi-search"></i>
+              <input
+                type="text"
+                name="q"
+                class="form-control"
+                placeholder="Search product, SKU, notes, ref…"
+                value="{{ q|default:'' }}"
+              >
+            </div>
+
+            <input type="date" name="date_from" class="filter-input" value="{{ date_from|default:'' }}">
+            <input type="date" name="date_to" class="filter-input" value="{{ date_to|default:'' }}">
+
+            <select name="tx_type" class="filter-input">
+              <option value="">All types</option>
+              <option value="in" {% if tx_type == "in" %}selected{% endif %}>In</option>
+              <option value="out" {% if tx_type == "out" %}selected{% endif %}>Out</option>
+              <option value="adjustment" {% if tx_type == "adjustment" %}selected{% endif %}>Adjustment</option>
+            </select>
+
+            <select name="warehouse" class="filter-input">
+              <option value="">All warehouses</option>
+              {% for w in warehouses %}
+                <option value="{{ w.id }}" {% if warehouse_id == w.id|stringformat:"s" %}selected{% endif %}>
+                  {{ w.name }}
+                </option>
+              {% endfor %}
+            </select>
+
+            <button class="btn btn-primary btn-sm" type="submit">
+              <i class="bi bi-funnel me-1"></i> Apply
+            </button>
+            <a href="{% url 'catalog:stock_ledger' %}" class="btn-reset">Reset all</a>
+          </form>
+        </div>
+      </div>
+
+      <hr class="filters-divider"/>
+
+      <!-- TABLE -->
+      <div class="table-shell">
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Product</th>
+                <th>Warehouse</th>
+                <th>Txn</th>
+                <th class="text-end">In</th>
+                <th class="text-end">Out</th>
+                <th class="text-end">Balance</th>
+                <th>Ref</th>
+                <th>User</th>
+                <th>Notes</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sl in ledgers %}
+                <tr>
+                  <!-- DATE + TIME -->
+                  <td>
+                    <div style="font-weight:500;">{{ sl.date|date:"d M Y" }}</div>
+                    <div style="font-size:12px;color:var(--muted);">{{ sl.date|time:"H:i" }}</div>
+                  </td>
+
+                  <!-- PRODUCT -->
+                  <td>
+                    <div class="prod-name">
+                      {% if sl.product %}
+                        {{ sl.product.name }}
+                      {% else %}
+                        <span class="text-muted">—</span>
+                      {% endif %}
+                    </div>
+                    <div class="prod-sku">
+                      {% if sl.product %}
+                        {{ sl.product.sku }}
+                      {% endif %}
+                    </div>
+                  </td>
+
+                  <!-- WAREHOUSE -->
+                  <td>
+                    {% if sl.warehouse %}
+                      {{ sl.warehouse.name }}
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </td>
+
+                  <!-- TXN TYPE -->
+                  <td>
+                    {% if sl.get_ref_type_display %}
+                      {% with t=sl.get_ref_type_display %}
+                        {% if "In" in t or "in" in t %}
+                          <span class="txn-pill txn-in">{{ t }}</span>
+                        {% elif "Out" in t or "out" in t %}
+                          <span class="txn-pill txn-out">{{ t }}</span>
+                        {% else %}
+                          <span class="txn-pill txn-adj">{{ t }}</span>
+                        {% endif %}
+                      {% endwith %}
+                    {% else %}
+                      {% if sl.ref_type %}
+                        <span class="txn-pill txn-adj">{{ sl.ref_type|cut:"_"|capfirst }}</span>
+                      {% else %}
+                        <span class="text-muted">—</span>
+                      {% endif %}
+                    {% endif %}
+                  </td>
+
+                  <!-- IN -->
+                  <td class="text-end">
+                    {% if sl.in_qty|default:0 > 0 %}
+                      <span class="badge-in">+{{ sl.in_qty }}</span>
+                    {% else %}
+                      —
+                    {% endif %}
+                  </td>
+
+                  <!-- OUT -->
+                  <td class="text-end">
+                    {% if sl.out_qty|default:0 > 0 %}
+                      <span class="badge-out">-{{ sl.out_qty }}</span>
+                    {% else %}
+                      —
+                    {% endif %}
+                  </td>
+
+                  <!-- BALANCE -->
+                  <td class="text-end">
+                    {{ sl.balance|default:"—" }}
+                  </td>
+
+                  <!-- REF -->
+                  <td>
+                    {% if sl.ref_id and sl.ref_type %}
+                      {% if sl.ref_url %}
+                        <a href="{{ sl.ref_url }}" class="ref-link">
+                          {{ sl.ref_type|cut:"_"|capfirst }} #{{ sl.ref_id }}
+                        </a>
+                      {% else %}
+                        <span class="ref-link">{{ sl.ref_type|cut:"_"|capfirst }} #{{ sl.ref_id }}</span>
+                      {% endif %}
+                    {% elif sl.ref_id %}
+                      <span class="ref-link">#{{ sl.ref_id }}</span>
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </td>
+
+                  <!-- USER -->
+                  <td style="font-size:12.5px;color:var(--muted);">
+                    {% if sl.user %}
+                      {% if sl.user.get_full_name %}
+                        {{ sl.user.get_full_name }}
+                      {% else %}
+                        {{ sl.user.username }}
+                      {% endif %}
+                    {% else %}
+                      System
+                    {% endif %}
+                  </td>
+
+                  <!-- NOTES -->
+                  <td>
+                    <div class="note-text">
+                      {% if sl.notes %}
+                        {{ sl.notes|truncatechars:80 }}
+                      {% else %}
+                        <span class="text-muted">—</span>
+                      {% endif %}
+                    </div>
+                  </td>
+
+                  <!-- ACTIONS: VIEW, EDIT, DELETE (delete -> confirm page) -->
+                  <td class="text-end">
+                    <div class="action-btns">
+                      {% if user.is_superuser or user.is_staff or perms.catalog.view_stockledger %}
+                        <a href="{% url 'catalog:stock_ledger_detail' sl.id %}"
+                           class="btn btn-soft btn-sm">
+                          View
+                        </a>
+                      {% endif %}
+
+                      {% if user.is_superuser or user.is_staff or perms.catalog.change_stockledger %}
+                        <a href="{% url 'catalog:stock_ledger_edit' sl.id %}"
+                           class="btn btn-outline-secondary btn-sm">
+                          Edit
+                        </a>
+                      {% endif %}
+
+                      {% if user.is_superuser or user.is_staff or perms.catalog.delete_stockledger %}
+                        <a href="{% url 'catalog:stock_ledger_delete' sl.id %}"
+                           class="btn btn-danger-soft btn-sm">
+                          <i class="bi bi-trash"></i>
+                        </a>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="11" class="text-center" style="padding:26px 0;color:var(--muted);">
+                    No ledger entries found for current filters.
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PAGINATION -->
+      {% if is_paginated %}
+        <div class="pagination-row">
+          <div>
+            Showing {{ page_obj.start_index }}–{{ page_obj.end_index }}
+            of {{ page_obj.paginator.count }} entries
+          </div>
+          <div class="page-buttons">
+            {% if page_obj.has_previous %}
+              <a class="page-btn"
+                 href="?page={{ page_obj.previous_page_number }}&q={{ q|urlencode }}&date_from={{ date_from|urlencode }}&date_to={{ date_to|urlencode }}&tx_type={{ tx_type|urlencode }}&warehouse={{ warehouse_id|urlencode }}">
+                <i class="bi bi-chevron-left"></i> Prev
+              </a>
+            {% endif %}
+            {% if page_obj.has_next %}
+              <a class="page-btn"
+                 href="?page={{ page_obj.next_page_number }}&q={{ q|urlencode }}&date_from={{ date_from|urlencode }}&date_to={{ date_to|urlencode }}&tx_type={{ tx_type|urlencode }}&warehouse={{ warehouse_id|urlencode }}">
+                Next <i class="bi bi-chevron-right"></i>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}

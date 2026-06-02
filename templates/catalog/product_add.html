@@ -1,0 +1,919 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Product Form · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  body{
+    background-color: #fff !important;
+  }
+  .product-form-page {
+   
+    
+    min-height: 100vh;
+  }
+
+  .product-form-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  .form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .header-left h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #316486;
+    margin: 0 0 8px 0;
+  }
+
+  .header-left p {
+    color: #3a3b3d;
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 12px;
+  }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    color: #154973;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .back-btn:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+  }
+
+  .form-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+  }
+
+  @media (max-width: 1024px) {
+    .form-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .form-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  }
+
+  .card-header {
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .card-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #154973;
+    margin: 0 0 8px 0;
+  }
+
+  .card-header p {
+    color: #4e4e4e;
+    font-size: 13px;
+    margin: 0;
+  }
+
+  .card-body {
+    padding: 24px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  @media (max-width: 768px) {
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .form-group {
+    margin-bottom: 0;
+  }
+
+  .form-group.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #000000;
+    margin-bottom: 8px;
+  }
+
+  .form-label.required:after {
+    content: " *";
+    color: #ef4444;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #000000;
+    background: white;
+    transition: all 0.2s;
+    box-sizing: border-box;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .form-input:hover {
+    border-color: #cbd5e1;
+  }
+
+  .form-input::placeholder {
+    color: #94a3b8;
+  }
+
+  select.form-input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 20px;
+    padding-right: 48px;
+  }
+
+  textarea.form-input {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.5;
+    font-family: inherit;
+  }
+
+  .image-upload-container {
+    border: 2px dashed #e2e8f0;
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .image-upload-container:hover {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+  }
+
+  .image-upload-content {
+    color: #415e80;
+  }
+
+  .image-upload-icon {
+    font-size: 48px;
+    color: #94a3b8;
+    margin-bottom: 16px;
+  }
+
+  .image-upload-text {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .image-upload-subtext {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  .image-preview {
+    margin-top: 16px;
+    display: none;
+  }
+
+  .image-preview img {
+    width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 8px;
+  }
+
+  .preview-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    position: sticky;
+    top: 24px;
+  }
+
+  .preview-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .preview-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #253b5a;
+    margin: 0 0 8px 0;
+  }
+
+  .preview-header p {
+    color: #3b3b3b;
+    font-size: 13px;
+    margin: 0;
+  }
+
+  .preview-image {
+    width: 100%;
+    height: 200px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+
+  .preview-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  .preview-image-placeholder {
+    color: #94a3b8;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .preview-image-placeholder i {
+    font-size: 48px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .preview-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .info-group h4 {
+    font-size: 13px;
+    font-weight: 500;
+    color: #000000;
+    margin: 0 0 8px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .info-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #424242;
+  }
+
+  .info-value.sku {
+    
+    background: #f8fafc;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .info-value.price {
+    color: #2c72ac;
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .stat-item {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: #425c7a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+
+  .stat-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #000000;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .status-badge.active {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .status-badge.inactive {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .status-badge i {
+    font-size: 10px;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  .btn {
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: #157347;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #157347;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+
+  .btn-secondary {
+    background: white;
+    color: #157347;
+    border: 1px solid #e2e8f0;
+  }
+
+  .btn-secondary:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+  }
+
+  .help-text {
+    font-size: 12px;
+    color: #157347;
+    margin-top: 6px;
+    display: block;
+  }
+
+  .error-text {
+    font-size: 12px;
+    color: #ef4444;
+    margin-top: 6px;
+    display: block;
+  }
+
+  .form-tabs {
+    display: flex;
+    gap: 4px;
+    background: #f8fafc;
+    padding: 4px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 12px;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    color: #157347;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab-btn.active {
+    background: white;
+    color: #3b82f6;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="product-form-page">
+  <div class="product-form-wrapper">
+    <div class="form-header">
+      <div class="header-left">
+        <h1>
+          {% if form.instance.pk %}
+            <i class="bi bi-pencil-square"></i> Edit Product
+          {% else %}
+            <i class="bi bi-plus-circle"></i> Add New Product
+          {% endif %}
+        </h1>
+        <p>Fill in product details. Preview updates in real-time on the right.</p>
+      </div>
+      <div class="header-actions">
+        <a href="{% url 'catalog:product_list' %}" class="back-btn">
+          <i class="bi bi-arrow-left"></i>
+          Back to Products
+        </a>
+      </div>
+    </div>
+
+    <div class="form-layout">
+      <div class="form-card">
+        <div class="card-header">
+          <h2>Product Information</h2>
+          <p>Enter basic details, pricing, and inventory information</p>
+        </div>
+
+        <div class="card-body">
+          <div class="form-tabs">
+            <button type="button" class="tab-btn active" data-tab="basic">
+              <i class="bi bi-info-circle"></i> Basic Info
+            </button>
+            <button type="button" class="tab-btn" data-tab="pricing">
+              <i class="bi bi-tag"></i> Pricing & Stock
+            </button>
+            <button type="button" class="tab-btn" data-tab="media">
+              <i class="bi bi-image"></i> Media
+            </button>
+          </div>
+
+          <form method="post" enctype="multipart/form-data" novalidate id="productForm">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+              <div style="background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+
+            <!-- BASIC TAB -->
+            <div class="tab-content active" id="basicTab">
+              <div class="form-grid">
+                <div class="form-group full-width">
+                  <label for="id_name" class="form-label required">Product Name</label>
+                  <input type="text"
+                         name="name"
+                         id="id_name"
+                         class="form-input"
+                         placeholder="Enter product name"
+                         value="{{ form.name.value|default:'' }}"
+                         required>
+                  {% if form.name.errors %}
+                    <span class="error-text">{{ form.name.errors|striptags }}</span>
+                  {% endif %}
+                </div>
+
+                <div class="form-group">
+                  <label for="id_sku" class="form-label required">SKU</label>
+                  <input type="text"
+                         name="sku"
+                         id="id_sku"
+                         class="form-input"
+                         placeholder="BOOK-001"
+                         value="{{ form.sku.value|default:'' }}"
+                         required>
+                  {% if form.sku.errors %}
+                    <span class="error-text">{{ form.sku.errors|striptags }}</span>
+                  {% endif %}
+                  <span class="help-text">Unique product identifier</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="id_hsn_code" class="form-label">HSN Code</label>
+                  <input type="text"
+                         name="hsn_code"
+                         id="id_hsn_code"
+                         class="form-input"
+                         maxlength="8"
+                         placeholder="e.g. 490110"
+                         value="{{ form.hsn_code.value|default:'' }}">
+                  {% if form.hsn_code.errors %}
+                    <span class="error-text">{{ form.hsn_code.errors|striptags }}</span>
+                  {% endif %}
+                </div>
+
+                <div class="form-group">
+                  <label for="id_tax_rate" class="form-label required">Tax Rate</label>
+                  <select name="tax_rate" id="id_tax_rate" class="form-input">
+                    {% for val,label in form.fields.tax_rate.choices %}
+                      <option value="{{ val }}"
+                        {% if form.tax_rate.value|stringformat:"s" == val|stringformat:"s" %}selected{% endif %}>
+                        {{ label }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                  {% if form.tax_rate.errors %}
+                    <span class="error-text">{{ form.tax_rate.errors|striptags }}</span>
+                  {% endif %}
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="id_description" class="form-label">Description</label>
+                  <textarea name="description"
+                            id="id_description"
+                            class="form-input"
+                            placeholder="Enter product description"
+                            rows="4">{{ form.description.value|default:'' }}</textarea>
+                  {% if form.description.errors %}
+                    <span class="error-text">{{ form.description.errors|striptags }}</span>
+                  {% endif %}
+                </div>
+
+                <div class="form-group">
+                  <label for="id_author" class="form-label">Author</label>
+                  <input type="text" name="author" id="id_author" class="form-input" value="{{ form.author.value|default:'' }}" placeholder="Author name">
+                </div>
+                <div class="form-group">
+                  <label for="id_imprint" class="form-label">Imprint</label>
+                  <input type="text" name="imprint" id="id_imprint" class="form-input" value="{{ form.imprint.value|default:'' }}" placeholder="Imprint / Publisher">
+                </div>
+                <div class="form-group">
+                  <label for="id_edition" class="form-label">Edition</label>
+                  <input type="text" name="edition" id="id_edition" class="form-input" value="{{ form.edition.value|default:'' }}" placeholder="e.g. 3rd Edition">
+                </div>
+                <div class="form-group">
+                  <label for="id_academic_session" class="form-label">Academic Session</label>
+                  <input type="text" name="academic_session" id="id_academic_session" class="form-input" value="{{ form.academic_session.value|default:'' }}" placeholder="e.g. 2026-27">
+                </div>
+              </div>
+            </div>
+
+            <!-- PRICING & STOCK TAB -->
+            <div class="tab-content" id="pricingTab">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="id_price" class="form-label required">Selling Price (₹)</label>
+                  <input type="number"
+                         name="price"
+                         id="id_price"
+                         class="form-input"
+                         placeholder="0.00"
+                         step="0.01"
+                         min="0"
+                         value="{{ form.price.value|default:'' }}"
+                         required>
+                  {% if form.price.errors %}
+                    <span class="error-text">{{ form.price.errors|striptags }}</span>
+                  {% endif %}
+                </div>
+
+                <div class="form-group">
+                  <label for="id_mrp" class="form-label">MRP (₹)</label>
+                  <input type="number"
+                         name="mrp"
+                         id="id_mrp"
+                         class="form-input"
+                         placeholder="0.00"
+                         step="0.01"
+                         min="0"
+                         value="{{ form.mrp.value|default:'' }}">
+                  {% if form.mrp.errors %}
+                    <span class="error-text">{{ form.mrp.errors|striptags }}</span>
+                  {% endif %}
+                  <span class="help-text">Maximum retail price</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="id_reorder_level" class="form-label">Reorder Level</label>
+                  <input type="number"
+                         name="reorder_level"
+                         id="id_reorder_level"
+                         class="form-input"
+                         placeholder="10"
+                         min="0"
+                         value="{{ form.reorder_level.value|default:'' }}">
+                  {% if form.reorder_level.errors %}
+                    <span class="error-text">{{ form.reorder_level.errors|striptags }}</span>
+                  {% endif %}
+                  <span class="help-text">Alert when stock reaches this level</span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Track Stock</label>
+                  <label style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                    <input type="checkbox"
+                           name="track_stock"
+                           id="id_track_stock"
+                           {% if form.track_stock.value or form.track_stock.value is None %}checked{% endif %}>
+                    <span>Enable stock tracking for this product</span>
+                  </label>
+                  {% if form.track_stock.errors %}
+                    <span class="error-text">{{ form.track_stock.errors|striptags }}</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- MEDIA TAB -->
+            <div class="tab-content" id="mediaTab">
+              <div class="form-group full-width">
+                <label class="form-label">Product Image</label>
+                <div class="image-upload-container" id="imageUpload">
+                  <div class="image-upload-content">
+                    <div class="image-upload-icon">
+                      <i class="bi bi-cloud-arrow-up"></i>
+                    </div>
+                    <div class="image-upload-text">Click to upload product image</div>
+                    <div class="image-upload-subtext">PNG, JPG, WEBP up to 5MB</div>
+                  </div>
+                </div>
+                <input type="file"
+                       name="image"
+                       id="id_image"
+                       accept="image/*"
+                       style="display: none;"
+                       onchange="handleImageUpload(event)">
+                <div class="image-preview" id="imagePreview">
+                  {% if form.instance.image %}
+                    <img src="{{ form.instance.image.url }}" alt="Current product image">
+                  {% endif %}
+                </div>
+                {% if form.image.errors %}
+                  <span class="error-text">{{ form.image.errors|striptags }}</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- STATUS -->
+            <div class="form-group" style="margin-top: 24px;">
+              <label class="form-label">Status</label>
+              <div style="display: flex; gap: 16px; margin-top: 8px;">
+                <label style="display: flex; align-items: center; gap: 8px;">
+                  <input type="radio"
+                         name="active"
+                         value="true"
+                         {% if form.active.value|default:True %}checked{% endif %}>
+                  <span>Active</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px;">
+                  <input type="radio"
+                         name="active"
+                         value="false"
+                         {% if form.active.value == False %}checked{% endif %}>
+                  <span>Inactive</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-circle"></i>
+                {% if form.instance.pk %}Update Product{% else %}Save Product{% endif %}
+              </button>
+              <a href="{% url 'catalog:product_list' %}" class="btn btn-secondary">
+                Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- PREVIEW SIDEBAR -->
+      <div class="preview-card">
+        <div class="preview-header">
+          <h3>Product Preview</h3>
+          <p>Real-time preview as you type</p>
+        </div>
+
+        <div class="preview-image" id="sidebarImagePreview">
+          <div class="preview-image-placeholder">
+            <i class="bi bi-image"></i>
+            <div>No image selected</div>
+          </div>
+        </div>
+
+        <div class="preview-info">
+          <div class="info-group">
+            <h4>Product Name</h4>
+            <div class="info-value" id="previewName">—</div>
+          </div>
+
+          <div class="info-group">
+            <h4>SKU</h4>
+            <div class="info-value sku" id="previewSKU">—</div>
+          </div>
+
+          <div class="info-group">
+            <h4>Price</h4>
+            <div class="info-value price" id="previewPrice">₹0.00</div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-label">Tracking</div>
+              <div class="stat-value" id="previewTrackStock">Enabled</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Reorder Level</div>
+              <div class="stat-value" id="previewReorder">—</div>
+            </div>
+          </div>
+
+          <div class="info-group">
+            <h4>Status</h4>
+            <div id="previewStatus">
+              <span class="status-badge active">
+                <i class="bi bi-circle-fill"></i>
+                Active
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tabId = btn.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.getElementById(tabId + 'Tab').classList.add('active');
+    });
+  });
+
+  const imageUpload = document.getElementById('imageUpload');
+  const fileInput = document.getElementById('id_image');
+
+  if (imageUpload && fileInput) {
+    imageUpload.addEventListener('click', () => fileInput.click());
+    const existingImg = document.querySelector('#imagePreview img');
+    if (existingImg && existingImg.src) {
+      document.getElementById('sidebarImagePreview').innerHTML =
+        `<img src="${existingImg.src}" alt="Product Image">`;
+      document.getElementById('imagePreview').style.display = 'block';
+    }
+  }
+
+  function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const formPreview = document.getElementById('imagePreview');
+      formPreview.style.display = 'block';
+      formPreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+      const sidebarPreview = document.getElementById('sidebarImagePreview');
+      sidebarPreview.innerHTML = `<img src="${e.target.result}" alt="Product Image">`;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function updatePreview() {
+    const nameInput = document.getElementById('id_name');
+    const previewName = document.getElementById('previewName');
+    if (nameInput && previewName) {
+      nameInput.addEventListener('input', (e) => {
+        previewName.textContent = e.target.value || '—';
+      });
+      previewName.textContent = nameInput.value || '—';
+    }
+
+    const skuInput = document.getElementById('id_sku');
+    const previewSKU = document.getElementById('previewSKU');
+    if (skuInput && previewSKU) {
+      skuInput.addEventListener('input', (e) => {
+        previewSKU.textContent = e.target.value || '—';
+      });
+      previewSKU.textContent = skuInput.value || '—';
+    }
+
+    const priceInput = document.getElementById('id_price');
+    const previewPrice = document.getElementById('previewPrice');
+    if (priceInput && previewPrice) {
+      function setPrice(val) {
+        const value = parseFloat(val) || 0;
+        previewPrice.textContent = `₹${value.toFixed(2)}`;
+      }
+      priceInput.addEventListener('input', (e) => setPrice(e.target.value));
+      setPrice(priceInput.value);
+    }
+
+    const reorderInput = document.getElementById('id_reorder_level');
+    const previewReorder = document.getElementById('previewReorder');
+    if (reorderInput && previewReorder) {
+      function setReorder(val) {
+        previewReorder.textContent = val || '—';
+      }
+      reorderInput.addEventListener('input', (e) => setReorder(e.target.value));
+      setReorder(reorderInput.value);
+    }
+
+    const trackCheckbox = document.getElementById('id_track_stock');
+    const previewTrack = document.getElementById('previewTrackStock');
+    if (trackCheckbox && previewTrack) {
+      function setTrack() {
+        previewTrack.textContent = trackCheckbox.checked ? "Enabled" : "Disabled";
+      }
+      trackCheckbox.addEventListener('change', setTrack);
+      setTrack();
+    }
+
+    const statusInputs = document.querySelectorAll('input[name="active"]');
+    const previewStatus = document.getElementById('previewStatus');
+    if (statusInputs.length && previewStatus) {
+      function updateStatus() {
+        const val = document.querySelector('input[name="active"]:checked')?.value || "true";
+        const isActive = val === "true";
+        previewStatus.innerHTML = `
+          <span class="status-badge ${isActive ? 'active' : 'inactive'}">
+            <i class="bi bi-circle-fill"></i>
+            ${isActive ? 'Active' : 'Inactive'}
+          </span>
+        `;
+      }
+      statusInputs.forEach(input => input.addEventListener('change', updateStatus));
+      updateStatus();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', updatePreview);
+</script>
+{% endblock %}

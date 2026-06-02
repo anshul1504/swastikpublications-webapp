@@ -1,0 +1,985 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{% block title %}Invoice Suite{% endblock %}</title>
+
+  <!-- Fonts + Icons + Bootstrap -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    a{
+      text-decoration: none;
+    }
+
+    /* ===========================
+       DESIGN TOKENS
+    ============================ */
+    :root{
+      --brand:#198754;
+      --brand-600:#157347;
+      --brand-soft:#e6f4ee;
+      --ink:#0f172a;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --bg:#f3f4f6;
+      --sidebar-bg:#020617;
+      --sidebar-border:#1f2937;
+      --sidebar-active:#16a34a;
+      --sidebar-hover:#111827;
+
+      --sidebar-width:250px;
+      --sidebar-collapsed-width:84px;
+      --radius:8px;
+      --shadow-sm:0 6px 18px rgba(2,6,23,0.08);
+      --glass:rgba(255,255,255,0.03);
+      --btn-transition:.14s cubic-bezier(.2,.9,.3,1);
+    }
+
+    *{
+      box-sizing:border-box;
+      font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+
+    html, body{
+      height:auto;
+      min-height:100%;
+    }
+
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--ink);
+      -webkit-font-smoothing:antialiased;
+      overflow-x:hidden;
+    }
+
+    .app{
+      display:flex;
+      min-height:100vh;
+      height:auto;
+    }
+
+    /* SIDEBAR */
+    .app-sidebar{
+      width:var(--sidebar-width);
+      min-width:var(--sidebar-width);
+      background:var(--sidebar-bg);
+      color:#cbd5e1;
+      border-right:1px solid var(--sidebar-border);
+      position:sticky;
+      top:0;
+      height:auto;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      transition:width .22s ease, transform .28s cubic-bezier(.2,.9,.3,1);
+      overflow:hidden;
+      z-index:1200;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.02);
+    }
+
+    .app-sidebar.collapsed{
+      width:var(--sidebar-collapsed-width);
+      min-width:var(--sidebar-collapsed-width);
+    }
+
+    .brand{
+      height:70px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:0 16px;
+      border-bottom:1px solid rgba(148,163,184,.18);
+    }
+    .brand-logo-wrap{
+      width:44px;
+      height:44px;
+      border-radius:10px;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.03);
+      transition:transform .16s ease, box-shadow .16s ease;
+    }
+    .brand-logo-wrap img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .brand-logo-wrap:hover{
+      transform:scale(1.04);
+      box-shadow:0 8px 20px rgba(2,6,23,0.12);
+    }
+
+    .brand-text{
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+    }
+    .brand-title{
+      font-weight:600;
+      color:#f9fafb;
+      font-size:15px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .brand-sub{
+      font-size:11px;
+      color:#9ca3af;
+    }
+
+    .app-sidebar.collapsed .brand-text{
+      display:none;
+    }
+
+    .sidebar-inner{
+      flex:1;
+      height:calc(100vh - 70px);
+      overflow-y:auto;
+      padding:12px 8px 16px;
+      -webkit-overflow-scrolling:touch;
+      scroll-behavior:smooth;
+    }
+    .sidebar-inner::-webkit-scrollbar{
+      width:9px;
+    }
+    .sidebar-inner::-webkit-scrollbar-thumb{
+      background:rgba(255,255,255,0.15);
+      border-radius:10px;
+      border:2px solid transparent;
+      background-clip:content-box;
+    }
+    .sidebar-inner:hover::-webkit-scrollbar-thumb{
+      background:rgba(255,255,255,0.32);
+    }
+
+    .nav-group{
+      margin-top:8px;
+    }
+    .nav-section-toggle{
+      width:100%;
+      padding:8px 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      background:transparent;
+      border:none;
+      color:#9aa4b2;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      cursor:pointer;
+    }
+    .nav-section-toggle i{
+      transition:transform .18s ease;
+    }
+    .nav-section-toggle[aria-expanded="false"] i{
+      transform:rotate(-90deg);
+    }
+
+    .app-sidebar.collapsed .nav-section-label{
+      display:none;
+    }
+    .app-sidebar.collapsed .nav-section-toggle{
+      justify-content:center;
+      padding:8px 0;
+    }
+
+    .nav-list{
+      list-style:none;
+      margin:0;
+      padding:6px 6px;
+      display:block;
+    }
+
+    .nav-item{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:6px;
+      position:relative;
+    }
+    .nav-link{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      width:100%;
+      padding:10px;
+      border-radius:8px;
+      color:#e5e7eb;
+      font-size:13px;
+      transition:background-color var(--btn-transition),
+                 transform var(--btn-transition),
+                 box-shadow var(--btn-transition),
+                 color var(--btn-transition);
+      outline:none;
+    }
+    .nav-icon{
+      width:36px;
+      height:36px;
+      min-width:36px;
+      display:inline-grid;
+      place-items:center;
+      border-radius:8px;
+      transition:background-color var(--btn-transition),
+                 transform var(--btn-transition),
+                 box-shadow var(--btn-transition);
+      color:inherit;
+    }
+    .app-sidebar.collapsed .nav-link{
+      justify-content:center;
+      padding:10px 6px;
+    }
+    .app-sidebar.collapsed .nav-text{
+      display:none;
+    }
+
+    .nav-link:hover{
+      transform:translateY(-3px);
+      background:var(--sidebar-hover);
+      color:#ffffff;
+      box-shadow:var(--shadow-sm);
+    }
+
+    .nav-link.active{
+      background:linear-gradient(90deg, rgba(22,163,74,0.12), rgba(22,163,74,0.06));
+      color:#fff;
+      box-shadow:0 6px 18px rgba(22,163,74,0.06);
+    }
+    .nav-link.active::after{
+      content:"";
+      position:absolute;
+      left:8px;
+      top:8px;
+      bottom:8px;
+      width:4px;
+      border-radius:6px;
+      background:var(--sidebar-active);
+      display:block;
+    }
+    .app-sidebar.collapsed .nav-link.active::after{
+      display:none;
+    }
+
+    .nav-icon i{
+      font-size:18px;
+    }
+
+    /* MAIN */
+    .app-main{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+      min-height:100vh;
+    }
+
+    .topbar{
+      height:64px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:0 16px;
+      border-bottom:1px solid var(--border);
+      background:#ffffff;
+      position:sticky;
+      top:0;
+      z-index:1050;
+    }
+
+    .toggle-btn{
+      border:none;
+      background:transparent;
+      font-size:20px;
+      color:var(--ink);
+      cursor:pointer;
+    }
+
+    .search{
+      flex:1;
+      max-width:640px;
+      position:relative;
+    }
+    .search input{
+      width:100%;
+      padding:10px 12px 10px 36px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fbfdff;
+      font-size:14px;
+      transition:box-shadow .12s ease, border-color .12s ease;
+    }
+    .search input:focus{
+      outline:none;
+      border-color:var(--brand-600);
+      box-shadow:0 6px 24px rgba(21,115,71,0.06);
+    }
+    .search i{
+      position:absolute;
+      left:12px;
+      top:10px;
+      color:var(--muted);
+      font-size:16px;
+      pointer-events:none;
+    }
+
+    .actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .avatar{
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:#eef3f1;
+      color:var(--ink);
+      font-weight:700;
+    }
+
+    .btn-primary.custom{
+      background:var(--brand-600);
+      border:none;
+      color:#fff;
+      padding:.5rem .85rem;
+      border-radius:20px;
+      font-weight:600;
+      box-shadow:0 6px 18px rgba(25,135,84,0.12);
+      transition:transform var(--btn-transition),
+                 box-shadow var(--btn-transition),
+                 opacity var(--btn-transition);
+    }
+    .btn-primary.custom:hover{
+      transform:translateY(-3px);
+      box-shadow:0 12px 30px rgba(21,115,71,0.14);
+      opacity:0.98;
+    }
+
+    .btn-outline.custom{
+      background:transparent;
+      border:1px solid rgba(15,23,42,0.06);
+      color:var(--ink);
+      padding:.45rem .75rem;
+      border-radius:10px;
+      transition:all var(--btn-transition);
+    }
+
+    .btn-icon{
+      display:inline-grid;
+      place-items:center;
+      width:40px;
+      height:40px;
+      border-radius:10px;
+      border:1px solid rgba(15,23,42,0.06);
+      background:#fff;
+      cursor:pointer;
+      transition:transform var(--btn-transition), box-shadow var(--btn-transition);
+    }
+
+    .content-wrap{
+      flex:1 1 auto;
+      max-width:1280px;
+      width:100%;
+      margin:18px auto;
+      padding:18px;
+    }
+
+    .card,
+    .dropdown-menu,
+    .modal-content,
+    .form-control,
+    .form-select,
+    .btn{
+      border-radius:8px;
+    }
+
+    .card{
+      border-color:var(--border);
+      box-shadow:0 1px 2px rgba(15,23,42,.04);
+    }
+
+    .table{
+      vertical-align:middle;
+    }
+
+    .table thead th{
+      color:#475569;
+      font-size:12px;
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      background:#f8fafc;
+      border-bottom-color:#dbe3ea;
+    }
+
+    .page-title,
+    h1{
+      letter-spacing:0;
+      font-weight:600;
+    }
+
+    .footer{
+      border-top:1px solid var(--border);
+      background:#f9fafb;
+    }
+    .footer .inner{
+      max-width:1200px;
+      margin:0 auto;
+      padding:10px 16px;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .overlay{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.35);
+      z-index:1040;
+    }
+    .overlay.show{
+      display:block;
+    }
+
+    @media (max-width:991px){
+      .app{
+        min-height:auto;
+        height:auto;
+        display:block;
+      }
+      .app-sidebar{
+        position:fixed;
+        left:0;
+        top:0;
+        transform:translateX(-112%);
+        height:100%;
+        width:var(--sidebar-width);
+        min-width:unset;
+        min-height:100vh;
+      }
+      .app-sidebar.show{
+        transform:translateX(0);
+      }
+      .app-sidebar.collapsed{
+        width:var(--sidebar-width);
+      }
+
+      .content-wrap{
+        height:auto;
+        min-height:calc(100vh - 64px - 56px);
+        margin:12px;
+        padding:12px;
+      }
+    }
+
+    .muted{ color:var(--muted); }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<div class="app" id="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar" class="app-sidebar" aria-label="Primary navigation">
+    <div class="brand" role="banner">
+      <div class="brand-logo-wrap" aria-hidden="true">
+        {% if company_profile and company_profile.logo %}
+          <img src="{{ company_profile.logo.url }}" alt="{{ company_profile.name }}">
+        {% else %}
+          <img src="{% static 'images/webfix-logo.png' %}" alt="The Webfix">
+        {% endif %}
+      </div>
+
+      <div class="brand-text">
+        <span class="brand-title">
+          {% if company_profile and company_profile.name %}{{ company_profile.name }}{% else %}Invoice Suite{% endif %}
+        </span>
+        <span class="brand-sub">Finance & Billing</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-inner" id="sidebarInner" role="navigation" aria-label="Sidebar menu">
+      {% with resolver=request.resolver_match %}
+
+      <!-- Analytics -->
+      <div class="nav-group" role="group" aria-label="Analytics">
+        <button class="nav-section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#nav-analytics" aria-expanded="true" aria-controls="nav-analytics">
+          <span class="nav-section-label">Analytics</span>
+          <i class="bi bi-chevron-up" aria-hidden="true"></i>
+        </button>
+
+        <div id="nav-analytics" class="collapse show nav-collapse">
+          <ul class="nav-list" role="menu">
+            <li class="nav-item" role="none">
+              <a href="{% url 'dashboard' %}" class="nav-link {% if resolver and resolver.url_name == 'dashboard' %}active{% endif %}" role="menuitem" title="Main Dashboard" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon" aria-hidden="true"><i class="bi bi-speedometer2"></i></span>
+                <span class="nav-text">Main Dashboard</span>
+              </a>
+            </li>
+
+            <li class="nav-item" role="none">
+              <a href="{% url 'sales:payments_dashboard' %}" class="nav-link {% if resolver and resolver.url_name == 'payments_dashboard' %}active{% endif %}" role="menuitem" title="Payment Analytics" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon" aria-hidden="true"><i class="bi bi-graph-up-arrow"></i></span>
+                <span class="nav-text">Payment Analytics</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Invoices -->
+      <div class="nav-group" role="group" aria-label="Invoices">
+        <button class="nav-section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#nav-invoices" aria-expanded="true" aria-controls="nav-invoices">
+          <span class="nav-section-label">Invoices</span>
+          <i class="bi bi-chevron-up" aria-hidden="true"></i>
+        </button>
+
+        <div id="nav-invoices" class="collapse show nav-collapse">
+          <ul class="nav-list" role="menu">
+            <li class="nav-item" role="none">
+              <a href="{% url 'sales:invoice_list' %}" class="nav-link {% if resolver and resolver.url_name == 'invoice_list' %}active{% endif %}" role="menuitem" title="All Invoices" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon" aria-hidden="true"><i class="bi bi-receipt"></i></span>
+                <span class="nav-text">All Invoices</span>
+              </a>
+            </li>
+
+            <li class="nav-item" role="none">
+              <a href="{% url 'sales:invoice_add' %}" class="nav-link {% if resolver and resolver.url_name == 'invoice_add' %}active{% endif %}" role="menuitem" title="Create Invoice" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon" aria-hidden="true"><i class="bi bi-plus-square"></i></span>
+                <span class="nav-text">New Invoice</span>
+              </a>
+            </li>
+
+            <li class="nav-item" role="none">
+              <a href="{% url 'sales:unpaid_invoices' %}" class="nav-link {% if resolver and resolver.url_name == 'unpaid_invoices' %}active{% endif %}" role="menuitem" title="Unpaid Invoices" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon" aria-hidden="true"><i class="bi bi-exclamation-octagon"></i></span>
+                <span class="nav-text">Unpaid Invoices</span>
+              </a>
+            </li>
+
+            <li class="nav-item" role="none">
+              <a href="{% url 'sales:invoice_bin_list' %}" class="nav-link {% if resolver and resolver.url_name == 'invoice_bin_list' %}active{% endif %}" role="menuitem" title="Bin" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon" aria-hidden="true"><i class="bi bi-archive-fill"></i></span>
+                <span class="nav-text">Bin</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Customers -->
+      <div class="nav-group" role="group" aria-label="Customers">
+        <button class="nav-section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#nav-customers" aria-expanded="true" aria-controls="nav-customers">
+          <span class="nav-section-label">Customers</span>
+          <i class="bi bi-chevron-up" aria-hidden="true"></i>
+        </button>
+        <div id="nav-customers" class="collapse show nav-collapse">
+          <ul class="nav-list" role="menu">
+            <li class="nav-item" role="none">
+              <a href="{% url 'sales:customer_list' %}" class="nav-link {% if resolver and resolver.url_name == 'customer_list' %}active{% endif %}" role="menuitem" title="Customers" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon" aria-hidden="true"><i class="bi bi-people"></i></span>
+                <span class="nav-text">All Customers</span>
+              </a>
+            </li>
+
+            <li class="nav-item" role="none">
+              <a href="{% url 'sales:customer_add' %}" class="nav-link {% if resolver and resolver.url_name == 'customer_add' %}active{% endif %}" role="menuitem" title="Add Customer" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon" aria-hidden="true"><i class="bi bi-person-plus"></i></span>
+                <span class="nav-text">Add Customer</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Payments & Refunds -->
+      <div class="nav-group" role="group" aria-label="Payments and refunds">
+        <button class="nav-section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#nav-payments" aria-expanded="true" aria-controls="nav-payments">
+          <span class="nav-section-label">Payments</span>
+          <i class="bi bi-chevron-up" aria-hidden="true"></i>
+        </button>
+        <div id="nav-payments" class="collapse show nav-collapse">
+          <ul class="nav-list" role="menu">
+            <li class="nav-item" role="none">
+              <a href="{% url 'sales:payment_list' %}" class="nav-link {% if resolver and resolver.url_name == 'payment_list' %}active{% endif %}" role="menuitem" title="Payments" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-credit-card"></i></span>
+                <span class="nav-text">Payments</span>
+              </a>
+            </li>
+
+            <li class="nav-item" role="none">
+              <a href="{% url 'sales:payment_add' %}" class="nav-link {% if resolver and resolver.url_name == 'payment_add' %}active{% endif %}" role="menuitem" title="Add Payment" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-plus-circle"></i></span>
+                <span class="nav-text">Add Payment</span>
+              </a>
+            </li>
+
+            <li class="nav-item" role="none">
+              <a href="{% url 'sales:refund_list' %}" class="nav-link {% if resolver and resolver.url_name == 'refund_list' %}active{% endif %}" role="menuitem" title="Refunds" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-arrow-counterclockwise"></i></span>
+                <span class="nav-text">Refunds</span>
+              </a>
+            </li>
+
+            <li class="nav-item" role="none">
+              <a href="{% url 'sales:refund_add' %}" class="nav-link {% if resolver and resolver.url_name == 'refund_add' %}active{% endif %}" role="menuitem" title="Add Refund" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-plus-square"></i></span>
+                <span class="nav-text">Add Refund</span>
+              </a>
+            </li>
+
+            <li class="nav-item" role="none">
+              <a href="{% url 'sales:refund_statement_pdf' %}" class="nav-link {% if resolver and resolver.url_name == 'refund_statement_pdf' %}active{% endif %}" role="menuitem" title="Refund Statement" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-file-earmark-text"></i></span>
+                <span class="nav-text">Refund Statement</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Inventory (full catalog urls) -->
+      <div class="nav-group" role="group" aria-label="Inventory">
+        <button class="nav-section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#nav-inventory" aria-expanded="true" aria-controls="nav-inventory">
+          <span class="nav-section-label">Inventory</span>
+          <i class="bi bi-chevron-up" aria-hidden="true"></i>
+        </button>
+
+        <div id="nav-inventory" class="collapse show nav-collapse">
+          <ul class="nav-list" role="menu">
+            <!-- Inventory home -->
+            <li class="nav-item" role="none">
+              <a href="{% url 'catalog:inventory_home' %}" class="nav-link {% if resolver and resolver.url_name == 'inventory_home' %}active{% endif %}" role="menuitem" title="Inventory Home" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-bar-chart-line"></i></span>
+                <span class="nav-text">Inventory Home</span>
+              </a>
+            </li>
+
+            <!-- Product stock search -->
+            <li class="nav-item" role="none">
+              <a href="{% url 'catalog:product_stock_search' %}" class="nav-link {% if resolver and resolver.url_name == 'product_stock_search' %}active{% endif %}" role="menuitem" title="Product Stock" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-box-seam"></i></span>
+                <span class="nav-text">Product Stock (search)</span>
+              </a>
+            </li>
+
+            <!-- Stock ledger + export -->
+            <li class="nav-item" role="none">
+              <a href="{% url 'catalog:stock_ledger' %}" class="nav-link {% if resolver and resolver.url_name == 'stock_ledger' %}active{% endif %}" role="menuitem" title="Stock Ledger" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-stack"></i></span>
+                <span class="nav-text">Stock Ledger</span>
+              </a>
+            </li>
+
+            <li class="nav-item" role="none">
+              <a href="{% url 'catalog:stock_ledger_export' %}" class="nav-link {% if resolver and resolver.url_name == 'stock_ledger_export' %}active{% endif %}" role="menuitem" title="Export Stock Ledger" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-file-earmark-arrow-down"></i></span>
+                <span class="nav-text">Export Stock Ledger</span>
+              </a>
+            </li>
+
+            <!-- Print runs / batches -->
+            <li class="nav-item" role="none">
+              <a href="{% url 'catalog:pr_list' %}" class="nav-link {% if resolver and resolver.url_name == 'pr_list' %}active{% endif %}" role="menuitem" title="Print Runs (GRN)" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-journal-bookmark"></i></span>
+                <span class="nav-text">Print Runs (GRN)</span>
+              </a>
+            </li>
+
+            <li class="nav-item" role="none">
+              <a href="{% url 'catalog:pr_create' %}" class="nav-link {% if resolver and resolver.url_name == 'pr_create' %}active{% endif %}" role="menuitem" title="Create Batch" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-plus-square"></i></span>
+                <span class="nav-text">Create Batch</span>
+              </a>
+            </li>
+
+            <li class="nav-item" role="none">
+              <a href="{% url 'catalog:export_csv' %}" class="nav-link {% if resolver and resolver.url_name == 'export_csv' %}active{% endif %}" role="menuitem" title="Export Print Runs (CSV)" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-filetype-csv"></i></span>
+                <span class="nav-text">Export Print Runs</span>
+              </a>
+            </li>
+
+            <!-- Warehouses -->
+            <li class="nav-item" role="none">
+              <a href="{% url 'catalog:warehouse_list' %}" class="nav-link {% if resolver and resolver.url_name == 'warehouse_list' %}active{% endif %}" role="menuitem" title="Warehouses" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-buildings"></i></span>
+                <span class="nav-text">Warehouses</span>
+              </a>
+            </li>
+
+            <li class="nav-item" role="none">
+              <a href="{% url 'catalog:warehouse_add' %}" class="nav-link {% if resolver and resolver.url_name == 'warehouse_add' %}active{% endif %}" role="menuitem" title="Add Warehouse" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-plus-circle"></i></span>
+                <span class="nav-text">Add Warehouse</span>
+              </a>
+            </li>
+
+            <li class="nav-item" role="none">
+              <a href="{% url 'catalog:warehouse_import_xlsx' %}" class="nav-link {% if resolver and resolver.url_name == 'warehouse_import_xlsx' %}active{% endif %}" role="menuitem" title="Import Warehouses (XLSX)" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-upload"></i></span>
+                <span class="nav-text">Import Warehouses</span>
+              </a>
+            </li>
+
+            <li class="nav-item" role="none">
+              <a href="{% url 'catalog:warehouse_export_xlsx' %}" class="nav-link {% if resolver and resolver.url_name == 'warehouse_export_xlsx' %}active{% endif %}" role="menuitem" title="Export Warehouses (XLSX)" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-download"></i></span>
+                <span class="nav-text">Export Warehouses</span>
+              </a>
+            </li>
+
+          </ul>
+        </div>
+      </div>
+
+      <!-- Products & Catalog -->
+      <div class="nav-group" role="group" aria-label="Products and catalog">
+        <button class="nav-section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#nav-products" aria-expanded="true" aria-controls="nav-products">
+          <span class="nav-section-label">Products</span>
+          <i class="bi bi-chevron-up" aria-hidden="true"></i>
+        </button>
+
+        <div id="nav-products" class="collapse show nav-collapse">
+          <ul class="nav-list" role="menu">
+            <li class="nav-item" role="none">
+              <a href="{% url 'catalog:product_list' %}" class="nav-link {% if resolver and resolver.url_name == 'product_list' %}active{% endif %}" role="menuitem" title="Products & Services" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-box-seam"></i></span>
+                <span class="nav-text">Products / Services</span>
+              </a>
+            </li>
+
+            <li class="nav-item" role="none">
+              <a href="{% url 'catalog:product_add' %}" class="nav-link {% if resolver and resolver.url_name == 'product_add' %}active{% endif %}" role="menuitem" title="Add product" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-plus-circle"></i></span>
+                <span class="nav-text">Add Product</span>
+              </a>
+            </li>
+
+            <li class="nav-item" role="none">
+              <a href="{% url 'catalog:product_import_xlsx' %}" class="nav-link {% if resolver and resolver.url_name == 'product_import_xlsx' %}active{% endif %}" role="menuitem" title="Import Products (XLSX)" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-upload"></i></span>
+                <span class="nav-text">Import Products</span>
+              </a>
+            </li>
+
+            <li class="nav-item" role="none">
+              <a href="{% url 'catalog:product_export_xlsx' %}" class="nav-link {% if resolver and resolver.url_name == 'product_export_xlsx' %}active{% endif %}" role="menuitem" title="Export Products (XLSX)" data-bs-toggle="tooltip" data-bs-placement="right">
+                <span class="nav-icon"><i class="bi bi-download"></i></span>
+                <span class="nav-text">Export Products</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      {% endwith %}
+    </nav>
+  </aside>
+
+  <!-- OVERLAY (mobile) -->
+  <div class="overlay" id="overlay" tabindex="-1" aria-hidden="true"></div>
+
+  <!-- MAIN -->
+  <section class="app-main" aria-live="polite">
+    <header class="topbar">
+      <button class="toggle-btn d-lg-none" id="btnMobile" aria-label="Open menu"><i class="bi bi-list"></i></button>
+      <button class="toggle-btn d-none d-lg-inline" id="btnCollapse" title="Collapse sidebar" aria-pressed="false" aria-label="Collapse sidebar"><i class="bi bi-layout-sidebar-inset"></i></button>
+
+      <div class="search d-none d-md-block" role="search">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <form method="get" action="{% url 'sales:invoice_list' %}">
+          <input name="q" placeholder="Search invoices, customers…" aria-label="Search invoices and customers">
+        </form>
+      </div>
+
+      <div class="ms-auto d-flex align-items-center gap-2 actions">
+        <a class="btn-primary custom" href="{% url 'sales:invoice_add' %}"><i class="bi bi-plus-lg me-1"></i>New Invoice</a>
+
+        {% if user.is_authenticated %}
+          <div class="dropdown">
+            <button class="btn btn-light border rounded-pill d-flex align-items-center gap-2 px-2" data-bs-toggle="dropdown" aria-expanded="false">
+              <span class="avatar">{{ user.username|first|upper }}</span>
+              <span class="d-none d-sm-inline small">{{ user.username }}</span>
+              <i class="bi bi-caret-down-fill small"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+              <li class="dropdown-item-text small text-muted px-3">Signed in as <b>{{ user.username }}</b></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="#"><i class="bi bi-person-circle me-2"></i>My Profile</a></li>
+              <li><a class="dropdown-item" href="#"><i class="bi bi-sliders me-2"></i>Account Settings</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{% url 'reports:dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+              <li><a class="dropdown-item" href="{% url 'sales:invoice_list' %}"><i class="bi bi-receipt me-2"></i>Invoices</a></li>
+              <li><a class="dropdown-item" href="{% url 'catalog:product_list' %}"><i class="bi bi-box-seam me-2"></i>Products</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+            </ul>
+          </div>
+        {% else %}
+          <a class="btn-outline custom" href="{% url 'accounts:login' %}"><i class="bi bi-box-arrow-in-right me-1"></i>Login</a>
+        {% endif %}
+      </div>
+    </header>
+
+    <main class="content-wrap" id="workspace" role="main">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer mt-auto">
+      {% now "Y" as current_year %}
+      <div class="inner d-flex justify-content-between align-items-center">
+        <div>© {{ company_profile.name|default:"The Webfix" }} {{ current_year }}</div>
+        <div class="muted">Smart Billing Platform · The Webfix</div>
+      </div>
+    </footer>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+<script>
+  (function(){
+    const sidebar   = document.getElementById('sidebar');
+    const overlay   = document.getElementById('overlay');
+    const btnMobile = document.getElementById('btnMobile');
+    const btnCollapse = document.getElementById('btnCollapse');
+
+    const tooltipTriggerList = [].slice.call(
+      document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
+    let tooltipInstances = [];
+
+    function enableSidebarTooltips(){
+      tooltipTriggerList.forEach(el => {
+        if (!el.getAttribute('title') && el.dataset.storedTitle){
+          el.setAttribute('title', el.dataset.storedTitle);
+        }
+      });
+      if (tooltipInstances.length) return;
+      tooltipInstances = tooltipTriggerList.map(el =>
+        new bootstrap.Tooltip(el, {
+          trigger: 'hover',
+          placement: el.getAttribute('data-bs-placement') || 'right',
+        })
+      );
+    }
+
+    function disableSidebarTooltips(){
+      tooltipInstances.forEach(instance => instance.dispose());
+      tooltipInstances = [];
+      tooltipTriggerList.forEach(el => {
+        if (!el.dataset.storedTitle){
+          el.dataset.storedTitle = el.getAttribute('title');
+        }
+        if (el.hasAttribute('title')){
+          el.removeAttribute('title');
+        }
+      });
+    }
+
+    function syncTooltipState(){
+      if (!sidebar) return;
+      const isDesktop = window.matchMedia &&
+                        window.matchMedia('(min-width: 992px)').matches;
+      const isCollapsed = isDesktop && sidebar.classList.contains('collapsed');
+
+      if (isCollapsed){
+        enableSidebarTooltips();
+      } else {
+        disableSidebarTooltips();
+      }
+    }
+
+    try {
+      const stored = localStorage.getItem('sidebar-collapsed');
+      if (stored === '1' && window.matchMedia &&
+          window.matchMedia('(min-width: 992px)').matches) {
+        sidebar.classList.add('collapsed');
+        if (btnCollapse){
+          btnCollapse.setAttribute('aria-pressed','true');
+        }
+      }
+    } catch(e){}
+
+    syncTooltipState();
+    window.addEventListener('resize', syncTooltipState);
+
+    if (btnCollapse && sidebar) {
+      btnCollapse.addEventListener('click', function () {
+        const isCollapsed = sidebar.classList.toggle('collapsed');
+        btnCollapse.setAttribute('aria-pressed', isCollapsed ? 'true' : 'false');
+        try {
+          localStorage.setItem('sidebar-collapsed', isCollapsed ? '1' : '0');
+        } catch(e){}
+        syncTooltipState();
+      });
+    }
+
+    if (btnMobile && sidebar && overlay) {
+      btnMobile.addEventListener('click', function () {
+        sidebar.classList.add('show');
+        overlay.classList.add('show');
+        overlay.setAttribute('aria-hidden','false');
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden';
+      });
+    }
+
+    if (overlay && sidebar) {
+      overlay.addEventListener('click', function () {
+        sidebar.classList.remove('show');
+        overlay.classList.remove('show');
+        overlay.setAttribute('aria-hidden','true');
+        document.documentElement.style.overflow = '';
+        document.body.style.overflow = '';
+      });
+    }
+
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape') {
+        if (sidebar && sidebar.classList.contains('show')) {
+          sidebar.classList.remove('show');
+          overlay.classList.remove('show');
+          overlay.setAttribute('aria-hidden','true');
+          document.documentElement.style.overflow = '';
+          document.body.style.overflow = '';
+        }
+      }
+    });
+
+    (function setupSidebarKeyboardNav(){
+      if (!sidebar) return;
+      const links = Array.from(sidebar.querySelectorAll('.nav-link'));
+      if (!links.length) return;
+      links.forEach(link => link.setAttribute('tabindex','0'));
+      let focused = -1;
+      sidebar.addEventListener('keydown', function(e){
+        if (['ArrowDown','ArrowUp','Home','End'].indexOf(e.key) === -1) return;
+        e.preventDefault();
+        if (e.key === 'ArrowDown') focused = Math.min(focused+1, links.length-1);
+        if (e.key === 'ArrowUp')   focused = Math.max(focused-1, 0);
+        if (e.key === 'Home')      focused = 0;
+        if (e.key === 'End')       focused = links.length-1;
+        links[focused].focus();
+      });
+    })();
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,703 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Batch {{ pr.batch_no|default:pr.id }} · Inventory · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root{
+    --primary:#157347;
+    --primary-dark:#0f5c38;
+    --accent:#2563eb;
+    --muted:#6b7280;
+    --text-dark:#111827;
+    --border:#e5e7eb;
+    --card-bg:#ffffff;
+    --soft-bg:#f9fafb;
+  }
+
+  body{
+    background:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    color:var(--text-dark);
+  }
+
+  a{text-decoration:none;color:inherit;}
+
+  .batch-page{
+    width:100%;
+  }
+  .batch-container{
+    max-width:1120px;
+    margin:26px auto 34px;
+    padding:0 12px 18px;
+  }
+
+  /* PAGE HEADER */
+  .page-header{
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+  }
+  .page-eyebrow{
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-size:11px;
+    color:#9ca3af;
+    margin-bottom:4px;
+  }
+  .page-title{
+    font-size:1.45rem;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:var(--text-dark);
+  }
+  .badge-soft{
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    background:#ecfdf5;
+    border:1px solid #bbf7d0;
+    color:#15803d;
+    font-weight:600;
+  }
+  .page-sub{
+    font-size:13px;
+    color:var(--muted);
+    margin-top:3px;
+  }
+
+  .header-meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:9px;
+  }
+  .header-pill{
+    font-size:11.5px;
+    padding:5px 10px;
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    color:#4b5563;
+  }
+  .header-pill-label{
+    font-weight:500;
+  }
+  .status-dot{
+    width:8px;
+    height:8px;
+    border-radius:999px;
+    background:#16a34a;
+  }
+
+  .header-actions{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    align-items:flex-end;
+  }
+  .header-actions-row{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+
+  .btn-soft{
+    border-radius:999px;
+    font-size:12.5px;
+    padding:7px 13px;
+    border:1px solid #e5e7eb;
+    background:#ffffff;
+    font-weight:500;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .btn-soft:hover{
+    background:#f3f4f6;
+  }
+
+  .btn-primary-soft{
+    border-radius:999px;
+    font-size:12.5px;
+    padding:7px 13px;
+    border:1px solid var(--primary);
+    background:var(--primary);
+    color:#ffffff;
+    font-weight:500;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .btn-primary-soft:hover{
+    background:var(--primary-dark);
+    border-color:var(--primary-dark);
+  }
+
+  .btn-danger-soft{
+    border-radius:999px;
+    font-size:12.5px;
+    padding:7px 13px;
+    border:1px solid #fecaca;
+    background:#fef2f2;
+    color:#b91c1c;
+    font-weight:500;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .btn-danger-soft:hover{
+    background:#fee2e2;
+  }
+
+  .header-tip{
+    font-size:12px;
+    color:#9ca3af;
+  }
+
+  /* MAIN LAYOUT */
+  .batch-layout{
+    display:grid;
+    grid-template-columns:minmax(0,1.7fr) minmax(0,1.1fr);
+    gap:16px;
+  }
+
+  .card{
+    background:var(--card-bg);
+    border-radius:18px;
+    border:1px solid #e2e8f0;
+    box-shadow:0 10px 28px rgba(15,23,42,0.06);
+    overflow:hidden;
+  }
+  .card-header{
+    padding:12px 16px;
+    border-bottom:1px solid #e5e7eb;
+    background:linear-gradient(90deg,#f9fafb,#ffffff);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+  }
+  .card-title{
+    font-size:13px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:#6b7280;
+  }
+  .card-sub{
+    font-size:12px;
+    color:#9ca3af;
+    margin-top:2px;
+  }
+  .card-body{
+    padding:14px 16px 16px;
+  }
+
+  /* LEFT SNAPSHOT */
+  .snapshot-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px 18px;
+  }
+  .field-label{
+    font-size:11.5px;
+    color:#6b7280;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+  }
+  .field-value{
+    font-size:13.5px;
+    font-weight:500;
+    color:#111827;
+    margin-top:2px;
+  }
+  .field-muted{
+    color:#9ca3af;
+    font-weight:400;
+  }
+
+  .wh-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    padding:4px 9px;
+    border-radius:999px;
+    background:#eff6ff;
+    border:1px solid #dbeafe;
+    color:#1d4ed8;
+  }
+
+  .notes-box{
+    margin-top:12px;
+    padding:9px 10px;
+    border-radius:12px;
+    background:#f9fafb;
+    border:1px solid #e5e7eb;
+    font-size:12.5px;
+    color:#4b5563;
+    max-height:130px;
+    overflow:auto;
+  }
+
+  /* RIGHT KPIs */
+  .kpi-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+  .kpi-card{
+    padding:10px 11px;
+    border-radius:14px;
+    background:#f9fafb;
+    border:1px solid #e5e7eb;
+  }
+  .kpi-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:#6b7280;
+  }
+  .kpi-value{
+    font-size:1.25rem;
+    font-weight:700;
+    color:#111827;
+    margin-top:2px;
+  }
+  .kpi-sub{
+    font-size:12px;
+    color:#9ca3af;
+  }
+  .kpi-positive{color:#15803d;}
+  .kpi-warning{color:#b45309;}
+  .kpi-danger{color:#b91c1c;}
+
+  .balance-box{
+    margin-top:12px;
+    padding:10px 11px;
+    border-radius:12px;
+    background:#fefce8;
+    border:1px solid #facc15;
+    font-size:12.5px;
+    color:#854d0e;
+  }
+
+  /* LEDGER SECTION */
+  .ledger-section{
+    margin-top:18px;
+  }
+  .ledger-header-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+  }
+
+  .ledger-table-wrap{
+    border-radius:12px;
+    border:1px solid #e5e7eb;
+    overflow:auto;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+  }
+  th, td{
+    padding:7px 9px;
+    border-bottom:1px solid #e5e7eb;
+  }
+  th{
+    text-align:left;
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:#6b7280;
+    background:#f9fafb;
+    white-space:nowrap;
+  }
+  tbody tr:hover td{
+    background:#f9fafb;
+  }
+
+  .tag-in{
+    padding:2px 8px;
+    border-radius:999px;
+    font-size:11px;
+    background:#ecfdf5;
+    color:#166534;
+    font-weight:600;
+  }
+  .tag-out{
+    padding:2px 8px;
+    border-radius:999px;
+    font-size:11px;
+    background:#fef2f2;
+    color:#b91c1c;
+    font-weight:600;
+  }
+  .tag-zero{
+    padding:2px 8px;
+    border-radius:999px;
+    font-size:11px;
+    background:#e5e7eb;
+    color:#4b5563;
+  }
+
+  .user-text{
+    font-size:12px;
+    color:#6b7280;
+  }
+  .note-text{
+    font-size:12.5px;
+    color:#4b5563;
+    max-width:280px;
+  }
+
+  @media (max-width:991.98px){
+    .batch-layout{
+      grid-template-columns:minmax(0,1fr);
+    }
+    .header-actions{
+      align-items:flex-start;
+    }
+    .header-actions-row{
+      justify-content:flex-start;
+    }
+  }
+  @media (max-width:575.98px){
+    .batch-container{
+      padding-inline:10px;
+    }
+    .card{
+      border-radius:14px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="batch-page">
+  <div class="batch-container">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">Inventory · Batch detail</div>
+        <h1 class="page-title">
+          Batch {{ pr.batch_no|default:pr.id }}
+          <span class="badge-soft">Print run</span>
+        </h1>
+        <div class="page-sub">
+          {{ product.name }}
+          {% if product.sku %} · SKU: {{ product.sku }}{% endif %}
+        </div>
+
+        <div class="header-meta-row">
+          <div class="header-pill">
+            <span class="status-dot"></span>
+            <span class="header-pill-label">On hand</span>
+            {{ available|default:0|intcomma }}
+          </div>
+
+          <div class="header-pill">
+            <span class="header-pill-label">Warehouse</span>
+            {% if warehouse %}
+              {{ warehouse.name }}
+            {% else %}
+              <span class="field-muted">Not assigned</span>
+            {% endif %}
+          </div>
+
+          <div class="header-pill">
+            <span class="header-pill-label">Print date</span>
+            {% if pr.print_date %}
+              {{ pr.print_date|date:"d M Y" }}
+            {% else %}
+              <span class="field-muted">—</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="header-actions-row">
+          <a href="{% url 'catalog:pr_list' %}" class="btn-soft">
+            <i class="bi bi-arrow-left"></i> Back to batches
+          </a>
+          <a href="{% url 'catalog:pr_edit' pr.id %}" class="btn-primary-soft">
+            <i class="bi bi-pencil-square"></i> Edit batch
+          </a>
+          <a href="{% url 'catalog:pr_delete' pr.id %}" class="btn-danger-soft">
+            <i class="bi bi-trash"></i> Delete
+          </a>
+        </div>
+        <div class="header-tip">
+          Tip: Detailed per-entry adjustments are available from the stock ledger screen.
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN LAYOUT -->
+    <div class="batch-layout">
+
+      <!-- LEFT: SNAPSHOT -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Batch snapshot</div>
+            <div class="card-sub">Core details for this GRN / print run</div>
+          </div>
+          <div class="card-sub">
+            On hand: <strong>{{ available|default:0|intcomma }}</strong>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="snapshot-grid">
+            <div>
+              <div class="field-label">Product</div>
+              <div class="field-value">{{ product.name }}</div>
+            </div>
+
+            <div>
+              <div class="field-label">Warehouse</div>
+              <div class="field-value">
+                {% if warehouse %}
+                  <span class="wh-chip">
+                    <i class="bi bi-shop"></i> {{ warehouse.name }}
+                  </span>
+                {% else %}
+                  <span class="field-muted">Not assigned</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div>
+              <div class="field-label">Printed quantity</div>
+              <div class="field-value">
+                {{ pr.printed_qty|default:0|intcomma }}
+              </div>
+            </div>
+
+            <div>
+              <div class="field-label">Received quantity</div>
+              <div class="field-value">
+                {{ pr.received_qty|default:0|intcomma }}
+              </div>
+            </div>
+
+            <div>
+              <div class="field-label">Available</div>
+              <div class="field-value">
+                {{ available|default:0|intcomma }}
+              </div>
+            </div>
+
+            <div>
+              <div class="field-label">Unit cost</div>
+              <div class="field-value">
+                {% if pr.unit_cost %}
+                  ₹ {{ pr.unit_cost|floatformat:2 }}
+                {% else %}
+                  <span class="field-muted">Not set</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div>
+              <div class="field-label">Print / receive date</div>
+              <div class="field-value">
+                {% if pr.print_date %}
+                  {{ pr.print_date|date:"d M Y" }}
+                {% else %}
+                  <span class="field-muted">—</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div>
+              <div class="field-label">Batch ID</div>
+              <div class="field-value">
+                #{{ pr.id }}
+              </div>
+            </div>
+          </div>
+
+          <div class="notes-box">
+            <div class="field-label" style="margin-bottom:3px;">Notes</div>
+            {% if pr.notes %}
+              {{ pr.notes }}
+            {% else %}
+              <span class="field-muted">No notes recorded for this batch.</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: KPIs -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Stock &amp; value</div>
+            <div class="card-sub">Quick KPIs for this batch</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-label">Received</div>
+              <div class="kpi-value kpi-positive">
+                {{ pr.received_qty|default:0|intcomma }}
+              </div>
+              <div class="kpi-sub">Total quantity received</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-label">Printed</div>
+              <div class="kpi-value kpi-warning">
+                {{ pr.printed_qty|default:0|intcomma }}
+              </div>
+              <div class="kpi-sub">Original print quantity</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-label">Available</div>
+              <div class="kpi-value {% if available|default:0 > 0 %}kpi-positive{% else %}kpi-danger{% endif %}">
+                {{ available|default:0|intcomma }}
+              </div>
+              <div class="kpi-sub">Current on-hand stock</div>
+            </div>
+
+            <div class="kpi-card">
+  <div class="kpi-label">Approx. value</div>
+  <div class="kpi-value">
+    {% if pr.unit_cost %}
+      {% with qty=available|default:0 %}
+        {% if qty %}
+          {# qty * unit_cost => widthratio se multiply #}
+          {% widthratio qty 1 pr.unit_cost as total_val %}
+          ₹ {{ total_val|floatformat:2 }}
+        {% else %}
+          <span class="field-muted">No stock on hand</span>
+        {% endif %}
+      {% endwith %}
+    {% else %}
+      <span class="field-muted">Unit cost not set</span>
+    {% endif %}
+  </div>
+  <div class="kpi-sub">
+    {% if pr.unit_cost and available|default:0 %}
+      Value of on-hand items
+    {% else %}
+      Set unit cost & quantity to see value
+    {% endif %}
+  </div>
+</div>
+
+          </div>
+
+          <div class="balance-box">
+            {% if available|default:0 > 0 %}
+              This batch still has <strong>{{ available|default:0|intcomma }}</strong> units on hand.
+              Make sure any new outward movements allocate from this batch FIFO if applicable.
+            {% else %}
+              On-hand quantity for this batch is <strong>0</strong>.
+              Any new issues will be from newer batches (if stock exists).
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEDGER SECTION -->
+    <div class="card ledger-section">
+      <div class="card-header">
+        <div class="ledger-header-row">
+          <div>
+            <div class="card-title">Ledger entries</div>
+            <div class="card-sub">All stock movements linked to this batch</div>
+          </div>
+        </div>
+        {% if ledgers %}
+          <div class="card-sub">
+            Total entries: <strong>{{ ledgers|length }}</strong>
+          </div>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        {% if ledgers %}
+          <div class="ledger-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date / time</th>
+                  <th>In</th>
+                  <th>Out</th>
+                  <th>Balance</th>
+                  <th>User</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for sl in ledgers %}
+                  <tr>
+                    <td>{{ sl.date|date:"d M Y · H:i" }}</td>
+                    <td>
+                      {% if sl.in_qty %}
+                        <span class="tag-in">+{{ sl.in_qty }}</span>
+                      {% else %}
+                        <span class="tag-zero">0</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if sl.out_qty %}
+                        <span class="tag-out">-{{ sl.out_qty }}</span>
+                      {% else %}
+                        <span class="tag-zero">0</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ sl.balance|default:"0" }}</td>
+                    <td class="user-text">
+                      {% if sl.user %}
+                        {{ sl.user.get_full_name|default:sl.user.username }}
+                      {% else %}
+                        System
+                      {% endif %}
+                    </td>
+                    <td>
+                      <div class="note-text">
+                        {% if sl.notes %}
+                          {{ sl.notes }}
+                        {% else %}
+                          <span class="field-muted">—</span>
+                        {% endif %}
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="card-sub" style="color:#6b7280;">
+            No ledger entries attached to this batch yet.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

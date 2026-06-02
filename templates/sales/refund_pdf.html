@@ -1,0 +1,644 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Refund #{{ refund.id }}</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --accent: #16a34a;
+      --accent-soft: #dcfce7;
+      --danger: #dc2626;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --bg-soft: #f9fafb;
+      --row-alt: #fcfcfc;
+    }
+
+    @page {
+      size: A4;
+      margin: 18mm 15mm;
+    }
+
+    body {
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 11px;
+      color: var(--text-main);
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+    }
+
+    h1, h2, h3, h4, h5 {
+      margin: 0;
+      padding: 0;
+      font-weight: 600;
+    }
+
+    .wrap {
+      width: 100%;
+    }
+
+    /* HEADER */
+    .header {
+      padding: 8px 0 10px;
+      display: table;
+      width: 100%;
+      box-sizing: border-box;
+      border-bottom: 1px solid var(--border);
+    }
+    .header-col {
+      display: table-cell;
+      vertical-align: middle;
+      width: 50%;
+    }
+
+    .company-top {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .company-logo {
+      width: 70px;
+      height: 70px;
+      border-radius: 4px;
+      object-fit: contain;
+    }
+    .company-name {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .company-details {
+      margin-top: 4px;
+      font-size: 10px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .company-detail-line {
+      display: block;
+    }
+
+    .header-right {
+      text-align: right;
+      font-size: 10px;
+      line-height: 1.5;
+    }
+    .header-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 2px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .header-sub {
+      font-size: 10px;
+      color: #4b5563;
+    }
+    .header-meta {
+      margin-top: 6px;
+      font-size: 9.5px;
+      color: var(--text-muted);
+    }
+    .meta-line {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+    .meta-label {
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 9px;
+      color: #9ca3af;
+    }
+    .meta-value {
+      font-size: 9.5px;
+      color: var(--text-main);
+    }
+
+    /* SECTION TITLES */
+    .section-title {
+      margin-top: 10px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+    .section-title span {
+      padding-bottom: 2px;
+      border-bottom: 2px solid var(--accent);
+      display: inline-block;
+    }
+
+    .section-sub {
+      margin-top: 3px;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* INFO GRID */
+    .info-grid {
+      width: 100%;
+      margin-top: 6px;
+      border-collapse: collapse;
+    }
+    .info-grid td {
+      vertical-align: top;
+      font-size: 11px;
+      padding-right: 10px;
+      padding-top: 2px;
+    }
+    .info-label {
+      font-size: 9.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .info-value {
+      font-size: 11.5px;
+      color: var(--text-main);
+      font-weight: 500;
+      margin-top: 1px;
+    }
+
+    /* SUMMARY ROW */
+    .summary-row {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .summary-card {
+      flex: 1 1 32%;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 7px;
+      background: #ffffff;
+      box-sizing: border-box;
+    }
+    .summary-label {
+      color: var(--text-muted);
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 2px;
+    }
+    .summary-value {
+      font-weight: 600;
+      font-size: 11.5px;
+    }
+    .summary-value-negative {
+      color: var(--danger);
+    }
+    .summary-value-strong {
+      color: var(--accent);
+    }
+
+    /* SIMPLE EXPLANATION BLOCK */
+    .explain-box {
+      margin-top: 8px;
+      border-radius: 6px;
+      border: 1px dashed var(--border);
+      background: var(--bg-soft);
+      padding: 6px 7px;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+    .explain-label {
+      font-weight:600;
+      font-size:10.5px;
+      margin-bottom:2px;
+      color:var(--text-main);
+    }
+
+    /* TRANSACTION DETAILS TABLE */
+    table.txn {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+      font-size: 10.5px;
+    }
+    table.txn th,
+    table.txn td {
+      border: 1px solid var(--border);
+      padding: 4px 4px;
+    }
+    table.txn th {
+      text-align: left;
+      background: var(--bg-soft);
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    /* INVOICE IMPACT TABLE */
+    table.impact {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+      font-size: 10.5px;
+    }
+    table.impact th,
+    table.impact td {
+      border: 1px solid var(--border);
+      padding: 4px 4px;
+    }
+    table.impact th {
+      text-align: left;
+      background: var(--bg-soft);
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+    .text-right { text-align: right; }
+
+    .status-pill {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 9px;
+      font-weight: 500;
+    }
+    .status-paid {
+      background: #ecfdf5;
+      color: #15803d;
+    }
+    .status-partial {
+      background: #fefce8;
+      color: #854d0e;
+    }
+    .status-unpaid {
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+
+    /* SIGNATURES */
+    .sign-row {
+      margin-top: 14px;
+      display: table;
+      width: 100%;
+    }
+    .sign-block {
+      display: table-cell;
+      width: 50%;
+      padding-right: 20px;
+      vertical-align: bottom;
+      font-size: 10px;
+    }
+    .sign-label {
+      margin-bottom: 28px;
+      font-weight: 500;
+      color: var(--text-main);
+    }
+    .sign-line {
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 4px;
+      height: 26px;
+    }
+    .sign-foot {
+      font-size: 9px;
+      color: var(--text-muted);
+    }
+
+    /* FOOTER NOTE */
+    .footer-note {
+      margin-top: 10px;
+      font-size: 9.5px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 6px;
+    }
+
+    .mt-1 { margin-top: 4px; }
+    .mt-2 { margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- ========== HEADER ========== -->
+    <div class="header">
+      <!-- LEFT: COMPANY -->
+      <div class="header-col">
+        {% if company %}
+          <div class="company-top">
+            {% if company.logo %}
+              <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="company-logo">
+            {% endif %}
+            <div>
+              <div class="company-name">{{ company.name }}</div>
+              <div class="company-details">
+                {% if company.address %}
+                  <div class="company-detail-line">{{ company.address|linebreaksbr }}</div>
+                {% endif %}
+                {% if company.email %}
+                  <div class="company-detail-line">Email: {{ company.email }}</div>
+                {% endif %}
+                {% if company.phone %}
+                  <div class="company-detail-line">Phone: {{ company.phone }}</div>
+                {% endif %}
+                {% if company.gstin %}
+                  <div class="company-detail-line">GSTIN: {{ company.gstin }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% else %}
+          <div class="company-name">The Webfix</div>
+          <div class="company-detail-line">Refund Document</div>
+        {% endif %}
+      </div>
+
+      <!-- RIGHT: META -->
+      <div class="header-col header-right">
+        <div class="header-title">Refund Note</div>
+        <div class="header-sub">
+          Refund #{{ refund.id }}{% if customer %} · {{ customer.name }}{% endif %}
+        </div>
+
+        <div class="header-meta">
+          <div class="meta-line">
+            <span class="meta-label">Generated</span>
+            <span class="meta-value">{{ now|date:"M d, Y H:i" }}</span>
+          </div>
+          <div class="meta-line">
+            <span class="meta-label">Refund Date</span>
+            <span class="meta-value">{{ refund.date|date:"M d, Y" }}</span>
+          </div>
+          {% if invoice %}
+            <div class="meta-line">
+              <span class="meta-label">Invoice</span>
+              <span class="meta-value">{{ invoice.number }}</span>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== 1. REFUND SUMMARY ========== -->
+    <div class="section-title"><span>Refund Summary</span></div>
+    <div class="section-sub">
+      High-level view of this refund and how it is linked inside your billing system.
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-card">
+        <div class="summary-label">Refund Amount</div>
+        <div class="summary-value summary-value-negative">
+          −₹{{ refund.amount|floatformat:2|intcomma }}
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Method</div>
+        <div class="summary-value">
+          {{ refund.method|default:"Refund" }}
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Linked Invoice</div>
+        <div class="summary-value">
+          {% if invoice %}
+            {{ invoice.number }}
+          {% else %}
+            Not linked to any invoice
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="explain-box">
+      <div class="explain-label">In simple terms</div>
+      <div>
+        This refund reduces the amount you have collected by
+        <strong>₹{{ refund.amount|floatformat:2|intcomma }}</strong>
+        {% if customer %}
+          from customer <strong>{{ customer.name }}</strong>
+        {% endif %}
+        {% if invoice %}
+          against invoice <strong>{{ invoice.number }}</strong>.
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ========== 1B. TRANSACTION DETAILS (MODE + NOTE) ========== -->
+    <div class="section-title"><span>Transaction Details</span></div>
+    <div class="section-sub">
+      Actual transaction information as entered in the system – useful for finance and audit.
+    </div>
+
+    <table class="txn">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Transaction Mode</td>
+          <td>{{ refund.method|default:"Refund" }}</td>
+        </tr>
+        <tr>
+          <td>Refund Date</td>
+          <td>{{ refund.date|date:"M d, Y" }}</td>
+        </tr>
+        <tr>
+          <td>Refund Amount</td>
+          <td>₹{{ refund.amount|floatformat:2|intcomma }}</td>
+        </tr>
+        {% if invoice %}
+        <tr>
+          <td>Related Invoice</td>
+          <td>{{ invoice.number }}{% if customer %} · {{ customer.name }}{% endif %}</td>
+        </tr>
+        {% endif %}
+        <tr>
+          <td>Reference / Note</td>
+          <td>
+            {% if refund.note %}
+              {{ refund.note }}
+            {% else %}
+              No specific reference or note was provided.
+            {% endif %}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ========== 2. CUSTOMER DETAILS ========== -->
+    <div class="section-title"><span>Customer</span></div>
+    <div class="section-sub">
+      Who is this refund issued to? Details from the customer record.
+    </div>
+
+    <table class="info-grid">
+      <tr>
+        <td width="52%">
+          <div class="info-label">Name</div>
+          <div class="info-value">
+            {% if customer %}
+              {{ customer.name }}
+            {% else %}
+              —
+            {% endif %}
+          </div>
+
+          {% if customer and customer.company %}
+            <div class="mt-1">
+              <div class="info-label">Company</div>
+              <div class="info-value">{{ customer.company }}</div>
+            </div>
+          {% endif %}
+
+          {% if customer and customer.email %}
+            <div class="mt-1">
+              <div class="info-label">Email</div>
+              <div class="info-value">{{ customer.email }}</div>
+            </div>
+          {% endif %}
+        </td>
+
+        <td width="48%">
+          {% if customer and customer.phone %}
+            <div class="mt-1">
+              <div class="info-label">Phone</div>
+              <div class="info-value">{{ customer.phone }}</div>
+            </div>
+          {% endif %}
+
+          {% if customer and customer.billing_address %}
+            <div class="mt-1">
+              <div class="info-label">Billing Address</div>
+              <div class="info-value">
+                {{ customer.billing_address|linebreaksbr }}
+              </div>
+            </div>
+          {% endif %}
+
+          {% if customer and customer.gstin %}
+            <div class="mt-1">
+              <div class="info-label">GSTIN</div>
+              <div class="info-value">{{ customer.gstin }}</div>
+            </div>
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+
+    <!-- ========== 3. IMPACT ON INVOICE (IF ANY) ========== -->
+    {% if invoice %}
+      <div class="section-title"><span>Impact on Invoice</span></div>
+      <div class="section-sub">
+        Current status of the linked invoice after considering this refund.
+      </div>
+
+      <table class="impact">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th class="text-right">Amount (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Invoice Total</td>
+            <td class="text-right">
+              {{ invoice.grand_total|default:0|floatformat:2|intcomma }}
+            </td>
+          </tr>
+          <tr>
+            <td>This Refund</td>
+            <td class="text-right">
+              −{{ refund.amount|floatformat:2|intcomma }}
+            </td>
+          </tr>
+          <tr>
+            <td>Amount Collected (current)</td>
+            <td class="text-right">
+              {{ invoice.paid_amount|default:0|floatformat:2|intcomma }}
+            </td>
+          </tr>
+          <tr>
+            <td>Outstanding Balance (current)</td>
+            <td class="text-right">
+              {{ invoice.balance_due|default:0|floatformat:2|intcomma }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="explain-box mt-1">
+        <div class="explain-label">Invoice status</div>
+        <div>
+          Current status:
+          {% if invoice.status == 'paid' %}
+            <span class="status-pill status-paid">Paid</span>
+          {% elif invoice.status == 'partial' %}
+            <span class="status-pill status-partial">Partial</span>
+          {% else %}
+            <span class="status-pill status-unpaid">Unpaid</span>
+          {% endif %}
+          <br>
+          The above collected and balance figures already include this refund.
+        </div>
+      </div>
+    {% else %}
+      <div class="section-title"><span>Impact on Invoice</span></div>
+      <div class="section-sub">
+        This refund is not linked to a specific invoice but still reduces total collections for this customer.
+      </div>
+    {% endif %}
+
+    <!-- ========== 4. INTERNAL NOTE ========== -->
+    <div class="section-title"><span>Internal Note</span></div>
+    <div class="section-sub">
+      Reason or context for this refund. Useful for future reference and audits.
+    </div>
+
+    <div class="info-value mt-1">
+      {% if refund.note %}
+        {{ refund.note }}
+      {% else %}
+        No detailed note was recorded for this refund.
+      {% endif %}
+    </div>
+
+    <!-- ========== SIGNATURE BLOCK ========== -->
+    <div class="sign-row">
+      <div class="sign-block">
+        <div class="sign-label">
+          For {% if company and company.name %}{{ company.name }}{% else %}The Webfix{% endif %}
+        </div>
+        <div class="sign-line"></div>
+        <div class="sign-foot">Authorised Signatory</div>
+      </div>
+
+      <div class="sign-block">
+        <div class="sign-label">
+          Customer Acknowledgement
+        </div>
+        <div class="sign-line"></div>
+        <div class="sign-foot">
+          {% if customer %}{{ customer.name }}{% else %}&nbsp;{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER NOTE -->
+    <div class="footer-note">
+      This is a system-generated refund note from your billing dashboard.
+      It confirms that the above refund has been recorded in your books.
+      Please retain a signed copy for your records if shared with the customer.
+    </div>
+
+  </div>
+</body>
+</html>

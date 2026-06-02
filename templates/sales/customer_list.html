@@ -1,0 +1,650 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Customers · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --primary: #157347;
+    --primary-dark: #0f5c38;
+    --accent: #2563eb;
+    --muted: #4b5563;
+    --text-dark: #111827;
+    --border: #d1d5db;
+    --card-bg: #ffffff;
+    --soft-bg: #f9fafb;
+    --danger: #dc2626;
+    --success: #16a34a;
+  }
+
+  body {
+    background:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    color:var(--text-dark);
+  }
+
+  /* PAGE WRAPPER (same vibe as dashboard) */
+  .customers-page{
+    width:100%;
+  }
+  .customers-container{
+    max-width:1150px;
+    margin:0 auto;
+    padding:14px 6px 20px;
+  }
+
+  /* HEADER – match dashboard */
+  .customers-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:18px;
+    margin-bottom:18px;
+  }
+  .page-heading{
+    font-weight:600;
+    color:var(--text-dark);
+    font-size:1.45rem;
+  }
+  .page-sub{
+    color:var(--muted);
+    font-size:13.5px;
+    margin-top:4px;
+  }
+  .meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:8px;
+  }
+  .meta-chip{
+    font-size:12px;
+    padding:6px 12px;
+    border-radius:999px;
+    background:#eef2ff;
+    color:#1e293b;
+    border:1px solid #e0e7ff;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .meta-dot{
+    width:6px;
+    height:6px;
+    border-radius:999px;
+    background:#3b82f6;
+  }
+  .header-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  /* Buttons like dashboard */
+  .customers-page .btn-sm{
+    font-size:0.92rem;
+    padding:0.46rem 1.05rem;
+    border-radius:9px;
+  }
+  .customers-page .btn{
+    border-radius:9px;
+  }
+  .btn-primary{
+    background-color:var(--primary);
+    border-color:var(--primary);
+  }
+  .btn-primary:hover{
+    background-color:var(--primary-dark);
+    border-color:var(--primary-dark);
+  }
+  .btn-outline-secondary:hover{
+    border-color:var(--accent);
+    color:var(--accent);
+  }
+
+  /* MAIN CARD (table wrapper) */
+  .card-lite{
+    background:var(--card-bg);
+    border-radius:16px;
+    box-shadow:0 4px 18px rgba(0,0,0,0.03);
+    border:1px solid var(--border);
+    padding:16px 18px;
+  }
+
+  .section-title{
+    font-weight:600;
+    font-size:15px;
+    margin-bottom:3px;
+    color:var(--text-dark);
+  }
+  .small-muted{
+    color:var(--muted);
+    font-size:12.5px;
+  }
+
+  /* SEARCH & TOP ROW */
+  .top-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .search-bar{
+    position:relative;
+    flex:1;
+    max-width:360px;
+  }
+  .search-bar input{
+    border-radius:10px;
+    font-size:0.85rem;
+    padding-left:34px;
+    border:1px solid var(--border);
+  }
+  .search-bar input:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(21,115,71,0.16);
+  }
+  .search-bar i{
+    position:absolute;
+    top:9px;
+    left:10px;
+    color:#9ca3af;
+    font-size:0.85rem;
+  }
+  .top-meta{
+    font-size:0.8rem;
+    color:var(--muted);
+    text-align:right;
+  }
+
+  /* FILTERS ROW */
+  .filters-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:12px;
+  }
+
+  .filter-chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .filter-chip{
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    padding:5px 11px;
+    font-size:11.5px;
+    background:#f9fafb;
+    color:#4b5563;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    transition:all .15s ease;
+  }
+  .filter-chip span.dot{
+    width:7px;
+    height:7px;
+    border-radius:999px;
+    background:#9ca3af;
+  }
+  .filter-chip:hover{
+    border-color:var(--accent);
+    color:var(--accent);
+    background:#eff6ff;
+  }
+  .filter-chip.active{
+    border-color:var(--primary);
+    background:#dcfce7;
+    color:#14532d;
+  }
+  .filter-chip.active span.dot{
+    background:#16a34a;
+  }
+
+  .filters-right{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .filter-select{
+    font-size:12.5px;
+    border-radius:999px;
+    padding:5px 10px;
+    border:1px solid #e5e7eb;
+  }
+
+  .export-group .btn{
+    font-size:11.5px;
+    padding:5px 9px;
+    border-radius:999px;
+  }
+
+  /* TABLE */
+  .table thead th{
+    border-bottom:0;
+    font-weight:600;
+    font-size:11.5px;
+    color:#374151;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    background:var(--soft-bg);
+  }
+  .table tbody td{
+    font-size:13.5px;
+    vertical-align:middle;
+    color:#1f2937;
+  }
+  .table tbody tr:hover{
+    background:#f9fafb;
+  }
+
+  /* CUSTOMER CELL */
+  .customer-main{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .customer-avatar{
+    width:38px;
+    height:38px;
+    border-radius:12px;
+    background:#e5e7eb;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:600;
+    color:#374151;
+    font-size:0.95rem;
+    flex-shrink:0;
+  }
+  .customer-name{
+    font-weight:600;
+    font-size:0.95rem;
+    color:var(--text-dark);
+  }
+  .customer-tag{
+    display:inline-flex;
+    align-items:center;
+    padding:3px 9px;
+    border-radius:999px;
+    font-size:0.7rem;
+    background:#ecfeff;
+    border:1px solid #bae6fd;
+    color:#0369a1;
+    margin-top:2px;
+  }
+
+  .customer-contact{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    font-size:0.84rem;
+  }
+  .contact-sub{
+    font-size:0.78rem;
+    color:var(--muted);
+  }
+
+  /* ACTION BUTTONS */
+  .action-buttons{
+    display:flex;
+    justify-content:center;
+    gap:6px;
+  }
+  .action-buttons .btn{
+    border-radius:8px;
+    font-size:0.78rem;
+    padding:5px 9px;
+    transition:all 0.18s ease;
+  }
+  .action-buttons .btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 3px 10px rgba(0,0,0,0.1);
+  }
+
+  /* Empty state */
+  .empty-state{
+    text-align:center;
+    padding:38px 0;
+    color:var(--muted);
+    font-size:0.9rem;
+  }
+  .empty-state i{
+    font-size:2.4rem;
+    color:#94a3b8;
+    margin-bottom:8px;
+  }
+
+  @media (max-width: 991.98px){
+    .customers-header{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+    .customers-container{
+      padding-inline:8px;
+    }
+  }
+
+  @media (max-width: 575.98px){
+    .card-lite{
+      padding:14px 12px;
+    }
+    .table thead{
+      font-size:0.7rem;
+    }
+  }
+
+  /* ------------------------
+   BETTER BUTTON DESIGNS
+------------------------- */
+
+/* Solid primary button */
+.btn-primary {
+  background: #157347;
+  border-color: #157347;
+  color: #fff !important;
+  font-weight: 500;
+  transition: all .2s ease;
+}
+.btn-primary:hover {
+  background: #0f5c38;
+  border-color: #0f5c38;
+  transform: translateY(-2px);
+}
+
+/* Outline secondary → Solid blue on hover */
+.btn-outline-secondary {
+  border-color: #1d4ed8;
+  color: #1d4ed8;
+  transition: all .2s ease;
+}
+.btn-outline-secondary:hover {
+  background: #1d4ed8;
+  color: #ffffff !important;
+  border-color: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+/* EXPORT BUTTONS (CSV + EXCEL) */
+.export-group .btn {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #fff;
+  font-weight: 500;
+  transition: all .2s ease;
+}
+.export-group .btn:hover {
+  background: #153fb1;
+  border-color: #153fb1;
+  transform: translateY(-2px);
+}
+
+/* Invoice Add button (outline-secondary → solid) */
+.header-actions .btn-outline-secondary {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #fff !important;
+  transition: all .2s ease;
+}
+.header-actions .btn-outline-secondary:hover {
+  background: #153fb1;
+  border-color: #153fb1;
+  transform: translateY(-2px);
+}
+
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="customers-page">
+  <div class="customers-container">
+
+    <!-- HEADER (same style as dashboard) -->
+    <div class="customers-header">
+      <div>
+        <h3 class="page-heading mb-0">Customers</h3>
+        <div class="page-sub">
+          Central directory for all your clients, linked with invoices & payments.
+        </div>
+        <div class="meta-row">
+          <div class="meta-chip">
+            <span class="meta-dot"></span>
+            {{ total_customers|default:customers|length }} total customer{% if total_customers|default:customers|length != 1 %}s{% endif %}
+          </div>
+          <div class="meta-chip">
+            <span class="meta-dot" style="background:#16a34a;"></span>
+            Active: {{ active_customers|default:"0" }} · Top Spender:
+            {% if top_spender %}{{ top_spender.name }} (₹{{ top_spender.total_spent_calc|floatformat:2|intcomma }}){% else %}—{% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a class="btn btn-outline-secondary btn-sm" href="{% url 'sales:invoice_add' %}">
+          <i class="bi bi-receipt"></i> New Invoice
+        </a>
+        <a class="btn btn-primary btn-sm" href="{% url 'sales:customer_add' %}">
+          <i class="bi bi-person-plus"></i> Add Customer
+        </a>
+      </div>
+    </div>
+
+    <!-- MAIN CARD -->
+    <div class="card-lite">
+
+      <!-- Search row -->
+      <div class="top-row">
+        <form class="search-bar" method="get" action="">
+          <i class="bi bi-search"></i>
+          <input
+  type="text"
+  class="form-control"
+  name="q"
+  placeholder="Search by name, email, phone, company or GSTIN…"
+  value="{{ query }}"
+>
+
+          <!-- preserve filters on search -->
+          <input type="hidden" name="status" value="{{ status }}">
+          <input type="hidden" name="type" value="{{ ctype }}">
+        </form>
+        <div class="top-meta">
+          <div>Showing <strong>{{ customers|length }}</strong> customer(s)</div>
+          {% if query %}
+            <div>Filtered by: "<strong>{{ query }}</strong>"</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Filters + Export row -->
+      <div class="filters-row">
+        <!-- Filter chips (status) -->
+        <div class="filter-chips">
+          {# ALL #}
+          <a href="?{% if query %}q={{ query }}&{% endif %}{% if ctype %}type={{ ctype }}&{% endif %}status="
+             class="filter-chip {% if not status or status == 'all' %}active{% endif %}">
+            <span class="dot"></span> All
+          </a>
+          {# ACTIVE #}
+          <a href="?{% if query %}q={{ query }}&{% endif %}{% if ctype %}type={{ ctype }}&{% endif %}status=active"
+             class="filter-chip {% if status == 'active' %}active{% endif %}">
+            <span class="dot"></span> Active (with invoices)
+          </a>
+          {# PENDING DUES #}
+          <a href="?{% if query %}q={{ query }}&{% endif %}{% if ctype %}type={{ ctype }}&{% endif %}status=pending"
+             class="filter-chip {% if status == 'pending' %}active{% endif %}">
+            <span class="dot"></span> Pending Dues
+          </a>
+          {# INACTIVE #}
+          <a href="?{% if query %}q={{ query }}&{% endif %}{% if ctype %}type={{ ctype }}&{% endif %}status=inactive"
+             class="filter-chip {% if status == 'inactive' %}active{% endif %}">
+            <span class="dot"></span> No Invoices
+          </a>
+          {# TOP SPENDERS #}
+          <a href="?{% if query %}q={{ query }}&{% endif %}{% if ctype %}type={{ ctype }}&{% endif %}status=top"
+             class="filter-chip {% if status == 'top' %}active{% endif %}">
+            <span class="dot"></span> Top Spenders
+          </a>
+        </div>
+
+        <!-- Type + Export -->
+        <div class="filters-right">
+          <!-- Customer type select -->
+          <form method="get" class="d-flex align-items-center gap-1">
+            {% if query %}
+              <input type="hidden" name="q" value="{{ query }}">
+            {% endif %}
+            {% if status %}
+              <input type="hidden" name="status" value="{{ status }}">
+            {% endif %}
+            <select name="type" class="filter-select" onchange="this.form.submit()">
+              <option value="">All Types</option>
+              <option value="Individual" {% if ctype == "Individual" %}selected{% endif %}>Individual</option>
+              <option value="Business" {% if ctype == "Business" %}selected{% endif %}>Business</option>
+            </select>
+          </form>
+
+          <!-- Export buttons -->
+          <div class="export-group">
+            <form method="get" class="d-inline">
+              {% if query %}
+                <input type="hidden" name="q" value="{{ query }}">
+              {% endif %}
+              {% if status %}
+                <input type="hidden" name="status" value="{{ status }}">
+              {% endif %}
+              {% if ctype %}
+                <input type="hidden" name="type" value="{{ ctype }}">
+              {% endif %}
+              <input type="hidden" name="export" value="csv">
+              <button type="submit" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-filetype-csv"></i> CSV
+              </button>
+            </form>
+
+            <form method="get" class="d-inline">
+              {% if query %}
+                <input type="hidden" name="q" value="{{ query }}">
+              {% endif %}
+              {% if status %}
+                <input type="hidden" name="status" value="{{ status }}">
+              {% endif %}
+              {% if ctype %}
+                <input type="hidden" name="type" value="{{ ctype }}">
+              {% endif %}
+              <input type="hidden" name="export" value="xlsx">
+              <button type="submit" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Contact</th>
+              <th class="text-center">Invoices</th>
+              <th class="text-center">Total Spent</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in customers %}
+            <tr>
+              <!-- CUSTOMER -->
+              <td>
+                <div class="customer-main">
+                  <div class="customer-avatar">
+                    {{ c.name|slice:":1"|upper }}
+                  </div>
+                  <div>
+                    <div class="customer-name">{{ c.name }}</div>
+                    {% if c.company %}
+                      <div class="small text-muted">{{ c.company }}</div>
+                    {% endif %}
+                    {% if c.tag %}
+                      <div class="customer-tag">{{ c.tag }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </td>
+
+              <!-- CONTACT -->
+              <td>
+                <div class="customer-contact">
+                  <span>{{ c.email|default:"—" }}</span>
+                  <span class="contact-sub">
+                    {% if c.phone %}
+                      {{ c.phone }}
+                    {% else %}
+                      No phone added
+                    {% endif %}
+                  </span>
+                </div>
+              </td>
+
+              <!-- INVOICES -->
+              <td class="text-center">
+                {{ c.invoices_count|default:"0" }}
+              </td>
+
+              <!-- TOTAL SPENT -->
+              <td class="text-center">
+                <span class="fw-semibold text-success">
+                  ₹{{ c.total_spent_calc|default:"0"|floatformat:2|intcomma }}
+                </span>
+              </td>
+
+              <!-- ACTIONS -->
+              <td class="text-center">
+                <div class="action-buttons">
+                  <a href="{% url 'sales:customer_detail' c.id %}"
+                     class="btn btn-outline-secondary btn-sm"
+                     title="View">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                  <a href="{% url 'sales:customer_edit' c.id %}"
+                     class="btn btn-outline-primary btn-sm"
+                     title="Edit">
+                    <i class="bi bi-pencil-square"></i>
+                  </a>
+                  <a href="{% url 'sales:customer_delete' c.id %}"
+                     class="btn btn-outline-danger btn-sm"
+                     title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="empty-state">
+                <i class="bi bi-people"></i><br>
+                No customers found yet.<br>
+                
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}

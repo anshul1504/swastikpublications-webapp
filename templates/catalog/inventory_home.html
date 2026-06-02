@@ -1,0 +1,497 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Inventory · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ---------- Inventory (scoped) — uses inv- prefix to avoid conflicts ---------- */
+body{
+  background-color: #fff !important;
+}
+:root{
+  --inv-primary: #157347;
+  --inv-accent: #2563eb;
+  --inv-muted: #64748b;
+  --inv-surface: #ffffff;
+  --inv-border: #e6eef2;
+  --inv-soft-bg: #fbfdff;
+  --inv-radius: 12px;
+  --inv-shadow-sm: 0 6px 18px rgba(12,18,20,0.06);
+}
+
+/* wrapper — contained inside base.content area */
+.inv-wrap {
+  max-width: 1150px;
+  margin: 6px auto 40px;
+  padding: 14px;
+}
+
+/* header */
+.inv-header { margin-bottom: 14px; display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap; }
+.inv-meta { display:flex; flex-direction:column; gap:6px; }
+.inv-title { font-weight:600; font-size:1.45rem; color:var(--ink, #0f172a); margin:0; }
+.inv-sub { color:var(--inv-muted); font-size:0.92rem; }
+
+/* actions */
+.inv-actions { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.inv-btn {
+  display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:10px; font-weight:600; text-decoration:none;
+  border:1px solid var(--inv-border); background:var(--inv-surface); color:inherit;
+}
+.inv-btn:hover{ transform:translateY(-2px); box-shadow:var(--inv-shadow-sm); }
+.inv-btn--primary{ background:linear-gradient(180deg,var(--inv-primary), #0f5c38); color:#fff; border-color:transparent; }
+.inv-btn--ghost{ background:transparent; border:1px solid var(--inv-border); color:var(--inv-muted); }
+.inv-btn--sm{ padding:6px 9px; font-size:0.85rem; border-radius:8px; }
+
+/* chips */
+.inv-chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+.inv-chip { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; background:var(--inv-surface); border:1px solid var(--inv-border); color:var(--inv-muted); font-weight:600; }
+
+/* filter card */
+.inv-filter {
+  background:var(--inv-surface); border-radius:var(--inv-radius); padding:14px; border:1px solid var(--inv-border); box-shadow:0 1px 2px rgba(2,6,23,0.03); margin-bottom:14px;
+}
+.inv-filter-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+.inv-filter-group{ display:flex; flex-direction:column; gap:6px; min-width:170px; }
+.inv-filter-label{ font-size:0.82rem; color:var(--inv-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
+
+/* inputs */
+.inv-search {
+  display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:10px; border:1px solid var(--inv-border); background:#fff; min-width:220px;
+}
+.inv-search input{ border:0; outline:0; width:100%; font-size:0.95rem; background:transparent; color:inherit; }
+.inv-select { padding:9px 10px; border-radius:10px; border:1px solid var(--inv-border); background:#fff; font-size:0.95rem; }
+
+/* layout grid */
+.inv-grid { display:grid; grid-template-columns: 1fr 360px; gap:16px; align-items:start; }
+@media (max-width: 1100px){ .inv-grid{ grid-template-columns:1fr; } }
+
+/* card */
+.inv-card { background:var(--inv-surface); border-radius:12px; padding:16px; border:1px solid var(--inv-border); box-shadow:var(--inv-shadow-sm); }
+.inv-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:10px; }
+
+/* charts */
+.inv-chart-wrap{ height:320px; border-radius:10px; overflow:hidden; background:linear-gradient(180deg,#fff,#fbfcff); padding:8px; border:1px solid var(--inv-border); }
+
+/* pills */
+.inv-pill { padding:6px 10px; border-radius:8px; border:1px solid var(--inv-border); background:#fff; font-weight:700; cursor:pointer; }
+.inv-pill.inv-active { background:var(--inv-primary); color:#fff; border-color:var(--inv-primary); }
+
+/* tables */
+.inv-table { width:100%; border-collapse:collapse; font-size:0.95rem; }
+.inv-table thead th { text-align:left; padding:12px 10px; font-weight:700; color:#374151; border-bottom:1px solid var(--inv-border); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em; background:transparent; }
+.inv-table tbody td { padding:12px 10px; vertical-align:middle; border-bottom:1px solid #f4f7f8; }
+.inv-table tbody tr:hover { background: rgba(15,107,58,0.03); transform:translateY(-1px); }
+
+/* suggestion & recent */
+.inv-suggestion { display:flex; justify-content:space-between; gap:10px; align-items:center; padding:10px 6px; border-bottom:1px solid #f3f6f7; }
+.inv-recent { border-radius:10px; padding:10px; cursor:pointer; transition:background .12s, transform .08s; }
+.inv-recent:hover{ background: rgba(15,107,58,0.03); transform:translateY(-2px); }
+
+/* status */
+.inv-status-good { color:#16a34a; font-weight:700; }
+.inv-status-low  { color:#dc2626; font-weight:700; }
+
+/* modal (accessible) */
+.inv-modal {
+  display:none; position:fixed; inset:0; background:rgba(2,6,23,0.45); z-index:1200; align-items:center; justify-content:center; padding:18px;
+}
+.inv-modal .inv-modal-card { width:100%; max-width:420px; background:var(--inv-surface); border-radius:10px; padding:16px; border:1px solid var(--inv-border); box-shadow:0 10px 30px rgba(12,18,20,0.08); }
+
+/* helpers */
+.inv-text-muted{ color:var(--inv-muted); font-size:0.92rem; }
+.inv-small{ font-size:0.85rem; color:var(--inv-muted); }
+
+/* responsive */
+@media (max-width:480px){
+  .inv-btn span{ display:none; }
+  .inv-chart-wrap{ height:220px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="inv-wrap">
+  <!-- HEADER -->
+  <div class="inv-header">
+    <div class="inv-meta">
+      <div class="inv-title">Inventory Dashboard</div>
+      <div class="inv-sub">Monitor stock levels & movements — updated: {{ today|date:"d M, Y" }}</div>
+      <div class="inv-chips" style="margin-top:8px;">
+        <div class="inv-chip"><i class="bi bi-box"></i><span>Products <strong style="margin-left:6px">{{ total_products }}</strong></span></div>
+        <div class="inv-chip"><i class="bi bi-stack"></i><span>Stock <strong style="margin-left:6px">{{ total_onhand }}</strong></span></div>
+        <div class="inv-chip"><i class="bi bi-exclamation-triangle"></i><span>Low <strong style="margin-left:6px">{{ low_stock_count }}</strong></span></div>
+        <div class="inv-chip"><i class="bi bi-collection"></i><span>Batches <strong style="margin-left:6px">{{ total_prs }}</strong></span></div>
+      </div>
+    </div>
+
+    <div class="inv-actions" role="toolbar" aria-label="Inventory actions">
+      <a class="inv-btn inv-btn--ghost" href="{% url 'catalog:product_list' %}"><i class="bi bi-boxes"></i><span>Products</span></a>
+      <a class="inv-btn inv-btn--primary" href="{% url 'catalog:pr_create' %}"><i class="bi bi-plus-lg"></i><span>New Batch</span></a>
+      <a class="inv-btn inv-btn--ghost" href="{% url 'catalog:pr_list' %}"><i class="bi bi-list-ul"></i><span>Batches</span></a>
+      <a id="invExport" class="inv-btn inv-btn--ghost" data-export-url="{{ export_csv_url|default:'' }}" href="#"><i class="bi bi-download"></i><span>Export</span></a>
+    </div>
+  </div>
+
+  <!-- FILTER -->
+  <div class="inv-filter" role="region" aria-label="Inventory filters">
+    <form id="invFilterForm" method="get" class="inv-filter-row" role="search" aria-label="Filter inventory">
+      
+
+      <div class="inv-filter-group">
+        <label class="inv-filter-label">Warehouse</label>
+        <select name="warehouse" class="inv-select" aria-label="Select warehouse">
+          <option value="">All</option>
+          {% for w in warehouses %}
+            <option value="{{ w.id }}" {% if filter_warehouse|stringformat:"s" == w.id|stringformat:"s" %}selected{% endif %}>{{ w.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      
+
+      
+
+      <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+        <button type="submit" class="inv-btn inv-btn--primary"><i class="bi bi-funnel"></i><span>Filter</span></button>
+        <a href="{% url 'catalog:inventory_home' %}" class="inv-btn inv-btn--ghost"><i class="bi bi-arrow-clockwise"></i><span>Reset</span></a>
+      </div>
+    </form>
+  </div>
+
+  <!-- KPI -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;">
+    <div class="inv-card" style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:8px;margin:0 auto 8px;background:rgba(21,115,71,0.08);display:flex;align-items:center;justify-content:center;color:var(--inv-primary)"><i class="bi bi-box"></i></div>
+      <div class="inv-text-muted">TOTAL PRODUCTS</div>
+      <div style="font-weight:700;font-size:1.15rem;margin-top:6px;">{{ total_products }}</div>
+    </div>
+    <div class="inv-card" style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:8px;margin:0 auto 8px;background:rgba(15,107,58,0.06);display:flex;align-items:center;justify-content:center;color:var(--inv-primary)"><i class="bi bi-stack"></i></div>
+      <div class="inv-text-muted">ON-HAND STOCK</div>
+      <div style="font-weight:700;font-size:1.15rem;margin-top:6px;">{{ total_onhand }}</div>
+    </div>
+    <div class="inv-card" style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:8px;margin:0 auto 8px;background:rgba(249,115,22,0.06);display:flex;align-items:center;justify-content:center;color:#f59e0b"><i class="bi bi-exclamation-triangle"></i></div>
+      <div class="inv-text-muted">LOW STOCK</div>
+      <div style="font-weight:700;font-size:1.15rem;margin-top:6px;color:#f59e0b;">{{ low_stock_count }}</div>
+    </div>
+    <div class="inv-card" style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:8px;margin:0 auto 8px;background:rgba(37,99,235,0.06);display:flex;align-items:center;justify-content:center;color:var(--inv-accent)"><i class="bi bi-collection"></i></div>
+      <div class="inv-text-muted">ACTIVE BATCHES</div>
+      <div style="font-weight:700;font-size:1.15rem;margin-top:6px;">{{ total_prs }}</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="inv-grid" role="main">
+    <!-- LEFT -->
+    <div>
+      <div class="inv-card" aria-labelledby="stock-movement">
+        <div class="inv-head">
+          <div>
+            <div id="stock-movement" style="font-weight:700;font-size:1rem;">Stock Movement</div>
+            <div class="inv-small">Last month net: <strong>{{ last_month_net }}</strong></div>
+          </div>
+
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="inv-pill" data-range="3" type="button">3M</button>
+            <button class="inv-pill inv-active" data-range="6" type="button">6M</button>
+            <button class="inv-pill" data-range="12" type="button">1Y</button>
+            <button id="invDownload" class="inv-btn inv-btn--ghost inv-btn--sm" title="Download chart"><i class="bi bi-download"></i></button>
+          </div>
+        </div>
+
+        <div class="inv-chart-wrap">
+          <canvas id="invChart" aria-label="Stock movement chart"></canvas>
+        </div>
+      </div>
+
+      <div class="inv-card" style="margin-top:12px;">
+        <div class="inv-head">
+          <div>
+            <div style="font-weight:700;">Recent Batches</div>
+            <div class="inv-small">Latest received batches</div>
+          </div>
+          <a class="inv-btn inv-btn--ghost inv-btn--sm" href="{% url 'catalog:pr_list' %}"><i class="bi bi-arrow-right"></i><span>View All</span></a>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table class="inv-table" aria-label="Recent batches">
+            <thead>
+              <tr><th>Batch</th><th>Product</th><th>Date</th><th class="text-end">Qty</th><th class="text-end">Actions</th></tr>
+            </thead>
+            <tbody>
+              {% for pr in recent_prs %}
+                <tr>
+                  <td style="color:var(--inv-primary);font-weight:700;">{{ pr.batch_no|default:pr.id }}</td>
+                  <td>
+                    <div style="font-weight:700;">{{ pr.product.name }}</div>
+                    <div class="inv-small" style="margin-top:4px;color:var(--inv-muted);">{{ pr.product.sku }}</div>
+                  </td>
+                  <td class="inv-small">{{ pr.print_date|date:"d M Y" }}</td>
+                  <td class="text-end"><div class="inv-status-good">{{ pr.received_qty }}</div></td>
+                  <td class="text-end">
+                    <div style="display:flex;gap:6px;justify-content:flex-end;">
+                      <a class="inv-btn inv-btn--ghost inv-btn--sm" href="{% url 'catalog:product_stock' %}?pk={{ pr.product.id }}" title="View"><i class="bi bi-eye"></i></a>
+                      <a class="inv-btn inv-btn--ghost inv-btn--sm" href="{% url 'catalog:pr_list' %}#pr-{{ pr.id }}" title="Edit"><i class="bi bi-pencil"></i></a>
+                      <button class="inv-btn inv-btn--sm" style="background:#ef4444;color:#fff;border-radius:8px;" data-delete-url="/catalog/pr/{{ pr.id }}/delete/" onclick="invConfirmDelete(this.dataset.deleteUrl)" title="Delete">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="5" class="text-center inv-text-muted" style="padding:20px;">No batches found</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div>
+      <div class="inv-card" aria-labelledby="reorder">
+        <div class="inv-head">
+          <div>
+            <div id="reorder" style="font-weight:700;">Reorder Suggestions</div>
+            <div class="inv-small">Stock recommendations</div>
+          </div>
+          <i class="bi bi-lightbulb" style="color:#f59e0b;font-size:1.1rem;"></i>
+        </div>
+
+        {% if reorder_suggestions %}
+          {% for r in reorder_suggestions %}
+            <div class="inv-suggestion">
+              <div style="flex:1;">
+                <div style="font-weight:700;">{{ r.name }}</div>
+                <div class="inv-small" style="color:var(--inv-muted);margin-top:6px;"><i class="bi bi-upc-scan" style="font-size:0.85rem;margin-right:6px;"></i>{{ r.sku }}</div>
+              </div>
+              <div style="text-align:right;min-width:110px;">
+                <div class="inv-status-low">{{ r.suggested_qty }}</div>
+                <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:8px;">
+                  <a class="inv-btn inv-btn--primary inv-btn--sm" href="{% url 'catalog:pr_create' %}?product={{ r.id }}" title="Create PR"><i class="bi bi-plus"></i></a>
+                  <a class="inv-btn inv-btn--ghost inv-btn--sm" href="{% url 'catalog:product_stock' %}?pk={{ r.id }}" title="View"><i class="bi bi-box-arrow-up-right"></i></a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="text-center inv-text-muted" style="padding:20px;">
+            <i class="bi bi-check-circle" style="color:#10b981;font-size:1.4rem;display:block;margin-bottom:8px;"></i>
+            All stock levels good
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="inv-card" style="margin-top:12px;">
+        <div class="inv-head">
+          <div>
+            <div style="font-weight:700;">Recent Activity</div>
+            <div class="inv-small">Stock movements</div>
+          </div>
+          <i class="bi bi-clock" style="color:var(--inv-muted);"></i>
+        </div>
+
+        {% for l in recent_ledgers %}
+          <div class="inv-recent" role="button" tabindex="0" data-target-url="{% url 'catalog:product_stock' %}?pk={{ l.product.id }}">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-weight:700;">{{ l.product.name }}</div>
+                <div class="inv-small" style="color:var(--inv-muted);margin-top:6px;"><i class="bi bi-calendar" style="font-size:0.85rem;margin-right:6px;"></i>{{ l.date|date:"d M" }} · {{ l.notes|default:"Stock update"|truncatewords:6 }}</div>
+              </div>
+              <div style="text-align:right;min-width:110px;">
+                <div style="font-weight:700;color:{% if l.net >= 0 %}#16a34a{% else %}#dc2626{% endif %};">{% if l.net >= 0 %}+{% endif %}{{ l.net }}</div>
+                <div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end;">
+                  <a class="inv-btn inv-btn--ghost inv-btn--sm" href="{% url 'catalog:product_stock' %}?pk={{ l.product.id }}" title="View"><i class="bi bi-eye"></i></a>
+                  <a class="inv-btn inv-btn--ghost inv-btn--sm" href="{% url 'catalog:stock_ledger' %}?product={{ l.product.id }}" title="Adjust"><i class="bi bi-activity"></i></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <div class="text-center inv-text-muted" style="padding:18px;">
+            <i class="bi bi-activity" style="color:#cbd5e1;font-size:1.3rem;display:block;margin-bottom:8px;"></i>
+            No recent activity
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete modal -->
+<div id="invDeleteModal" class="inv-modal" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="inv-modal-card" role="document">
+    <h4 style="margin:0 0 8px 0;">Confirm delete</h4>
+    <p class="inv-text-muted" style="margin:0 0 12px 0;">Delete this batch? This action cannot be undone.</p>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button type="button" class="inv-btn inv-btn--ghost inv-btn--sm" onclick="invCloseModal()">Cancel</button>
+      <button id="invConfirmDelete" type="button" class="inv-btn inv-btn--primary inv-btn--sm" style="background:#ef4444;border-color:#ef4444;">Delete</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+/* Inventory page JS (scoped) */
+(function(){
+  // Helpers
+  const safeParse = v => { try { if (Array.isArray(v)) return v; if (typeof v === 'string') return JSON.parse(v); return []; } catch(e){ try { return JSON.parse(String(v).replace(/'/g,'"')); } catch(e){ return []; } } };
+  const toNums = arr => { try { return (Array.isArray(arr)?arr:[]).map(v => { if (v===null||v===undefined||v==='') return 0; const s=String(v).replace(/,/g,'').replace(/[^\d\.\-]/g,''); const n=parseFloat(s); return isNaN(n)?0:n; }); } catch(e){ return []; } };
+  const numFormat = n => { try { return Number(n).toLocaleString('en-IN'); } catch(e){ return String(n); } };
+
+  // CSV export with current filters
+  document.getElementById('invExport')?.addEventListener('click', function(e){
+    e.preventDefault();
+    const url = this.dataset.exportUrl || '';
+    const f = document.getElementById('invFilterForm');
+    const params = f ? new URLSearchParams(new FormData(f)).toString() : '';
+    if (url) {
+      window.location = url + (params ? ('?' + params) : '');
+    } else {
+      const u = new URL(window.location.href);
+      if (params) {
+        new URLSearchParams(params).forEach((v,k)=> u.searchParams.set(k,v));
+      }
+      u.searchParams.set('export','1');
+      window.location = u.toString();
+    }
+  });
+
+  // Delete modal flow: open, POST request with CSRF, close, fallback navigation
+  let invDeleteUrl = null;
+  window.invConfirmDelete = function(url){
+    invDeleteUrl = url;
+    const m = document.getElementById('invDeleteModal');
+    if (m) { m.style.display = 'flex'; m.setAttribute('aria-hidden','false'); }
+  };
+  window.invCloseModal = function(){
+    invDeleteUrl = null;
+    const m = document.getElementById('invDeleteModal');
+    if (m) { m.style.display = 'none'; m.setAttribute('aria-hidden','true'); }
+  };
+
+  document.getElementById('invConfirmDelete')?.addEventListener('click', function(){
+    if (!invDeleteUrl) return;
+    const getCookie = (name) => { const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)'); return v ? v.pop() : ''; };
+    const csrftoken = getCookie('csrftoken');
+    if (csrftoken) {
+      fetch(invDeleteUrl, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrftoken, 'Accept': 'application/json' },
+        credentials: 'same-origin'
+      }).then(r => {
+        if (r.ok) window.location.reload();
+        else window.location.href = invDeleteUrl;
+      }).catch(()=> window.location.href = invDeleteUrl);
+    } else {
+      // fallback (GET)
+      window.location.href = invDeleteUrl;
+    }
+  });
+
+  // Clickable recent items keyboard support
+  document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.inv-recent').forEach(el=>{
+      el.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const u=this.dataset.targetUrl; if (u) window.location = u; } });
+      el.addEventListener('click', function(e){
+        if (e.target.closest('a') || e.target.closest('button')) return;
+        const u = this.dataset.targetUrl; if (u) window.location = u;
+      });
+    });
+  });
+
+  // Chart: robust with gradients, responsive
+  (function(){
+    const labels = safeParse({{ chart_labels_json|default:"[]"|safe }});
+    const recs   = toNums(safeParse({{ chart_received_json|default:"[]"|safe }}));
+    const used   = toNums(safeParse({{ chart_used_json|default:"[]"|safe }}));
+    const maxLen = Math.max(labels.length, recs.length, used.length, 6);
+
+    function pad(a){ const o=a.slice(); while(o.length<maxLen) o.push(0); return o; }
+    const L = pad(labels.length?labels:Array.from({length:maxLen},(_,i)=>`P${i+1}`));
+    const R = pad(recs), U = pad(used);
+
+    const canvas = document.getElementById('invChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (canvas._invChart) try{ canvas._invChart.destroy(); }catch(e){}
+
+    function makeGrad(a,b,c){
+      const h = canvas.parentElement.clientHeight || 320;
+      const g = ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,a); g.addColorStop(0.6,b); g.addColorStop(1,c);
+      return g;
+    }
+
+    const suggestedMax = v=>{ try{ if(!v) return 10; const p=Math.pow(10,Math.floor(Math.log10(v))); return Math.ceil(v/p)*p; } catch(e){ return undefined; } };
+    const cfg = {
+      type:'line',
+      data:{ labels:L, datasets:[
+        { label:'Received', data:R, borderColor:'#157347', backgroundColor: makeGrad('rgba(21,115,71,0.18)','rgba(21,115,71,0.08)','rgba(21,115,71,0.02)'), fill:true, tension:0.36, borderWidth:3, pointRadius:3 },
+        { label:'Used',     data:U, borderColor:'#f59e0b', backgroundColor: makeGrad('rgba(245,158,11,0.14)','rgba(245,158,11,0.06)','rgba(245,158,11,0.02)'), fill:true, tension:0.36, borderWidth:3, pointRadius:3 }
+      ]},
+      options:{
+        maintainAspectRatio:false, responsive:true,
+        plugins:{
+          legend:{ position:'top', labels:{ color:'#374151', usePointStyle:true, padding:10, font:{size:12, weight:'600'} } },
+          tooltip:{ callbacks:{ label: ctx => `${ctx.dataset.label}: ${numFormat(ctx.parsed.y ?? 0)} units` }, backgroundColor:'#fff', titleColor:'#111827', bodyColor:'#111827', borderColor:'#eef6f7', borderWidth:1, padding:10 }
+        },
+        interaction:{ mode:'index', intersect:false },
+        scales:{ x:{ grid:{ display:false } }, y:{ beginAtZero:true, suggestedMax: suggestedMax(Math.max(...R.concat(U))*1.18), grid:{ color:'#f1f5f9' }, ticks:{ callback: v => numFormat(v) } } },
+        animation:{ duration:420, easing:'easeOutCubic' }
+      }
+    };
+
+    const chart = new Chart(ctx, cfg);
+    canvas._invChart = chart;
+
+    // pills behaviour
+    document.querySelectorAll('.inv-pill').forEach(p=>{
+      p.addEventListener('click', function(){
+        document.querySelectorAll('.inv-pill').forEach(x=>x.classList.remove('inv-active'));
+        this.classList.add('inv-active');
+        const months = parseInt(this.dataset.range,10)||6;
+        const total = L.length, start = Math.max(0, total - months);
+        chart.data.labels = L.slice(start);
+        chart.data.datasets[0].data = R.slice(start);
+        chart.data.datasets[1].data = U.slice(start);
+        chart.update();
+      });
+    });
+
+    // download PNG — white background
+    document.getElementById('invDownload')?.addEventListener('click', function(){
+      if (!canvas || !canvas._invChart) return;
+      try {
+        const img = canvas.toDataURL('image/png');
+        const w = canvas.width, h = canvas.height;
+        const tmp = document.createElement('canvas'); tmp.width=w; tmp.height=h;
+        const t = tmp.getContext('2d'); t.fillStyle='#fff'; t.fillRect(0,0,w,h);
+        const image = new Image();
+        image.onload = function(){ t.drawImage(image,0,0,w,h); const url = tmp.toDataURL('image/png'); const a=document.createElement('a'); a.href=url; a.download='stock-movement.png'; document.body.appendChild(a); a.click(); a.remove(); };
+        image.src = img;
+      } catch(e){
+        const a=document.createElement('a'); a.href = canvas.toDataURL('image/png'); a.download='stock-movement.png'; document.body.appendChild(a); a.click(); a.remove();
+      }
+    });
+
+    // update gradients on resize
+    try{
+      const ro = new ResizeObserver(()=> {
+        chart.data.datasets[0].backgroundColor = makeGrad('rgba(21,115,71,0.18)','rgba(21,115,71,0.08)','rgba(21,115,71,0.02)');
+        chart.data.datasets[1].backgroundColor = makeGrad('rgba(245,158,11,0.14)','rgba(245,158,11,0.06)','rgba(245,158,11,0.02)');
+        chart.resize();
+      });
+      ro.observe(canvas.parentElement);
+    } catch(e){}
+  })();
+
+})();
+</script>
+{% endblock %}

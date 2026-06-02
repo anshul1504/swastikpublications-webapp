@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h4 class="mb-3">Edit Transaction</h4>
+  <p class="mb-1"><strong>Reference Type:</strong> {{ ref_type }}</p>
+  <p class="mb-3"><strong>Reference ID:</strong> {{ ref_id }}</p>
+  <pre class="bg-light p-3 border rounded">{{ obj }}</pre>
+
+  <form method="post">
+    {% csrf_token %}
+    <p class="text-muted">Edit form is a safe placeholder for now.</p>
+    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+    <a class="btn btn-secondary btn-sm" href="{% url 'catalog:transaction_detail' ref_type ref_id %}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

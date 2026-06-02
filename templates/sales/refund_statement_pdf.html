@@ -1,0 +1,428 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Refunds Statement</title>
+
+  <!-- Poppins Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --accent:#dc2626;
+      --text-main:#111827;
+      --text-muted:#6b7280;
+      --border:#e5e7eb;
+      --bg-soft:#f9fafb;
+      --row-alt:#fcfcfc;
+    }
+
+    @page{
+      size:A4;
+      margin:16mm 14mm;
+    }
+
+    body{
+      font-family:"Poppins",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      font-size:11px;
+      color:var(--text-main);
+      margin:0;
+      padding:0;
+      background:#ffffff;
+    }
+
+    h1,h2,h3,h4,h5{
+      margin:0;
+      padding:0;
+      font-weight:600;
+    }
+
+    .wrap{
+      width:100%;
+    }
+
+    /* Header */
+    .header{
+      display:table;
+      width:100%;
+      padding-bottom:10px;
+      border-bottom:1px solid var(--border);
+      margin-bottom:8px;
+    }
+    .header-col{
+      display:table-cell;
+      vertical-align:top;
+      width:50%;
+    }
+
+    .company-top{
+      display:inline-flex;
+      align-items:flex-start;
+      gap:8px;
+    }
+    .company-logo{
+      width:70px;
+      height:70px;
+      border-radius:5px;
+      object-fit:contain;
+    }
+    .company-name-block{
+      display:flex;
+      flex-direction:column;
+    }
+
+    .company-name{
+      font-size:13px;
+      font-weight:600;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+    .company-block{
+      font-size:10px;
+      color:var(--text-muted);
+      margin-top:4px;
+      line-height:1.5;
+    }
+    .company-detail-line{
+      display:block;
+      margin-top:1px;
+    }
+
+    .header-right{
+      text-align:right;
+      font-size:10px;
+      line-height:1.5;
+    }
+    .title-main{
+      font-size:15px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      margin-bottom:3px;
+    }
+    .sub-line{
+      font-size:10px;
+      color:var(--text-muted);
+    }
+    .meta-line{
+      margin-top:4px;
+      font-size:9.5px;
+      color:var(--text-muted);
+      display:flex;
+      justify-content:flex-end;
+      gap:6px;
+    }
+    .label{
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-size:9px;
+      color:#9ca3af;
+    }
+    .value{
+      font-size:9.5px;
+      color:var(--text-main);
+    }
+
+    /* Section title */
+    .section-title{
+      margin-top:10px;
+      padding-bottom:3px;
+      border-bottom:1px solid var(--border);
+      font-size:11.5px;
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+    }
+    .section-title span{
+      border-bottom:2px solid var(--accent);
+      padding-bottom:1px;
+      display:inline-block;
+    }
+
+    /* Summary cards */
+    .summary-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-top:6px;
+    }
+    .summary-card{
+      flex:1 1 30%;
+      border:1px solid var(--border);
+      border-radius:6px;
+      padding:6px 7px;
+      background:#ffffff;
+      box-sizing:border-box;
+    }
+    .summary-card.highlight{
+      background:var(--bg-soft);
+    }
+    .summary-label{
+      font-size:9.5px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      color:var(--text-muted);
+      margin-bottom:2px;
+    }
+    .summary-value{
+      font-weight:600;
+      font-size:11.5px;
+    }
+    .summary-value-strong{
+      color:var(--accent);
+    }
+    .summary-sub{
+      font-size:9.5px;
+      color:var(--text-muted);
+      margin-top:2px;
+    }
+
+    /* Customer info (optional) */
+    .info-block{
+      margin-top:8px;
+      padding:7px 8px;
+      background:var(--bg-soft);
+      border-radius:6px;
+      border:1px solid var(--border);
+    }
+    .info-label{
+      font-size:9.5px;
+      color:var(--text-muted);
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+    .info-value{
+      font-size:11px;
+      font-weight:500;
+      margin-top:1px;
+    }
+    .small-muted{
+      font-size:9.5px;
+      color:var(--text-muted);
+    }
+
+    /* Table */
+    table.refunds{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:8px;
+      font-size:10.5px;
+    }
+    table.refunds th,
+    table.refunds td{
+      border:1px solid var(--border);
+      padding:5px 4px;
+    }
+    table.refunds th{
+      background:var(--bg-soft);
+      text-align:left;
+      font-size:9.5px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--text-muted);
+    }
+    table.refunds tbody tr:nth-child(even){
+      background:var(--row-alt);
+    }
+    .text-right{
+      text-align:right;
+    }
+
+    /* Footer / signature */
+    .footer{
+      margin-top:10px;
+      border-top:1px solid var(--border);
+      padding-top:6px;
+      font-size:9.5px;
+      color:var(--text-muted);
+    }
+    .footer-grid{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:6px;
+    }
+    .sign-block{
+      width:45%;
+      border-top:1px solid #9ca3af;
+      padding-top:3px;
+      text-align:left;
+      font-size:9.5px;
+      color:var(--text-muted);
+    }
+    .sign-label{
+      font-weight:500;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <!-- LEFT: COMPANY -->
+    <div class="header-col">
+      {% if company %}
+        <div class="company-top">
+          {% if company.logo %}
+            <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="company-logo">
+          {% endif %}
+          <div class="company-name-block">
+            <div class="company-name">{{ company.name }}</div>
+            <div class="company-block">
+              {% if company.address %}
+                <div class="company-detail-line">{{ company.address|linebreaksbr }}</div>
+              {% endif %}
+              {% if company.email %}
+                <div class="company-detail-line">Email: {{ company.email }}</div>
+              {% endif %}
+              {% if company.phone %}
+                <div class="company-detail-line">Phone: {{ company.phone }}</div>
+              {% endif %}
+              {% if company.gstin %}
+                <div class="company-detail-line">GSTIN: {{ company.gstin }}</div>
+              {% endif %}
+              {% if company.bank_details %}
+                <div class="company-detail-line">{{ company.bank_details|linebreaksbr }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div class="company-name">The Webfix</div>
+        <div class="company-block">Refunds statement</div>
+      {% endif %}
+    </div>
+
+    <!-- RIGHT: META -->
+    <div class="header-col header-right">
+      <div class="title-main">Refunds Statement</div>
+      <div class="sub-line">
+        {% if customer %}
+          {{ customer.name }} – Customer refunds overview
+        {% else %}
+          All customers – Refunds overview
+        {% endif %}
+      </div>
+
+      <div class="meta-line">
+        <span class="label">Period</span>
+        <span class="value">
+          {% if period_label %}
+            {{ period_label }}
+          {% else %}
+            {{ date_from|date:"d M Y" }} – {{ date_to|date:"d M Y" }}
+          {% endif %}
+        </span>
+      </div>
+      <div class="meta-line">
+        <span class="label">Generated</span>
+        <span class="value">{{ generated_at|date:"d M Y H:i" }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="section-title"><span>Summary</span></div>
+  <div class="summary-row">
+    <div class="summary-card highlight">
+      <div class="summary-label">Total Refunded</div>
+      <div class="summary-value summary-value-strong">
+        ₹{{ total_refunds|floatformat:2 }}
+      </div>
+      <div class="summary-sub">Amount returned in selected period.</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Number of Refunds</div>
+      <div class="summary-value">
+        {{ refund_count }}
+      </div>
+      <div class="summary-sub">Distinct refund entries included.</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Average Refund</div>
+      <div class="summary-value">
+        ₹{{ avg_refund|floatformat:2 }}
+      </div>
+      <div class="summary-sub">Average size of each refund.</div>
+    </div>
+  </div>
+
+  {% if customer %}
+    <div class="section-title"><span>Customer</span></div>
+    <div class="info-block">
+      <div class="info-label">Customer</div>
+      <div class="info-value">{{ customer.name }}</div>
+      {% if customer.company %}
+        <div class="small-muted">{{ customer.company }}</div>
+      {% endif %}
+      {% if customer.email %}
+        <div class="small-muted">Email: {{ customer.email }}</div>
+      {% endif %}
+      {% if customer.phone %}
+        <div class="small-muted">Phone: {{ customer.phone }}</div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <!-- TABLE -->
+  <div class="section-title"><span>Refund Entries</span></div>
+  <table class="refunds">
+    <thead>
+      <tr>
+        <th style="width:17%;">Date</th>
+        <th style="width:18%;">Invoice #</th>
+        <th style="width:25%;">Customer</th>
+        <th style="width:18%;">Method</th>
+        <th>Note</th>
+        <th style="width:13%;" class="text-right">Amount (₹)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in refunds %}
+        <tr>
+          <td>{{ r.date|date:"d M Y" }}</td>
+          <td>
+            {% if r.invoice %}{{ r.invoice.number }}{% else %}—{% endif %}
+          </td>
+          <td>
+            {% if r.invoice and r.invoice.customer %}
+              {{ r.invoice.customer.name }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td>{{ r.method|default:"Refund" }}</td>
+          <td>{{ r.note|default:"" }}</td>
+          <td class="text-right">₹{{ r.amount|floatformat:2 }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="6" class="small-muted">
+            No refunds found for this period.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- FOOTER / SIGNATURE -->
+  <div class="footer">
+    <div class="small-muted">
+      This statement is system-generated from your billing dashboard.
+      Please contact your accounts team if any corrections are required.
+    </div>
+
+    <div class="footer-grid mt-5" style="margin-top: 100px;">
+      <div class="sign-block">
+        <div class="sign-label">Authorised Signatory</div>
+        <div class="small-muted">
+          For {{ company.name|default:"The Webfix" }}
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Edit Stock Ledger · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+:root{
+  --primary: #0f6b3a;
+  --accent: #2563eb;
+  --muted: #6b7280;
+  --text: #0f1724;
+  --bg: #f7fafc;
+  --card: #ffffff;
+  --border: #e6eef6;
+  --danger: #dc2626;
+  --shadow-sm: 0 6px 18px rgba(15,23,42,0.06);
+  --shadow-lg: 0 20px 40px rgba(11,20,30,0.10);
+  --radius: 12px;
+}
+
+*{box-sizing:border-box}
+body{ background:var(--bg) !important; font-family: Inter, Poppins, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--text); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+
+.container-page{ width:100%; padding:40px 18px 64px; }
+.container{ max-width:1180px; margin:0 auto; }
+
+/* Header */
+.header{ display:flex; justify-content:space-between; align-items:flex-start; gap:18px; margin-bottom:26px; flex-wrap:wrap; }
+.heading{ font-weight:800; font-size:1.45rem; margin-bottom:6px; letter-spacing: -0.2px; color:var(--text) }
+.sub{ color:var(--muted); font-size:13px; line-height:1.4 }
+
+/* Chips */
+.chips{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+.chip{ padding:7px 12px; border-radius:999px; background:#fbfdff; border:1px solid var(--border); font-size:13px; color:var(--muted); display:inline-flex; gap:8px; align-items:center; }
+
+/* Grid */
+.grid{ display:grid; grid-template-columns: 1fr 380px; gap:22px; align-items:start; }
+@media(max-width:1050px){ .grid{ grid-template-columns:1fr 340px; } }
+@media(max-width:880px){ .grid{ grid-template-columns:1fr; } }
+
+/* Cards */
+.card{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow-sm); border:1px solid var(--border); padding:20px; }
+.card h4{ margin:0 0 10px 0; font-size:15px }
+
+/* Form */
+.form-area .card{ padding:22px; }
+.form-row{ display:flex; gap:14px; flex-wrap:wrap; align-items:flex-start; margin-bottom:14px }
+.form-col{ flex:1 1 220px; min-width:180px }
+.label{ display:block; font-size:13px; color:var(--muted); margin-bottom:8px; font-weight:600 }
+.input, .select, textarea{ width:100%; padding:12px 14px; border-radius:10px; border:1px solid #eef6fb; background:#fff; font-size:14px; color:var(--text); transition: box-shadow .15s ease, border-color .15s ease; box-shadow: inset 0 1px 0 rgba(15,23,42,0.02); }
+.input:focus, .select:focus, textarea:focus{ outline:none; border-color:var(--accent); box-shadow: 0 8px 30px rgba(37,99,235,0.06); }
+textarea{ min-height:120px; resize:vertical; }
+.small{ font-size:13px; color:var(--muted); }
+
+/* Inline field helper */
+.field-row{ display:flex; gap:10px; align-items:center; }
+.field-hint{ font-size:12px; color:var(--muted) }
+
+/* Buttons */
+.actions{ display:flex; gap:12px; justify-content:flex-end; margin-top:18px; align-items:center; }
+.btn{ padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer; font-size:14px; display:inline-flex; align-items:center; gap:8px; text-decoration:none; }
+.btn-ghost{ background:#fff; border:1px solid var(--border); color:var(--text); }
+.btn-primary{ background:var(--primary); color:#fff; border:1px solid var(--primary); box-shadow: 0 8px 24px rgba(15,23,42,0.06); }
+.btn-outline{ background:transparent; border:1px solid var(--primary); color:var(--primary); }
+.btn:hover{ transform:translateY(-1px); transition:transform .12s ease; }
+
+/* Error / success */
+.error{ color:var(--danger); font-size:13px; margin-top:6px; }
+.success{ color:#16a34a; font-size:13px; margin-top:6px; }
+
+/* Sidebar & snapshot - BOTH NON-STICKY so they remain in flow (no overlap) */
+.sidebar{ position:relative; }
+.sidebar .card{ margin-bottom:16px; }
+.snapshot{ margin-bottom:10px; }
+.snapshot .kv{ display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px dashed #f1f5f9; align-items:center }
+.snapshot .kv:last-child{ border-bottom:none; }
+.snapshot .value{ font-weight:700; color:var(--text); }
+.note{ font-size:13px; color:var(--muted); margin-top:8px }
+
+/* Adjustment card - placed below snapshot, non-sticky */
+.adjust{ background:linear-gradient(180deg,#fff,#fbfdff); border-radius:12px; box-shadow:var(--shadow-lg); padding:16px; margin-top:6px; }
+.adjust form{ display:flex; flex-direction:column; gap:12px; }
+.adjust .row{ display:flex; gap:8px; align-items:center; }
+.adjust .apply{ align-self:flex-end; padding:10px 14px; border-radius:10px; background:var(--primary); color:#fff; border:1px solid var(--primary); cursor:pointer; }
+
+/* Input groups compact */
+.input-group{ display:flex; gap:8px; }
+.input-group .input{ flex:1; }
+
+/* helper tiny */
+.kv .muted{ color:var(--muted); font-size:13px; }
+
+/* Responsive tweaks */
+@media(max-width:880px){
+  .actions{ justify-content:stretch; flex-direction:column-reverse; }
+  .actions .btn{ width:100%; }
+  .snapshot{ position:relative; top:auto; }
+  .adjust{ width:100%; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-page">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <div>
+        <div class="heading">Edit Ledger Entry</div>
+        <div class="sub">Editing a single ledger row will update running balances. Prefer an adjustment row to keep history intact.</div>
+        <div class="chips" aria-hidden="true">
+          <div class="chip">Entry: <strong>#{{ entry.id }}</strong></div>
+          <div class="chip">Product: <strong>{{ product_label }}</strong></div>
+          <div class="chip">Warehouse: <strong>{{ warehouse_name|default:'-' }}</strong></div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:center;">
+        <a href="{% url 'catalog:stock_ledger' %}" class="btn btn-ghost" aria-label="Back to stock ledger">← Back</a>
+        <a href="#" class="btn btn-outline" onclick="window.print(); return false;">Print</a>
+      </div>
+    </div>
+
+    <div class="grid">
+
+      <!-- LEFT: FORM -->
+      <div class="form-area">
+        <div class="card" role="region" aria-labelledby="form-heading">
+          <h4 id="form-heading">Edit ledger details</h4>
+
+          <form method="post" id="ledgerForm" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+              <div class="error" role="alert">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            {# === Render core fields explicitly if they exist on the form === #}
+            <div class="form-row">
+              <div class="form-col">
+                <label class="label">Date & time</label>
+                {% if form.date %}{{ form.date }}{% else %}<div class="small">—</div>{% endif %}
+                {% if form.date and form.date.errors %}<div class="error">{{ form.date.errors }}</div>{% endif %}
+              </div>
+
+              <div class="form-col">
+                <label class="label">Unit price</label>
+                {% if form.unit_price %}{{ form.unit_price }}{% else %}
+                  {# try common alternate names if unit_price absent #}
+                  {% if form.unit_cost %}{{ form.unit_cost }}{% elif form.price %}{{ form.price }}{% else %}<div class="small">—</div>{% endif %}
+                {% endif %}
+                {% if form.unit_price and form.unit_price.errors %}<div class="error">{{ form.unit_price.errors }}</div>{% endif %}
+                {% if not form.unit_price %}
+                  {% if form.unit_cost and form.unit_cost.errors %}<div class="error">{{ form.unit_cost.errors }}</div>{% endif %}
+                  {% if form.price and form.price.errors %}<div class="error">{{ form.price.errors }}</div>{% endif %}
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-col">
+                <label class="label">In quantity</label>
+                {% if form.in_qty %}{{ form.in_qty }}{% elif form.in_quantity %}{{ form.in_quantity }}{% else %}<div class="small">—</div>{% endif %}
+                {% if form.in_qty and form.in_qty.errors %}<div class="error">{{ form.in_qty.errors }}</div>{% endif %}
+              </div>
+
+              <div class="form-col">
+                <label class="label">Out quantity</label>
+                {% if form.out_qty %}{{ form.out_qty }}{% elif form.out_quantity %}{{ form.out_quantity }}{% else %}<div class="small">—</div>{% endif %}
+                {% if form.out_qty and form.out_qty.errors %}<div class="error">{{ form.out_qty.errors }}</div>{% endif %}
+              </div>
+            </div>
+
+            <div style="margin-top:8px;">
+              <label class="label">Notes</label>
+              {% if form.notes %}{{ form.notes }}{% elif form.note %}{{ form.note }}{% else %}<div class="small">—</div>{% endif %}
+              {% if form.notes and form.notes.errors %}<div class="error">{{ form.notes.errors }}</div>{% endif %}
+            </div>
+
+            {# === Warehouse explicit editable select (if present) === #}
+            <div style="margin-top:12px;">
+              <label class="label">Warehouse</label>
+              {% if form.warehouse %}
+                {{ form.warehouse }}
+                {% if form.warehouse.errors %}<div class="error">{{ form.warehouse.errors }}</div>{% endif %}
+              {% elif form.warehouse_id %}
+                {{ form.warehouse_id }}
+                {% if form.warehouse_id.errors %}<div class="error">{{ form.warehouse_id.errors }}</div>{% endif %}
+              {% else %}
+                <div class="small">-</div>
+              {% endif %}
+            </div>
+
+            {# === Render remaining fields automatically but keep product/print_run as readonly + hidden original widget === #}
+            <div style="margin-top:12px;">
+              {% for field in form.visible_fields %}
+                {# skip those we've already rendered explicitly — check several common names so we don't duplicate #}
+                {% if field.name not in "date unit_price unit_cost price in_qty in_quantity out_qty out_quantity notes note warehouse warehouse_id" %}
+                  <div style="margin-top:10px;">
+                    <label class="label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+
+                    {% if field.name == 'product' %}
+                      <input class="input" type="text" readonly aria-readonly="true" value="{{ product_label }}" />
+                      <div style="display:none;">{{ field }}</div>
+
+                    {% elif field.name == 'print_run' %}
+                      <div class="small">{% if entry.print_run %}{{ entry.print_run }}{% else %}-{% endif %}</div>
+                      <div style="display:none;">{{ field }}</div>
+
+                    {% else %}
+                      {{ field }}
+                    {% endif %}
+
+                    {% if field.errors %}<div class="error">{{ field.errors }}</div>{% endif %}
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+
+            <div class="actions" style="margin-top:20px;">
+              <a href="{% url 'catalog:stock_ledger' %}" class="btn btn-ghost">Cancel</a>
+              <button type="submit" class="btn btn-primary">Save changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- RIGHT: SIDEBAR (snapshot + adjustment stacked, both non-sticky) -->
+      <aside class="sidebar" aria-label="Snapshot and adjustments">
+
+        <div class="card snapshot" role="note" aria-live="polite">
+          <h4>Live snapshot</h4>
+          <div class="kv"><div class="label muted">Current balance</div><div class="value">{{ entry.balance|default:0|intcomma }}</div></div>
+          <div class="kv"><div class="label muted">In / Out</div><div class="value">{{ entry.in_qty|default:0 }} / {{ entry.out_qty|default:0 }}</div></div>
+          <div class="kv"><div class="label muted">Product</div><div class="value">{{ product_label }}</div></div>
+          <div class="kv"><div class="label muted">Warehouse</div><div class="value">{{ warehouse_name|default:'-' }}</div></div>
+          <div class="note">Tip: use adjustment to correct stock without editing history.</div>
+        </div>
+
+        <div class="card adjust" role="region" aria-labelledby="adjust-heading">
+          <h4 id="adjust-heading">Create adjustment</h4>
+          <div class="note">Enter + to add stock, - to remove. This will create a corrective ledger row.</div>
+
+          <form method="post" action="{% url 'catalog:api_create_adjustment_v2' %}">
+            {% csrf_token %}
+            <input type="hidden" name="ledger_id" value="{{ entry.id }}" />
+            {% if entry.print_run %}
+              <input type="hidden" name="print_run_id" value="{{ entry.print_run.id }}" />
+            {% endif %}
+
+            <div>
+              <label class="label" for="adj_qty">Qty (+ in, - out)</label>
+              <div class="input-group">
+                <input id="adj_qty" name="qty" class="input" placeholder="+10 or -5" aria-describedby="qtyHelp" />
+                <button type="button" class="btn btn-ghost" onclick="document.getElementById('adj_qty').value = '';" title="Clear">Clear</button>
+              </div>
+              <div id="qtyHelp" class="field-hint">Whole numbers only. Use + or - sign.</div>
+            </div>
+
+            <div>
+              <label class="label" for="adj_notes">Reason (optional)</label>
+              <input id="adj_notes" name="notes" class="input" placeholder="e.g. damaged, correction" />
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:6px;">
+              <button type="submit" class="btn apply">Apply adjustment</button>
+            </div>
+          </form>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+// add 'input' class to form widgets and small behaviors
+document.addEventListener('DOMContentLoaded', function(){
+
+  var applyClass = function(root){
+    if(!root) return;
+    var fields = root.querySelectorAll('input, select, textarea');
+    fields.forEach(function(f){
+      if(f.type === 'submit' || f.type === 'button' || f.type === 'hidden') return;
+      if(!f.classList.contains('input')) f.classList.add('input');
+      if(f.hasAttribute('readonly')) f.setAttribute('aria-readonly','true');
+    });
+  };
+
+  applyClass(document.getElementById('ledgerForm'));
+  applyClass(document.querySelector('.adjust'));
+
+  // simple numeric input enforcement for adjustment qty
+  var qty = document.querySelector('input[name="qty"], #adj_qty');
+  if(qty){
+    qty.addEventListener('input', function(e){
+      var v = e.target.value;
+      var cleaned = v.replace(/[^\d\+\-]/g,'');
+      if(cleaned.length > 1 && (cleaned[0] === '+' || cleaned[0] === '-')) {
+        cleaned = cleaned[0] + cleaned.slice(1).replace(/[\+\-]/g,'');
+      } else {
+        cleaned = cleaned.replace(/[\+\-]/g,'');
+      }
+      if(cleaned !== v) e.target.value = cleaned;
+    });
+  }
+
+  // focus first field that has error text
+  var firstError = document.querySelector('.error');
+  if(firstError){
+    var input = firstError.closest('div')?.querySelector('input, textarea, select');
+    if(input) input.focus();
+  }
+});
+</script>
+{% endblock %}

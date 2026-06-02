@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>The Webfix – Login</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body{
+            background:#ffffff;
+            padding:40px 0;
+        }
+
+        .wrapper{
+            width:900px;
+            margin:40px auto;
+            display:flex;
+            border-radius:14px;
+            overflow:hidden;
+            border:1px solid #e5e7eb;
+            box-shadow:0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        /* Left side */
+        .left-box{
+            width:50%;
+            background:#fff;
+            padding:45px 50px;
+        }
+
+        .logo{
+            text-align:center;
+            margin-bottom:25px;
+        }
+
+        .logo img{
+            width:85px;
+        }
+
+        h2{
+            text-align:center;
+            margin-bottom:5px;
+            font-size:22px;
+            font-weight:600;
+            color:#111827;
+        }
+
+        p.subtext{
+            text-align:center;
+            font-size:13px;
+            color:#6b7280;
+            margin-bottom:25px;
+        }
+
+        label{
+            display:block;
+            font-size:14px;
+            margin-bottom:5px;
+            color:#374151;
+        }
+
+        input{
+            width:100%;
+            padding:10px;
+            border:1px solid #d1d5db;
+            border-radius:6px;
+            outline:none;
+            font-size:14px;
+            margin-bottom:18px;
+            transition:0.2s;
+        }
+
+        input:focus{
+            border-color:#2563eb;
+        }
+
+        .password-wrap{
+            position: relative;
+        }
+
+        .eye{
+            position:absolute;
+            right:12px;
+            top:10px;
+            font-size:16px;
+            cursor:pointer;
+            color:#6b7280;
+        }
+
+        .btn-login{
+            width:100%;
+            padding:11px;
+            border:none;
+            border-radius:6px;
+            background:#198754;
+            color:#fff;
+            font-size:15px;
+            font-weight:500;
+            cursor:pointer;
+            margin-top:6px;
+        }
+
+        .btn-login:hover{
+            background:#157347;
+        }
+
+        .form-footer{
+            display:flex;
+            justify-content:space-between;
+            font-size:13px;
+            margin-bottom:15px;
+        }
+
+        a{
+            text-decoration:none;
+            color:#2563eb;
+        }
+
+        .signup{
+            text-align:center;
+            margin-top:10px;
+            font-size:13px;
+        }
+
+        /* Divider */
+        .divider{
+            width:100%;
+            height:1px;
+            background:#e5e7eb;
+            margin:18px 0;
+        }
+
+        .social{
+            text-align:center;
+            margin-top:10px;
+        }
+
+        .social-icon{
+            display:inline-block;
+            width:34px;
+            height:34px;
+            border-radius:50%;
+            background:#f3f4f6;
+            margin:0 5px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            cursor:pointer;
+        }
+
+        /* Right side */
+        .right-box{
+            width:50%;
+            background:#73A79C; /* Teal like screenshot */
+            padding:45px;
+            color:white;
+        }
+
+        .quote{
+            margin-top:100px;
+            font-size:20px;
+            line-height:28px;
+            font-weight:500;
+            text-align:center;
+        }
+
+        .quote-text{
+            margin-top:15px;
+            font-size:14px;
+            opacity:0.85;
+            text-align:center;
+            line-height:22px;
+        }
+
+        footer{
+            text-align:center;
+            margin-top:40px;
+            font-size:12px;
+            color:#6b7280;
+        }
+
+    </style>
+
+</head>
+<body>
+
+    <div class="logo">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRUX2mQ7xUvQXlEjrfXAdHw5rdKgjYQkMqYA&s" alt="The Webfix">
+        </div>
+
+<div class="wrapper">
+    
+    <!-- LEFT SIDE -->
+    <div class="left-box">
+
+        
+
+        <h2>Welcome Back !</h2>
+        <p class="subtext">Sign in to continue to The Webfix Panel</p>
+
+        {% if messages %}
+            {% for m in messages %}
+                <div style="background:#fee2e2;padding:10px;border-radius:5px;
+                color:#b91c1c;margin-bottom:12px;font-size:13px;">
+                    {{ m }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <label>Username</label>
+            <input type="text" name="username" required placeholder="Enter username">
+
+            <label>Password</label>
+            <div class="password-wrap">
+                <input type="password" name="password" required placeholder="Enter password" id="password">
+                <span class="eye" onclick="togglePass()">👁</span>
+            </div>
+
+            <div class="form-footer">
+                
+                <a href="{% url 'accounts:password_reset' %}">Forgot your password?</a>
+            </div>
+
+            <button class="btn-login">Log In</button>
+
+            <!--div class="divider"></div>
+
+            
+
+            <div class="signup">
+                Don't have an account? 
+                <a href="{% url 'accounts:signup' %}">Signup now</a>
+            </div-->
+
+        </form>
+
+    </div>
+
+    <!-- RIGHT SIDE CAROUSEL -->
+<div class="right-box">
+
+    <div class="carousel">
+
+        <!-- Slide 1 -->
+        <div class="slide active">
+            <img src="https://cdn.prod.website-files.com/603d48021c4d3f9a76f3f408/6587655b76a064d50232d4db_online-invoicing.jpg" class="slide-img">
+            <h3 class="quote">Smart Invoice Automation</h3>
+            <p class="quote-text">
+                Auto-generate invoices, send reminders, and track payments with 1-click.
+            </p>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="slide">
+            <img src="https://cdn.prod.website-files.com/603d48021c4d3f9a76f3f408/6587655b76a064d50232d4db_online-invoicing.jpg" class="slide-img">
+            <h3 class="quote">Instant Payment Tracking</h3>
+            <p class="quote-text">
+                Get real-time updates on paid, pending, and overdue invoices instantly.
+            </p>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="slide">
+            <img src="https://cdn.prod.website-files.com/603d48021c4d3f9a76f3f408/6587655b76a064d50232d4db_online-invoicing.jpg" class="slide-img">
+            <h3 class="quote">Inventory & Product Management</h3>
+            <p class="quote-text">
+                Manage items, stock, pricing, and discounts directly from your dashboard.
+            </p>
+        </div>
+
+    </div>
+
+    <div class="dots">
+        <span class="dot active" onclick="goToSlide(0)"></span>
+        <span class="dot" onclick="goToSlide(1)"></span>
+        <span class="dot" onclick="goToSlide(2)"></span>
+    </div>
+
+</div>
+
+
+</div>
+
+<footer>
+    © 2025 The Webfix. Crafted with ❤️ by The Webfix Team.
+</footer>
+
+<style>
+    /* -------------------- RESPONSIVE DESIGN -------------------- */
+
+@media (max-width: 992px) {
+    .wrapper {
+        width: 90%;
+        flex-direction: column;
+        margin-top: 20px;
+    }
+
+    .left-box, 
+    .right-box {
+        width: 100%;
+    }
+
+    .left-box {
+        padding: 30px 30px;
+    }
+
+    .right-box {
+        padding: 30px 20px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .wrapper {
+        width: 95%;
+        margin: 15px auto;
+    }
+
+    .logo img {
+        width: 65px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    p.subtext {
+        font-size: 12px;
+    }
+
+    input {
+        font-size: 13px;
+    }
+
+    .btn-login,
+    .btn-signup {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .quote {
+        font-size: 18px;
+    }
+
+    .quote-text {
+        font-size: 13px;
+        padding: 0 10px;
+    }
+
+    .slide-img {
+        width: 140px;
+    }
+}
+
+@media (max-width: 576px) {
+
+    body {
+        padding: 10px;
+    }
+
+    .wrapper {
+        border-radius: 10px;
+        box-shadow: none;
+        border: none;
+    }
+
+    .left-box,
+    .right-box {
+        padding: 20px 18px;
+    }
+
+    input {
+        padding: 8px;
+    }
+
+    .form-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+        font-size: 12px;
+    }
+
+    .btn-login,
+    .btn-signup {
+        padding: 9px;
+    }
+
+    .dots {
+        margin-top: 15px;
+    }
+
+    .dot {
+        height: 8px;
+        width: 8px;
+    }
+
+    footer {
+        font-size: 11px;
+        margin-top: 20px;
+    }
+}
+
+    .carousel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.slide {
+    display: none;
+    text-align: center;
+    animation: fade 0.8s ease-in-out;
+}
+
+.slide.active {
+    display: block;
+}
+
+@keyframes fade {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.slide-img {
+    width: 170px;
+    margin: 0 auto 18px auto;
+    display: block;
+    filter: drop-shadow(0 3px 8px rgba(0,0,0,0.15));
+}
+
+.dots {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.dot {
+    height: 9px;
+    width: 9px;
+    margin: 0 4px;
+    display: inline-block;
+    background: rgba(255,255,255,0.5);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.dot.active {
+    background: #ffffff;
+}
+
+</style>
+
+<script>
+let slideIndex = 0;
+const slides = document.querySelectorAll(".slide");
+const dots = document.querySelectorAll(".dot");
+
+function showSlide(index) {
+    slides.forEach((s, i) => {
+        s.classList.toggle("active", i === index);
+        dots[i].classList.toggle("active", i === index);
+    });
+}
+
+function goToSlide(i){
+    slideIndex = i;
+    showSlide(slideIndex);
+}
+
+function autoSlide(){
+    slideIndex = (slideIndex + 1) % slides.length;
+    showSlide(slideIndex);
+}
+
+setInterval(autoSlide, 4000); // auto-change every 4 sec
+
+showSlide(slideIndex);
+</script>
+
+<script>
+    function togglePass(){
+        let pwd = document.getElementById("password");
+        pwd.type = (pwd.type === "password") ? "text" : "password";
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Record Payment · {{ inv.number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root{
+    --primary:#157347;
+    --primary-dark:#0f5c38;
+    --accent:#2563eb;
+    --muted:#4b5563;
+    --text-dark:#111827;
+    --border:#d1d5db;
+    --card-bg:#ffffff;
+    --soft-bg:#f9fafb;
+    --danger:#dc2626;
+    --success:#16a34a;
+    --radius:16px;
+    --shadow:0 10px 30px rgba(15,23,42,0.06);
+  }
+
+  body{
+    background:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    color:var(--text-dark);
+  }
+
+  .payment-page{ width:100%; padding:20px 10px 36px; }
+  .payment-container{ max-width:1100px; margin:0 auto; }
+
+  /* Header */
+  .page-header{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+  .page-title{ font-size:1.45rem; font-weight:600; margin:0; color:var(--text-dark); }
+  .page-sub{ font-size:13px; color:var(--muted); margin-top:6px; }
+
+  .header-actions .btn{ border-radius:9px; font-size:0.95rem; padding:8px 12px; }
+  .header-actions .btn-outline-secondary:hover{ border-color:var(--accent); color:var(--accent); }
+
+  .chip-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .chip{ display:inline-flex; align-items:center; gap:8px; padding:7px 12px; border-radius:999px; border:1px solid #e5e7eb; background:#f9fafb; font-size:12px; color:#374151; }
+  .chip strong{ font-weight:700; color:var(--text-dark); }
+
+  /* Layout */
+  .payment-layout{ display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap; }
+  .payment-main{ flex:1 1 0; min-width:300px; }
+  .payment-side{ flex:0 0 360px; max-width:360px; }
+
+  /* Card */
+  .card-lite{ background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); padding:18px; }
+
+  .card-header-mini{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+  .card-title{ font-size:15px; font-weight:600; color:var(--text-dark); }
+  .card-sub{ font-size:12px; color:var(--muted); }
+  .hint-strong{ font-size:12px; color:var(--danger); font-weight:600; }
+
+  /* Form */
+  .form-label{ font-size:13px; font-weight:500; margin-bottom:6px; display:block; }
+  .form-control, .form-select, textarea{ border-radius:10px; border:1px solid var(--border); font-size:13px; padding:10px 12px; width:100%; box-sizing:border-box; }
+  .form-control:focus, .form-select:focus, textarea:focus{ border-color:var(--primary); box-shadow:0 0 0 6px rgba(21,115,71,0.06); outline:none; }
+
+  .form-text{ font-size:11.5px; color:var(--muted); margin-top:6px; }
+
+  .amount-row{ display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap; }
+  .btn-chip{ font-size:12px; padding:7px 11px; border-radius:999px; border:1px solid #e5e7eb; background:#f9fafb; cursor:pointer; white-space:nowrap; }
+  .btn-chip:hover{ border-color:var(--primary); color:var(--primary-dark); background:#ecfdf3; }
+
+  .actions-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; justify-content:flex-end; }
+  .btn{ border-radius:10px; font-size:13px; padding:9px 14px; cursor:pointer; }
+  .btn-primary{ background-color:var(--primary); border:1px solid var(--primary); color:#ffffff; font-weight:600; }
+  .btn-primary:hover{ background-color:var(--primary-dark); border-color:var(--primary-dark); }
+  .btn-outline-secondary{ background:transparent; border:1px solid var(--border); color:var(--text-dark); }
+  .btn-outline-secondary:hover{ border-color:var(--accent); color:var(--accent); }
+
+  /* Sidebar summary */
+  .summary-title{ font-size:13px; font-weight:700; margin-bottom:6px; color:var(--text-dark); }
+  .summary-sub{ font-size:12px; color:var(--muted); margin-bottom:10px; }
+
+  .summary-block{ border-radius:12px; border:1px solid #e5e7eb; background:#f9fafb; padding:12px; margin-bottom:12px; }
+  .summary-label{ font-size:11px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+  .summary-value-main{ font-size:16px; font-weight:700; color:var(--text-dark); }
+  .summary-value-sub{ font-size:13px; color:var(--muted); margin-top:4px; }
+
+  .summary-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:8px; }
+  .summary-pill{ border-radius:10px; background:#fff; border:1px solid #e5e7eb; padding:8px; text-align:left; }
+  .summary-pill-label{ font-size:11px; color:var(--muted); }
+  .summary-pill-value{ font-size:13px; font-weight:700; }
+  .pill-paid .summary-pill-value{ color:var(--success); }
+  .pill-due .summary-pill-value{ color:var(--danger); }
+
+  .status-badge{ display:inline-flex; align-items:center; gap:8px; padding:5px 10px; border-radius:999px; font-weight:700; font-size:12px; }
+  .status-paid{ background:rgba(16,185,129,0.08); color:#059669; border:1px solid rgba(16,185,129,0.14); }
+  .status-partial{ background:rgba(245,158,11,0.08); color:#b45309; border:1px solid rgba(245,158,11,0.12); }
+  .status-unpaid{ background:rgba(239,68,68,0.06); color:#b91c1c; border:1px solid rgba(239,68,68,0.12); }
+
+  .summary-note{ font-size:12px; color:var(--muted); margin-top:8px; }
+
+  @media(max-width:991.98px){ .payment-layout{ flex-direction:column-reverse; } .payment-side{ max-width:100%; } }
+  @media(max-width:575.98px){ .card-lite{ padding:14px; } .page-title{ font-size:1.25rem; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="payment-page">
+  <div class="payment-container">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <div class="page-title">Record Payment</div>
+        <div class="page-sub">Update payment for invoice <strong>{{ inv.number }}</strong>. Amount will adjust invoice status automatically.</div>
+
+        <div class="chip-row">
+          <div class="chip">
+            <i class="bi bi-person"></i>
+            {% if inv.customer %}<strong>{{ inv.customer.name }}</strong>{% else %}<span>No customer</span>{% endif %}
+          </div>
+          <div class="chip">
+            <i class="bi bi-receipt"></i>
+            Total: <strong>₹{{ inv.grand_total|floatformat:2|intcomma }}</strong>
+          </div>
+          <div class="chip">
+            <i class="bi bi-wallet2"></i>
+            Paid: <strong>₹{{ inv.paid_amount|default:"0"|floatformat:2|intcomma }}</strong>
+          </div>
+          <div class="chip">
+            <i class="bi bi-exclamation-triangle"></i>
+            Due: <strong>₹{{ inv.balance_due|default:"0"|floatformat:2|intcomma }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <a href="{% url 'sales:invoice_detail' inv.id %}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-arrow-left"></i> Back to Invoice
+        </a>
+      </div>
+    </div>
+
+    <div class="payment-layout">
+
+      <!-- MAIN FORM -->
+      <div class="payment-main">
+        <div class="card-lite">
+          <div class="card-header-mini">
+            <div>
+              <div class="card-title">Payment Details</div>
+              <div class="card-sub">Record full or partial payment for this invoice. Double-check amount and method before saving.</div>
+            </div>
+            <div class="hint-strong">Current due: ₹{{ inv.balance_due|default:"0"|floatformat:2|intcomma }}</div>
+          </div>
+
+          <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="row g-3">
+
+              <!-- Invoice (readonly info) -->
+              <div class="col-12">
+                <label class="form-label">Invoice</label>
+                <div class="form-control" readonly>{{ inv.number }}{% if inv.customer %} — {{ inv.customer.name }}{% endif %}</div>
+                <div class="form-text">This payment will be linked to invoice <strong>{{ inv.number }}</strong>.</div>
+              </div>
+
+              <!-- Amount -->
+              <div class="col-md-6">
+                <label class="form-label" for="id_amount">Payment Amount</label>
+                <div class="amount-row">
+                  <div style="flex:1;">
+                    <input
+                      id="id_amount"
+                      name="amount"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      class="form-control"
+                      value="{{ inv.balance_due|default:'0' }}"
+                      placeholder="Enter amount received"
+                      required
+                    >
+                    <div class="form-text" id="amount_hint">Suggested full due: ₹{{ inv.balance_due|default:'0'|floatformat:2|intcomma }}. You may enter partial amount.</div>
+                  </div>
+                  <button type="button" class="btn-chip" onclick="fillFullDue()">Pay full due</button>
+                </div>
+              </div>
+
+              <!-- Method -->
+              <div class="col-md-6">
+                <label class="form-label" for="id_method">Payment Method</label>
+                <select id="id_method" name="method" class="form-select">
+                  <option value="Cash">Cash</option>
+                  <option value="UPI">UPI</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="Card">Card</option>
+                  <option value="Cheque">Cheque</option>
+                </select>
+              </div>
+
+              <!-- Date -->
+              <div class="col-md-6">
+                <label class="form-label" for="id_date">Date</label>
+                <input id="id_date" name="date" type="date" class="form-control" value="{{ today|default:'' }}">
+                <div class="form-text">Use payment receipt date (defaults to today).</div>
+              </div>
+
+              <!-- Reference / Note -->
+              <div class="col-12">
+                <label class="form-label" for="id_note">Note or reference (optional)</label>
+                <textarea id="id_note" name="note" rows="2" class="form-control" placeholder="e.g. UPI ref, cheque no., bank txn id, internal note"></textarea>
+                <div class="form-text">Include any transaction reference for reconciliation.</div>
+              </div>
+
+            </div>
+
+            <!-- Actions -->
+            <div class="actions-row">
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check2-circle me-1"></i> Save Payment
+              </button>
+              <a href="{% url 'sales:invoice_detail' inv.id %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- SIDEBAR: Invoice Snapshot -->
+      <div class="payment-side">
+        <div class="card-lite">
+          <div class="summary-title">Invoice Snapshot</div>
+          <div class="summary-sub">Quick summary to help you confirm amounts before saving the payment.</div>
+
+          <div class="summary-block">
+            <div class="summary-label">Invoice</div>
+            <div class="summary-value-main">{{ inv.number }}</div>
+            <div class="summary-value-sub">
+              {% if inv.customer %}{{ inv.customer.name }}{% else %}No customer linked{% endif %}
+              {% if inv.date %} • {{ inv.date|date:"d M, Y" }}{% endif %}
+            </div>
+          </div>
+
+          <div style="margin-bottom:8px;">
+            {% if inv.status == 'paid' %}
+              <span class="status-badge status-paid"><i class="bi bi-check-circle"></i> Paid</span>
+            {% elif inv.status == 'partial' %}
+              <span class="status-badge status-partial"><i class="bi bi-exclamation-circle"></i> Partial</span>
+            {% else %}
+              <span class="status-badge status-unpaid"><i class="bi bi-exclamation-triangle"></i> Unpaid</span>
+            {% endif %}
+          </div>
+
+          <div class="summary-grid">
+            <div class="summary-pill pill-total">
+              <div class="summary-pill-label">Total</div>
+              <div class="summary-pill-value">₹{{ inv.grand_total|floatformat:2|intcomma }}</div>
+            </div>
+            <div class="summary-pill pill-paid">
+              <div class="summary-pill-label">Paid</div>
+              <div class="summary-pill-value">₹{{ inv.paid_amount|default:"0"|floatformat:2|intcomma }}</div>
+            </div>
+            <div class="summary-pill pill-due">
+              <div class="summary-pill-label">Due</div>
+              <div class="summary-pill-value">₹{{ inv.balance_due|default:"0"|floatformat:2|intcomma }}</div>
+            </div>
+          </div>
+
+          <div class="summary-note">
+            After saving, the invoice balance and status will update automatically. Records are used in reports and reconciliation.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // set today's date if backend didn't supply 'today'
+  (function(){
+    const dateInput = document.getElementById('id_date');
+    if (dateInput && (!dateInput.value || dateInput.value.trim()==='')) {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      dateInput.value = `${y}-${m}-${d}`;
+    }
+  })();
+
+  // Fill full due into amount input
+  function fillFullDue(){
+    const amountInput = document.getElementById('id_amount');
+    if(!amountInput) return;
+    const due = "{{ inv.balance_due|default:'0'|floatformat:2 }}";
+    // remove commas and set numeric value
+    amountInput.value = parseFloat(due.toString().replace(/,/g,'')) || 0;
+  }
+
+  // Format INR helper (used only for potential dynamic updates)
+  function formatINR(val){
+    if(val === null || val === undefined || val === '') return '₹0.00';
+    const num = parseFloat(val.toString().replace(/,/g,'')) || 0;
+    return '₹' + num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  // Optional: warn user if they try to submit amount > due
+  (function(){
+    const form = document.querySelector('form');
+    if(!form) return;
+    form.addEventListener('submit', function(e){
+      const amountEl = document.getElementById('id_amount');
+      if(!amountEl) return;
+      const val = parseFloat(amountEl.value.toString().replace(/,/g,'')) || 0;
+      const due = parseFloat("{{ inv.balance_due|default:'0'|floatformat:2 }}".replace(/,/g,'')) || 0;
+      if(val > (due + 0.005)) { // allow tiny float rounding
+        const ok = confirm(`Entered amount ₹${val.toFixed(2)} is greater than invoice due ₹${due.toFixed(2)}. Do you want to continue?`);
+        if(!ok) { e.preventDefault(); return false; }
+      }
+    });
+  })();
+</script>
+{% endblock %}

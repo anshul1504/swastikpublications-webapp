@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h4 class="mb-3">Transaction Detail</h4>
+
+  {% if error %}
+    <div class="alert alert-warning">{{ error }}</div>
+    <p class="mb-1"><strong>Reference Type:</strong> {{ ref_type }}</p>
+    <p class="mb-3"><strong>Reference ID:</strong> {{ ref_id }}</p>
+  {% else %}
+    <p class="mb-1"><strong>Reference Type:</strong> {{ ref_type }}</p>
+    <p class="mb-3"><strong>Reference ID:</strong> {{ ref_id }}</p>
+    <pre class="bg-light p-3 border rounded">{{ obj }}</pre>
+    <a class="btn btn-outline-primary btn-sm" href="{% url 'catalog:transaction_edit' ref_type ref_id %}">Edit</a>
+    <a class="btn btn-outline-danger btn-sm" href="{% url 'catalog:transaction_delete' ref_type ref_id %}">Delete</a>
+  {% endif %}
+</div>
+{% endblock %}

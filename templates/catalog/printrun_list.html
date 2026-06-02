@@ -1,0 +1,709 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Print Runs · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root{
+    --primary:#157347;
+    --primary-dark:#0f5c38;
+    --accent:#2563eb;
+    --muted:#6b7280;
+    --text-dark:#111827;
+    --border:#e5e7eb;
+    --card-bg:#ffffff;
+    --soft-bg:#f9fafb;
+  }
+
+  body{
+    background-color:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    color:var(--text-dark);
+  }
+
+  a{text-decoration:none;color:inherit;}
+
+  .pr-page{
+    width:100%;
+  }
+  .pr-container{
+    max-width:1160px;
+    margin:24px auto 40px;
+    padding:0 10px;
+  }
+
+  /* PAGE HEADER */
+  .pr-header{
+    display:flex;
+    justify-content:space-between;
+    gap:18px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+  }
+  .pr-title{
+    font-weight:700;
+    font-size:1.4rem;
+    color:var(--text-dark);
+  }
+  .pr-sub{
+    color:var(--muted);
+    font-size:13px;
+    margin-top:4px;
+  }
+
+  .pr-stats-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:10px;
+  }
+  .pr-pill{
+    font-size:12px;
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .pr-pill-label{
+    font-weight:500;
+    color:#4b5563;
+  }
+
+  .pr-header-right{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    align-items:flex-end;
+  }
+
+  /* MAIN CARD */
+  .pr-card{
+    background:var(--card-bg);
+    border-radius:16px;
+    padding:0;
+    border:1px solid var(--border);
+    box-shadow:0 8px 24px rgba(15,23,42,0.06);
+    overflow:hidden;
+  }
+
+  /* FILTERS PANEL */
+  .pr-filters-shell{
+    padding:14px 18px 10px;
+    background:linear-gradient(to bottom,#f9fafb,#ffffff);
+    border-bottom:1px solid var(--border);
+  }
+  .pr-filters-header{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    align-items:flex-start;
+    margin-bottom:10px;
+  }
+  .pr-filters-title{
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-weight:600;
+    color:#6b7280;
+  }
+  .pr-filters-sub{
+    font-size:12px;
+    color:#9ca3af;
+    margin-top:2px;
+  }
+
+  .active-filters{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    justify-content:flex-end;
+  }
+  .filter-chip{
+    font-size:11px;
+    padding:4px 8px;
+    border-radius:999px;
+    border:1px solid #d1d5db;
+    background:#ffffff;
+    display:flex;
+    align-items:center;
+    gap:4px;
+    white-space:nowrap;
+  }
+  .filter-chip span{
+    font-weight:500;
+  }
+
+  .pr-filters-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:flex-end;
+    justify-content:space-between;
+    margin-top:4px;
+  }
+
+  .pr-filters-left{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:flex-end;
+  }
+
+  .search-bar{
+    position:relative;
+    min-width:230px;
+    max-width:360px;
+  }
+  .search-bar input{
+    border-radius:10px;
+    font-size:0.85rem;
+    padding-left:34px;
+    border:1px solid var(--border);
+  }
+  .search-bar input:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(21,115,71,0.16);
+  }
+  .search-bar i{
+    position:absolute;
+    top:8px;
+    left:10px;
+    color:#9ca3af;
+    font-size:0.9rem;
+  }
+
+  .filter-input{
+    font-size:12.5px;
+    border-radius:10px;
+    padding:6px 10px;
+    border:1px solid #e5e7eb;
+    min-width:140px;
+  }
+
+  .pr-filters-actions{
+    display:flex;
+    gap:6px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+
+  .btn-reset{
+    font-size:12px;
+    color:var(--muted);
+    text-decoration:none;
+  }
+  .btn-reset:hover{
+    color:var(--accent);
+    text-decoration:underline;
+  }
+
+  .btn-soft{
+    border-radius:9px;
+    font-size:12.5px;
+    padding:6px 12px;
+  }
+
+  .filters-divider{
+    margin:0;
+    border-top:1px dashed #e5e7eb;
+  }
+
+  .export-group{
+    display:flex;
+    gap:6px;
+    align-items:center;
+  }
+
+  /* TABLE */
+  .pr-table-shell{
+    padding:12px 18px 16px;
+  }
+  .table-responsive{
+    border-radius:12px;
+    border:1px solid var(--border);
+    overflow:auto;
+  }
+  .table{
+    margin-bottom:0;
+  }
+  .table thead th{
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:#374151;
+    background:var(--soft-bg);
+    border-bottom:0;
+    white-space:nowrap;
+    position:sticky;
+    top:0;
+    z-index:5;
+  }
+  .table tbody td{
+    font-size:13.5px;
+    vertical-align:middle;
+    color:var(--text-dark);
+    background:#ffffff;
+  }
+  .table tbody tr:hover td{
+    background:#f9fafb;
+  }
+
+  .small-muted{
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  .badge-avail{
+    font-weight:700;
+    padding:6px 9px;
+    border-radius:999px;
+    display:inline-block;
+    min-width:52px;
+    text-align:center;
+    font-size:12px;
+  }
+  .avail-high{
+    background:#ecfdf5;
+    color:#075f30;
+    border:1px solid rgba(21,115,71,0.12);
+  }
+  .avail-low{
+    background:#fff7ed;
+    color:#7a3e04;
+    border:1px solid rgba(245,158,11,0.14);
+  }
+  .avail-zero{
+    background:#fef2f2;
+    color:#7f1d1d;
+    border:1px solid rgba(220,38,38,0.14);
+  }
+
+  .wh-chip{
+    display:inline-flex;
+    align-items:center;
+    font-size:12px;
+    padding:3px 8px;
+    border-radius:999px;
+    background:#eff6ff;
+    border:1px solid #dbeafe;
+    color:#1d4ed8;
+    gap:5px;
+  }
+
+  .action-btn{
+    border-radius:8px;
+    padding:6px 10px;
+    font-size:12.5px;
+    display:inline-flex;
+    gap:6px;
+    align-items:center;
+  }
+  .action-btn i{
+    font-size:13px;
+  }
+
+  /* PAGINATION */
+  .pr-pagination-row{
+    padding:0 18px 12px;
+    margin-top:4px;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    font-size:12.5px;
+    color:var(--muted);
+  }
+  .pr-page-buttons{
+    display:flex;
+    gap:6px;
+    align-items:center;
+  }
+  .page-chip{
+    padding:7px 11px;
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#ffffff;
+    font-size:12px;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    color:#111827;
+  }
+  .page-chip:hover{
+    background:#f3f4f6;
+  }
+
+  @media (max-width:991.98px){
+    .pr-header{flex-direction:column;align-items:flex-start;}
+    .pr-header-right{align-items:flex-start;}
+    .pr-filters-header{flex-direction:column;align-items:flex-start;}
+    .active-filters{justify-content:flex-start;}
+  }
+  @media (max-width:575.98px){
+    .pr-card{border-radius:12px;}
+    .pr-filters-shell{padding:12px 12px 8px;}
+    .pr-table-shell{padding:8px 12px 12px;}
+    .pr-filters-row{flex-direction:column;align-items:stretch;}
+    .table-responsive{border-radius:10px;}
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pr-page">
+  <div class="pr-container">
+
+    <!-- PAGE HEADER -->
+    <div class="pr-header">
+      <div>
+        <div class="pr-title">Print Runs · GRN</div>
+        <div class="pr-sub">
+          Manage batches received into warehouses. Adjust, view or delete batches safely.
+        </div>
+
+        <div class="pr-stats-row">
+          <div class="pr-pill">
+            <span class="pr-pill-label">Batches</span>
+            {% if is_paginated %}
+              {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}
+            {% else %}
+              {{ print_runs|length }}
+            {% endif %}
+          </div>
+
+          <div class="pr-pill" id="totalsReceived">
+            <span class="pr-pill-label">Received</span> —
+          </div>
+          <div class="pr-pill" id="totalsAvailable">
+            <span class="pr-pill-label">Available</span> —
+          </div>
+        </div>
+      </div>
+
+      <div class="pr-header-right">
+        <a href="{% url 'catalog:pr_create' %}" class="btn btn-primary btn-soft">
+          <i class="bi bi-plus-lg"></i> Create batch
+        </a>
+        <div class="small-muted">
+          Tip: Use filters to narrow batches. Reset will clear all filters.
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN CARD -->
+    <div class="pr-card">
+
+      <!-- FILTERS PANEL -->
+      <div class="pr-filters-shell">
+        <div class="pr-filters-header">
+          <div>
+            <div class="pr-filters-title">Filters</div>
+            <div class="pr-filters-sub">
+              Filter by product, warehouse, date range and sort by availability.
+            </div>
+          </div>
+
+          {% if filter_q or filter_warehouse or filter_date_from or filter_date_to or filter_sort %}
+            <div class="active-filters">
+              {% if filter_q %}
+                <div class="filter-chip">
+                  <span>Search</span> {{ filter_q }}
+                </div>
+              {% endif %}
+              {% if filter_warehouse %}
+                {% for w in warehouses %}
+                  {% if filter_warehouse|stringformat:"s" == w.id|stringformat:"s" %}
+                    <div class="filter-chip">
+                      <span>Warehouse</span> {{ w.name }}
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+              {% if filter_date_from %}
+                <div class="filter-chip">
+                  <span>From</span> {{ filter_date_from }}
+                </div>
+              {% endif %}
+              {% if filter_date_to %}
+                <div class="filter-chip">
+                  <span>To</span> {{ filter_date_to }}
+                </div>
+              {% endif %}
+              {% if filter_sort %}
+                <div class="filter-chip">
+                  <span>Sort</span>
+                  {% if filter_sort == "oldest" %}Oldest
+                  {% elif filter_sort == "avail_asc" %}Available ↑
+                  {% elif filter_sort == "avail_desc" %}Available ↓
+                  {% else %}Custom{% endif %}
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="pr-filters-row">
+          <form method="get"
+                action="{% url 'catalog:pr_list' %}"
+                class="pr-filters-left"
+                role="search"
+                aria-label="print-run-filters">
+
+            <div class="search-bar">
+              <i class="bi bi-search"></i>
+              <input
+                name="q"
+                value="{{ filter_q|default_if_none:'' }}"
+                class="form-control form-control-sm"
+                placeholder="Search SKU, product name, batch or notes"
+              />
+            </div>
+
+            <select name="warehouse"
+                    class="filter-input"
+                    aria-label="warehouse filter">
+              <option value="">All warehouses</option>
+              {% for w in warehouses %}
+                <option value="{{ w.id }}"
+                        {% if filter_warehouse|stringformat:"s" == w.id|stringformat:"s" %}selected{% endif %}>
+                  {{ w.name }}
+                </option>
+              {% endfor %}
+            </select>
+
+            <input
+              name="date_from"
+              value="{{ filter_date_from|default_if_none:'' }}"
+              class="filter-input"
+              type="date"
+              placeholder="From (YYYY-MM-DD)"
+            />
+            <input
+              name="date_to"
+              value="{{ filter_date_to|default_if_none:'' }}"
+              class="filter-input"
+              type="date"
+              placeholder="To (YYYY-MM-DD)"
+            />
+
+            <select name="sort"
+                    class="filter-input"
+                    aria-label="sort">
+              <option value="">Sort: Newest</option>
+              <option value="oldest" {% if filter_sort == 'oldest' %}selected{% endif %}>Oldest</option>
+              <option value="avail_asc" {% if filter_sort == 'avail_asc' %}selected{% endif %}>Available ↑</option>
+              <option value="avail_desc" {% if filter_sort == 'avail_desc' %}selected{% endif %}>Available ↓</option>
+            </select>
+
+            <div class="pr-filters-actions">
+              <button class="btn btn-sm btn-outline-secondary btn-soft" type="submit">
+                <i class="bi bi-funnel"></i> Apply
+              </button>
+              <a class="btn-reset" href="{% url 'catalog:pr_list' %}">
+                Reset all
+              </a>
+            </div>
+          </form>
+
+          <div class="pr-filters-actions">
+            <div class="export-group">
+              <a class="btn btn-sm btn-outline-primary btn-soft"
+                 href="{% url 'catalog:export_csv' %}?{{ querystring_no_page }}"
+                 title="Export CSV">
+                <i class="bi bi-file-earmark-arrow-down"></i> CSV
+              </a>
+              <a class="btn btn-sm btn-outline-success btn-soft"
+                 href="{% url 'catalog:export_csv' %}?{{ querystring_no_page }}&format=xlsx"
+                 title="Export Excel (XLSX)">
+                <i class="bi bi-file-earmark-spreadsheet"></i> XLSX
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="filters-divider"/>
+
+      <!-- TABLE -->
+      <div class="pr-table-shell">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th style="width:72px;">ID</th>
+                <th>Batch</th>
+                <th>Product</th>
+                <th>Received</th>
+                <th>Available</th>
+                <th>Print date</th>
+                <th>Warehouse</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for pr in print_runs %}
+                <tr data-pr-id="{{ pr.id }}">
+                  <td>
+                    <a href="{% url 'catalog:pr_detail' pr.id %}" class="text-decoration-none">
+                      #{{ pr.id }}
+                    </a>
+                  </td>
+
+                  <td>
+                    <div style="font-weight:600;">
+                      {% if pr.batch_no %}{{ pr.batch_no }}{% else %}PR-{{ pr.id }}{% endif %}
+                    </div>
+                    <div class="small-muted">
+                      {% if pr.printed_qty %}
+                        Printed: {{ pr.printed_qty }}
+                      {% endif %}
+                    </div>
+                  </td>
+
+                  <td style="min-width:220px;">
+                    <div>{{ pr.product.name|default:pr.product }}</div>
+                    <div class="small-muted">{{ pr.product.sku|default:"—" }}</div>
+                  </td>
+
+                  <td class="cell-received">
+                    {{ pr.received_qty|default:0 }}
+                  </td>
+
+                  <td class="cell-avail">
+                    {% with avail_first=pr.computed_available_qty|default_if_none:pr.available_qty %}
+                      {% with avail=avail_first|default:0 %}
+                        {% if avail|add:0 > 10 %}
+                          <span class="badge-avail avail-high">{{ avail }}</span>
+                        {% elif avail|add:0 > 0 %}
+                          <span class="badge-avail avail-low">{{ avail }}</span>
+                        {% else %}
+                          <span class="badge-avail avail-zero">0</span>
+                        {% endif %}
+                      {% endwith %}
+                    {% endwith %}
+                  </td>
+
+                  <td>
+                    {% if pr.print_date %}
+                      {{ pr.print_date|date:"d M, Y" }}
+                    {% else %}
+                      —
+                    {% endif %}
+                  </td>
+
+                  <td>
+                    {% if pr.warehouse %}
+                      <span class="wh-chip">
+                        <i class="bi bi-shop"></i> {{ pr.warehouse.name }}
+                      </span>
+                    {% else %}
+                      <span class="small-muted">—</span>
+                    {% endif %}
+                  </td>
+
+                  <td class="text-end">
+                    <div class="d-inline-flex gap-2">
+                      <a href="{% url 'catalog:pr_detail' pr.id %}"
+                         class="btn btn-sm btn-outline-info action-btn"
+                         title="View">
+                        <i class="bi bi-eye"></i> View
+                      </a>
+
+                      <a href="{% url 'catalog:pr_edit' pr.id %}"
+                         class="btn btn-sm btn-outline-secondary action-btn"
+                         title="Edit">
+                        <i class="bi bi-pencil"></i> Edit
+                      </a>
+
+                      {# DELETE → direct delete confirmation page #}
+                      <a href="{% url 'catalog:pr_delete' pr.id %}"
+                         class="btn btn-sm btn-outline-danger action-btn"
+                         title="Delete batch">
+                        <i class="bi bi-trash"></i> Delete
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="8" class="text-center small-muted" style="padding:24px 0;">
+                    No batches found for current filters.
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PAGINATION -->
+      {% if is_paginated %}
+        <div class="pr-pagination-row">
+          <div>
+            Showing {{ page_obj.start_index }}–{{ page_obj.end_index }}
+            of {{ page_obj.paginator.count }} batches
+          </div>
+          <div class="pr-page-buttons">
+            {% if page_obj.has_previous %}
+              <a class="page-chip"
+                 href="?page={{ page_obj.previous_page_number }}&{{ querystring_no_page }}">
+                <i class="bi bi-chevron-left"></i> Prev
+              </a>
+            {% endif %}
+            <span class="page-chip" style="background:#f9fafb;">
+              Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+            </span>
+            {% if page_obj.has_next %}
+              <a class="page-chip"
+                 href="?page={{ page_obj.next_page_number }}&{{ querystring_no_page }}">
+                Next <i class="bi bi-chevron-right"></i>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+  // Totals calculation
+  function computeTotals(){
+    var rows = document.querySelectorAll('tbody tr[data-pr-id]');
+    var totRecv = 0, totAvail = 0;
+    rows.forEach(function(r){
+      var recvEl = r.querySelector('.cell-received');
+      var availEl = r.querySelector('.cell-avail .badge-avail');
+      var recv = parseInt((recvEl && recvEl.textContent.trim())||0,10) || 0;
+      var avail = 0;
+      if(availEl){
+        avail = parseInt(availEl.textContent.trim().replace(/[^\d\-]/g,''),10) || 0;
+      } else {
+        var maybe = r.querySelector('.cell-avail');
+        if(maybe && maybe.textContent.trim().match(/\d+/)){
+          avail = parseInt(maybe.textContent.trim().match(/\d+/)[0],10) || 0;
+        }
+      }
+      totRecv += recv;
+      totAvail += avail;
+    });
+    var elR = document.getElementById('totalsReceived');
+    var elA = document.getElementById('totalsAvailable');
+    if(elR) elR.innerHTML = '<span class="pr-pill-label">Received</span> <strong>' + totRecv.toLocaleString() + '</strong>';
+    if(elA) elA.innerHTML = '<span class="pr-pill-label">Available</span> <strong>' + totAvail.toLocaleString() + '</strong>';
+  }
+
+  document.addEventListener('DOMContentLoaded', computeTotals);
+})();
+</script>
+{% endblock %}

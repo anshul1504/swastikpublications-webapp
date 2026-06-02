@@ -1,0 +1,12 @@
+.env
+*.py[cod]
+__pycache__/
+*.log
+db.sqlite3
+db_backup_before_cleaning.sqlite3
+staticfiles/
+media/
+media/cache/
+tmp/
+.pytest_cache/
+.coverage

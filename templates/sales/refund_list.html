@@ -1,0 +1,687 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Refunds · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root{
+    --primary:#157347;
+    --primary-dark:#0f5c38;
+    --accent:#2563eb;
+    --muted:#4b5563;
+    --text-dark:#111827;
+    --border:#d1d5db;
+    --card-bg:#ffffff;
+    --soft-bg:#f9fafb;
+    --danger:#dc2626;
+  }
+
+  body{
+    background:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    color:var(--text-dark);
+  }
+
+  /* CSV / Excel Export Button */
+.btn-export {
+    padding: 6px 14px !important;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 6px;
+    border: 1px solid #d1d5db !important;
+    background: #ffffff !important;
+    color: #374151 !important;
+    transition: all 0.25s ease;
+}
+
+/* Hover – solid color */
+.btn-export:hover {
+    background: #2c5e86 !important;   /* Your orange theme */
+    color: #ffffff !important;
+    border-color: #2c5e86 !important;
+    transform: translateY(-1px);
+}
+
+/* Active (click) */
+.btn-export:active {
+    transform: translateY(0);
+    background: #356791 !important;
+    border-color: #356791 !important;
+}
+
+
+  .refunds-page{
+    width:100%;
+  }
+  .refunds-container{
+    max-width:1150px;
+    margin:0 auto;
+    padding:14px 6px 20px;
+  }
+
+  /* Header */
+  .page-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:14px;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .page-heading{
+    font-weight:600;
+    font-size:1.45rem;
+    margin-bottom:2px;
+    color:var(--text-dark);
+  }
+  .page-sub{
+    font-size:13px;
+    color:var(--muted);
+  }
+
+  .header-actions .btn{
+    border-radius:9px;
+    font-size:0.9rem;
+  }
+  .header-actions .btn-outline-secondary:hover{
+    border-color:var(--accent);
+    color:var(--accent);
+  }
+
+  /* Chips */
+  .chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:8px;
+  }
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:5px 11px;
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+    font-size:11.5px;
+    color:#374151;
+  }
+  .chip strong{
+    font-weight:600;
+  }
+  .chip-dot{
+    width:7px;
+    height:7px;
+    border-radius:999px;
+    background:#16a34a;
+  }
+  .chip-dot.red{ background:#ef4444; }
+  .chip-dot.blue{ background:#2563eb; }
+
+  /* Card */
+  .card-lite{
+    background:var(--card-bg);
+    border-radius:16px;
+    box-shadow:0 10px 30px rgba(15,23,42,0.05);
+    border:1px solid var(--border);
+    padding:18px 18px 16px;
+    margin-bottom:14px;
+  }
+
+  /* KPI Summary */
+  .kpi-row{
+    margin-bottom:10px;
+  }
+  .kpi{
+    border-radius:14px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+    padding:10px 12px;
+  }
+  .kpi-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--muted);
+  }
+  .kpi-value{
+    font-size:1.15rem;
+    font-weight:700;
+    margin-top:2px;
+  }
+  .kpi-value.negative{
+    color:var(--danger);
+  }
+  .kpi-hint{
+    font-size:11.5px;
+    color:var(--muted);
+    margin-top:1px;
+  }
+
+  /* Section title, text */
+  .section-title{
+    font-weight:600;
+    font-size:15px;
+    margin-bottom:3px;
+    color:var(--text-dark);
+  }
+  .small-muted{
+    font-size:12.5px;
+    color:var(--muted);
+  }
+
+  /* STATEMENT BAR (same style as payments) */
+  .statement-bar{
+    margin-bottom:14px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:flex-end;
+    justify-content:space-between;
+  }
+  .statement-bar-left{
+    max-width:360px;
+  }
+  .statement-bar-right{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:flex-end;
+  }
+  .statement-select{
+    font-size:12.5px;
+    border-radius:999px;
+    padding:5px 10px;
+    border:1px solid #e5e7eb;
+    min-width:160px;
+  }
+  .statement-date{
+    font-size:12.5px;
+    border-radius:999px;
+    padding:5px 10px;
+    border:1px solid #e5e7eb;
+  }
+
+  /* Filters */
+  .filters-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .filters-left{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:flex-end;
+    flex:1;
+    min-width:260px;
+  }
+  .filters-right{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:flex-end;
+  }
+  .filter-block{
+    min-width:180px;
+  }
+  .filter-label{
+    font-size:11.5px;
+    color:var(--muted);
+    margin-bottom:2px;
+  }
+  .form-control,
+  .form-select{
+    border-radius:10px;
+    border:1px solid var(--border);
+    font-size:13px;
+  }
+  .form-control:focus,
+  .form-select:focus{
+    border-color:var(--accent);
+    box-shadow:0 0 0 2px rgba(37,99,235,0.2);
+  }
+
+  .btn-sm{
+    border-radius:999px;
+    font-size:12px;
+    padding:6px 14px;
+  }
+  .btn-reset{
+    font-size:12px;
+    color:var(--muted);
+    text-decoration:none;
+  }
+  .btn-reset:hover{
+    color:var(--accent);
+    text-decoration:underline;
+  }
+
+  .active-filter-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 9px;
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#ecfeff;
+    font-size:11.5px;
+    color:#0f172a;
+  }
+
+  /* Table */
+  .table thead th{
+    border-bottom:0;
+    font-weight:600;
+    font-size:11.5px;
+    color:#374151;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    background:var(--soft-bg);
+  }
+  .table tbody td{
+    font-size:13px;
+    vertical-align:middle;
+    color:#1f2937;
+  }
+  .table tbody tr:hover{
+    background:#f9fafb;
+  }
+
+  .method-pill{
+    display:inline-flex;
+    align-items:center;
+    padding:3px 9px;
+    border-radius:999px;
+    font-size:11.5px;
+    background:#fef2f2;
+    border:1px solid #fecaca;
+    color:#b91c1c;
+    font-weight:500;
+  }
+
+  .amount-negative{
+    color:var(--danger);
+    font-weight:600;
+  }
+
+
+
+  .customer-name{
+    font-weight:600;
+  }
+  .customer-sub{
+    font-size:11.5px;
+    color:var(--muted);
+  }
+
+  .actions .btn{
+    border-radius:999px;
+    font-size:11.5px;
+    padding:4px 9px;
+  }
+
+  .empty-state{
+    text-align:center;
+    padding:28px 0;
+    color:var(--muted);
+    font-size:0.9rem;
+  }
+
+  @media (max-width:991.98px){
+    .refunds-container{
+      padding-inline:8px;
+    }
+  }
+  @media (max-width:575.98px){
+    .card-lite{
+      padding:16px 12px;
+    }
+    .statement-bar-right{
+      flex-direction:column;
+      align-items:stretch;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="refunds-page">
+  <div class="refunds-container">
+
+    <!-- HEADER -->
+    <div class="page-header">
+      <div>
+        <h3 class="page-heading mb-0">Refunds</h3>
+        <div class="page-sub">
+          All refund entries recorded in your billing system, linked to invoices & customers.
+        </div>
+
+        <div class="chip-row">
+          <div class="chip">
+            <span class="chip-dot red"></span>
+            Total refunded: <strong>₹{{ total_refunds|floatformat:2|intcomma }}</strong>
+          </div>
+          <div class="chip">
+            <span class="chip-dot blue"></span>
+            Refund entries: <strong>{{ refund_count }}</strong>
+          </div>
+          {% if last_refund %}
+            <div class="chip">
+              <i class="bi bi-clock-history"></i>
+              Last refund: <strong>{{ last_refund.date|date:"M d, Y" }}</strong>
+            </div>
+          {% else %}
+            <div class="chip">
+              <i class="bi bi-info-circle"></i>
+              No refunds recorded yet.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="header-actions d-flex flex-column align-items-end gap-2">
+        <div class="d-flex gap-2">
+          <a href="{% url 'sales:refund_add' %}" class="btn btn-success btn-sm">
+            <i class="bi bi-plus-circle me-1"></i> New Refund
+          </a>
+          <a href="{% url 'sales:payment_list' %}" class="btn btn-export">
+            <i class="bi bi-credit-card-2-front me-1"></i> Payments
+          </a>
+        </div>
+
+        <!-- Export buttons (respect current filters) -->
+        <div class="d-flex gap-2">
+          <form method="get" class="d-inline">
+            {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+            {% if customer_id %}<input type="hidden" name="customer" value="{{ customer_id }}">{% endif %}
+            <input type="hidden" name="export" value="csv">
+            <button type="submit" class="btn btn-export">
+              <i class="bi bi-filetype-csv me-1"></i> CSV
+            </button>
+          </form>
+          <form method="get" class="d-inline">
+            {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+            {% if customer_id %}<input type="hidden" name="customer" value="{{ customer_id }}">{% endif %}
+            <input type="hidden" name="export" value="xlsx">
+            <button type="submit" class="btn btn-export">
+              <i class="bi bi-file-earmark-spreadsheet me-1"></i> Excel
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🔶 REFUND STATEMENT BAR (PDF DOWNLOAD) -->
+    <div class="card-lite statement-bar">
+      <div class="statement-bar-left">
+        <div class="section-title mb-0" style="font-size:14px;">Refunds Statement</div>
+        <div class="small-muted">
+          Download a PDF summary of all refunds for a chosen period.
+        </div>
+      </div>
+      <div class="statement-bar-right">
+        <form method="get" action="{% url 'sales:refund_statement_pdf' %}" class="d-flex flex-wrap gap-2 align-items-end">
+          {% if customer_id %}
+            {# agar filter laga hai to usi customer ke liye statement #}
+            <input type="hidden" name="customer" value="{{ customer_id }}">
+          {% endif %}
+          <div>
+            <label class="small-muted d-block mb-1">Period</label>
+            <select name="period" id="refundStatementPeriod" class="statement-select">
+              <option value="quarter">Quarterly (last 3 months)</option>
+              <option value="half">Half-yearly (last 6 months)</option>
+              <option value="year">Yearly (last 12 months)</option>
+              <option value="custom">Custom date range</option>
+            </select>
+          </div>
+          <div id="refundStatementCustomDates" class="d-flex flex-wrap gap-2" style="display:none;">
+            <div>
+              <label class="small-muted d-block mb-1">From</label>
+              <input type="date" name="from" class="statement-date">
+            </div>
+            <div>
+              <label class="small-muted d-block mb-1">To</label>
+              <input type="date" name="to" class="statement-date">
+            </div>
+          </div>
+          <div>
+            <button type="submit" class="btn btn-success btn-sm">
+              <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- KPI SUMMARY -->
+    <div class="row g-3 kpi-row">
+      <div class="col-md-4">
+        <div class="kpi">
+          <div class="kpi-label">Total Refunded</div>
+          <div class="kpi-value negative">₹{{ total_refunds|floatformat:2|intcomma }}</div>
+          <div class="kpi-hint">Cumulative amount returned to customers (filtered list).</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="kpi">
+          <div class="kpi-label">Number of Refunds</div>
+          <div class="kpi-value">{{ refund_count }}</div>
+          <div class="kpi-hint">Distinct refund entries in the current view.</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="kpi">
+          <div class="kpi-label">Average Refund Size</div>
+          <div class="kpi-value">
+            {% if refund_count %}
+              ₹{{ avg_refund|floatformat:2|intcomma }}
+            {% else %}
+              ₹0.00
+            {% endif %}
+          </div>
+          <div class="kpi-hint">Typical refund amount for this filtered set.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN CARD: FILTERS + TABLE -->
+    <div class="card-lite">
+      <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+        <div>
+          <div class="section-title mb-0">All Refunds</div>
+          <div class="small-muted">
+            Search by customer, invoice, method or note. Use customer filter to zoom into one client.
+          </div>
+        </div>
+
+        {% if customer_id or q %}
+          <div class="active-filter-pill">
+            <i class="bi bi-filter-circle"></i>
+            Filters:
+            {% if q %} <span>Search: "{{ q }}"</span>{% endif %}
+            {% if customer_id %} <span>Customer ID: {{ customer_id }}</span>{% endif %}
+            <a href="{% url 'sales:refund_list' %}" class="btn-reset ms-1">Clear</a>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Filters row -->
+      <div class="filters-row">
+        <!-- Search + customer dropdown -->
+        <form method="get" class="filters-left">
+          <div class="filter-block flex-grow-1">
+            <div class="filter-label">Search</div>
+            <input
+              type="text"
+              name="q"
+              class="form-control"
+              placeholder="Customer name, invoice #, method, note…"
+              value="{{ q }}"
+            >
+          </div>
+
+          <div class="filter-block">
+            <div class="filter-label">Customer</div>
+            <select name="customer" class="form-select">
+              <option value="">All customers</option>
+              {% for c in customers_with_refunds %}
+                <option value="{{ c.id }}" {% if customer_id|default_if_none:'' == c.id|stringformat:"s" %}selected{% endif %}>
+                  {{ c.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <button type="submit" class="btn btn-primary btn-sm">
+              <i class="bi bi-funnel me-1"></i> Apply
+            </button>
+          </div>
+        </form>
+
+        <!-- Reset + quick action -->
+        <div class="filters-right">
+          <a href="{% url 'sales:refund_list' %}" class="btn-reset">
+            Reset filters
+          </a>
+          <a href="{% url 'sales:refund_add' %}" class="btn btn-export">
+            <i class="bi bi-plus-circle me-1"></i> New Refund
+          </a>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Refund</th>
+              <th>Invoice</th>
+              <th>Customer</th>
+              <th>Mode</th>
+              <th class="text-end">Amount</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in refunds %}
+              <tr>
+                <!-- Date -->
+                <td>{{ r.date|date:"M d, Y" }}</td>
+
+                <!-- Refund ID -->
+                <td>#{{ r.id }}</td>
+
+                <!-- Invoice -->
+                <td>
+                  {% if r.invoice %}
+                    <a href="{% url 'sales:invoice_detail' r.invoice.id %}">
+                      {{ r.invoice.number }}
+                    </a>
+                  {% else %}
+                    <span class="small-muted">—</span>
+                  {% endif %}
+                </td>
+
+                <!-- Customer -->
+                <td>
+                  {% if r.invoice and r.invoice.customer %}
+                    <div class="customer-name">{{ r.invoice.customer.name }}</div>
+                  {% else %}
+                    <span class="small-muted">—</span>
+                  {% endif %}
+                </td>
+
+                <!-- Mode -->
+                <td>
+                  <span class="method-pill">
+                    {{ r.method|default:"Refund" }}
+                  </span>
+                </td>
+
+                <!-- Amount -->
+                <td class="text-end">
+                  <span class="amount-negative">
+                    −₹{{ r.amount|floatformat:2|intcomma }}
+                  </span>
+                </td>
+
+                <!-- Actions -->
+                <td class="text-end actions">
+                  <div class="d-flex justify-content-end flex-wrap gap-1">
+
+                    <!-- View -->
+                    <a href="{% url 'sales:refund_detail' r.id %}"
+                       class="btn btn-export">
+                      View
+                    </a>
+
+                    <!-- Edit -->
+                    <a href="{% url 'sales:refund_edit' r.id %}"
+                       class="btn btn-outline-primary btn-sm">
+                      Edit
+                    </a>
+
+                    <!-- PDF -->
+                    <a href="{% url 'sales:refund_pdf' r.id %}"
+                       class="btn btn-outline-primary btn-sm"
+                       title="Download Refund PDF">
+                      <i class="bi bi-file-earmark-pdf"></i>
+                    </a>
+
+                    <!-- Delete -->
+                    <a href="{% url 'sales:refund_delete' r.id %}"
+                       class="btn btn-outline-danger btn-sm"
+                       title="Delete refund">
+                      <i class="bi bi-trash"></i>
+                    </a>
+
+                  </div>
+                </td>
+
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7" class="empty-state">
+                  <i class="bi bi-arrow-counterclockwise d-block mb-2" style="font-size:1.6rem;"></i>
+                  No refunds found for the current filters.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Refund Statement period: show/hide custom date range
+  const refundStmtPeriod = document.getElementById('refundStatementPeriod');
+  const refundStmtCustom = document.getElementById('refundStatementCustomDates');
+
+  function toggleRefundStatementDates() {
+    if (!refundStmtPeriod || !refundStmtCustom) return;
+    if (refundStmtPeriod.value === 'custom') {
+      refundStmtCustom.style.display = 'flex';
+    } else {
+      refundStmtCustom.style.display = 'none';
+    }
+  }
+
+  if (refundStmtPeriod) {
+    refundStmtPeriod.addEventListener('change', toggleRefundStatementDates);
+    toggleRefundStatementDates();
+  }
+</script>
+{% endblock %}

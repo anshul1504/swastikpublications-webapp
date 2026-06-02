@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Bin · Invoices · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --primary:#157347;
+    --primary-dark:#0f5c38;
+    --accent:#1d4ed8;
+    --muted:#4b5563;
+    --text-dark:#111827;
+    --border:#e5e7eb;
+    --card-bg:#ffffff;
+    --soft-bg:#f9fafb;
+    --danger:#dc2626;
+  }
+
+  body{
+    background-color:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    color:var(--text-dark);
+  }
+
+  /* PAGE WRAPPER (same vibe as dashboard/customers) */
+  .bin-page{
+    width:100%;
+  }
+  .bin-container{
+    max-width:1150px;
+    margin:0 auto;
+    padding:14px 6px 20px;
+  }
+
+  /* HEADER */
+  .bin-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:18px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+  .page-heading{
+    font-weight:600;
+    color:var(--text-dark);
+    font-size:1.45rem;
+  }
+  .page-sub{
+    color:var(--muted);
+    font-size:13.5px;
+    margin-top:4px;
+  }
+  .meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:8px;
+  }
+  .meta-chip{
+    font-size:12px;
+    padding:6px 12px;
+    border-radius:999px;
+    background:#fef2f2;
+    color:#b91c1c;
+    border:1px solid #fecaca;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .meta-dot{
+    width:7px;
+    height:7px;
+    border-radius:999px;
+    background:#b91c1c;
+  }
+
+  .header-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  /* BUTTONS – consistent with rest of app */
+  .bin-page .btn{
+    border-radius:9px;
+    font-size:0.9rem;
+  }
+
+  /* Back button – solid blue */
+  .bin-page .btn-outline-secondary{
+    background:#1d4ed8;
+    border-color:#1d4ed8;
+    color:#ffffff !important;
+    padding:0.42rem 0.95rem;
+    transition:all .2s ease;
+  }
+  .bin-page .btn-outline-secondary:hover{
+    background:#153fb1;
+    border-color:#153fb1;
+    transform:translateY(-2px);
+    box-shadow:0 4px 12px rgba(29,78,216,0.35);
+  }
+
+  /* Restore button – solid green */
+  .bin-page .btn-outline-success{
+    background:#157347;
+    border-color:#157347;
+    color:#ffffff !important;
+    transition:all .2s ease;
+  }
+  .bin-page .btn-outline-success:hover{
+    background:#0f5c38;
+    border-color:#0f5c38;
+    transform:translateY(-2px);
+    box-shadow:0 3px 10px rgba(21,115,71,0.35);
+  }
+
+  /* View button – solid blue/info */
+  .bin-page .btn-outline-info{
+    background:#2563eb;
+    border-color:#2563eb;
+    color:#ffffff !important;
+    transition:all .2s ease;
+  }
+  .bin-page .btn-outline-info:hover{
+    background:#1e4fd9;
+    border-color:#1e4fd9;
+    transform:translateY(-2px);
+    box-shadow:0 3px 10px rgba(37,99,235,0.35);
+  }
+
+  /* Delete forever – solid red */
+  .bin-page .btn-outline-danger{
+    background:#dc2626;
+    border-color:#dc2626;
+    color:#ffffff !important;
+    transition:all .2s ease;
+  }
+  .bin-page .btn-outline-danger:hover{
+    background:#b91c1c;
+    border-color:#b91c1c;
+    transform:translateY(-2px);
+    box-shadow:0 3px 10px rgba(220,38,38,0.35);
+  }
+
+  .btn-sm{
+    font-size:0.82rem;
+    padding:0.34rem 0.7rem;
+    border-radius:8px;
+  }
+
+  /* CARD */
+  .bin-card {
+    background:var(--card-bg);
+    border-radius:16px;
+    box-shadow:0 8px 26px rgba(15,23,42,0.06);
+    padding:18px 18px 16px;
+    border:1px solid var(--border);
+  }
+
+  .text-muted-small {
+    font-size:12px;
+    color:#6b7280;
+  }
+
+  /* TABLE */
+  .table thead {
+    background:var(--soft-bg);
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+  }
+  .table thead th {
+    border-bottom:0;
+    color:#4b5563;
+  }
+  .table tbody td {
+    vertical-align:middle;
+    font-size:13px;
+  }
+  .table tbody tr:hover {
+    background:#f3f4f6;
+    transition:.2s;
+  }
+
+  .status-badge{
+    padding:4px 9px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:500;
+  }
+  .status-paid{
+    background:#dcfce7;
+    color:#166534;
+  }
+  .status-partial{
+    background:#fef9c3;
+    color:#92400e;
+  }
+  .status-unpaid{
+    background:#e5e7eb;
+    color:#374151;
+  }
+
+  .action-btns .btn {
+    border-radius:8px;
+    padding:6px 10px;
+    font-size:12px;
+  }
+
+  @media (max-width: 991.98px){
+    .bin-container{
+      padding-inline:8px;
+    }
+    .bin-header{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bin-page">
+  <div class="bin-container">
+
+    <!-- Header -->
+    <div class="bin-header">
+      <div>
+        <h4 class="page-heading mb-1">Bin · Deleted Invoices</h4>
+        <div class="page-sub">
+          Invoices moved to bin. You can restore them or permanently delete if no longer needed.
+        </div>
+        <div class="meta-row">
+          <div class="meta-chip">
+            <span class="meta-dot"></span>
+            In Bin: <strong>{{ invoices|length }}</strong> invoice{% if invoices|length != 1 %}s{% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a href="{% url 'sales:invoice_list' %}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-arrow-left-short"></i> Back to Invoices
+        </a>
+      </div>
+    </div>
+
+    <!-- Card -->
+    <div class="bin-card">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th class="text-end">Total</th>
+              <th class="text-center">Status</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for i in invoices %}
+            <tr>
+              <td class="fw-semibold">
+                {{ i.number }}
+                <div class="text-muted-small">
+                  Deleted: {{ i.updated_at|naturaltime }}
+                </div>
+              </td>
+              <td>
+                <div>{{ i.customer.name }}</div>
+                {% if i.customer.email %}
+                  <div class="text-muted-small">{{ i.customer.email }}</div>
+                {% endif %}
+              </td>
+              <td>{{ i.date|date:"M d, Y" }}</td>
+              <td class="text-end">₹{{ i.grand_total|floatformat:2|intcomma }}</td>
+              <td class="text-center">
+                {% if i.status == 'paid' %}
+                  <span class="status-badge status-paid">Paid</span>
+                {% elif i.status == 'partial' %}
+                  <span class="status-badge status-partial">Partial</span>
+                {% else %}
+                  <span class="status-badge status-unpaid">Unpaid</span>
+                {% endif %}
+              </td>
+              <td class="text-center action-btns">
+                <!-- Restore -->
+                <form method="post" action="{% url 'sales:invoice_restore' i.id %}" class="d-inline">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-success btn-sm" title="Restore">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                  </button>
+                </form>
+
+                <!-- View -->
+                <a href="{% url 'sales:invoice_detail' i.id %}"
+                   class="btn btn-outline-info btn-sm ms-1"
+                   title="View Invoice">
+                  <i class="bi bi-eye"></i>
+                </a>
+
+                <!-- Delete forever -->
+                <a href="{% url 'sales:invoice_bin_delete' i.id %}"
+                   class="btn btn-outline-danger btn-sm ms-1"
+                   title="Delete forever">
+                  <i class="bi bi-trash3"></i>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center text-muted py-5">
+                <i class="bi bi-archive display-6 d-block mb-2"></i>
+                Bin is empty.<br>
+                <span class="text-muted-small">No deleted invoices are currently stored.</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% block title %}Delete Warehouse · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  body{
+    background-color:#fff !important;
+  }
+  .wh-delete-page{
+    max-width:720px;
+    margin:40px auto;
+    background:#ffffff;
+    border-radius:18px;
+    border:1px solid #e5e7eb;
+    box-shadow:0 14px 40px rgba(15,23,42,0.08);
+    padding:26px 26px 24px;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+  }
+  .wh-delete-header{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    margin-bottom:12px;
+  }
+  .wh-icon{
+    width:42px;
+    height:42px;
+    border-radius:14px;
+    background:#fef2f2;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#b91c1c;
+    font-size:20px;
+  }
+  .wh-delete-title{
+    margin:0;
+    font-size:22px;
+    font-weight:700;
+    color:#b91c1c;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .wh-delete-sub{
+    font-size:13px;
+    color:#6b7280;
+    margin-top:4px;
+  }
+
+  .wh-danger-box{
+    margin-top:10px;
+    background:#fef2f2;
+    border-radius:14px;
+    border:1px solid #fecaca;
+    padding:14px 14px 12px;
+    font-size:13.5px;
+    color:#7f1d1d;
+  }
+  .wh-danger-title{
+    font-weight:600;
+    margin-bottom:6px;
+  }
+  .wh-meta-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:6px 12px;
+    margin-top:4px;
+    font-size:13px;
+  }
+  .wh-meta-label{
+    color:#991b1b;
+    font-weight:500;
+  }
+  .wh-meta-value{
+    color:#7f1d1d;
+  }
+
+  .wh-note{
+    margin-top:16px;
+    padding:10px 12px;
+    border-radius:12px;
+    background:#f9fafb;
+    border:1px dashed #e5e7eb;
+    font-size:12.5px;
+    color:#4b5563;
+  }
+
+  .wh-actions{
+    margin-top:24px;
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .btn{
+    padding:10px 20px;
+    border-radius:10px;
+    font-size:14px;
+    font-weight:500;
+    border:none;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    text-decoration:none;
+    transition:all .16s ease;
+  }
+  .btn-cancel{
+    background:#ffffff;
+    color:#374151;
+    border:1px solid #e5e7eb;
+  }
+  .btn-cancel:hover{
+    background:#f3f4f6;
+    border-color:#cbd5e1;
+  }
+  .btn-danger{
+    background:#dc2626;
+    color:#ffffff;
+    box-shadow:0 8px 20px rgba(220,38,38,0.25);
+  }
+  .btn-danger:hover{
+    background:#b91c1c;
+    box-shadow:0 10px 26px rgba(185,28,28,0.32);
+    transform:translateY(-1px);
+  }
+
+  @media (max-width:575.98px){
+    .wh-delete-page{
+      margin:18px 10px;
+      padding:18px 14px;
+    }
+    .wh-meta-grid{
+      grid-template-columns:1fr;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wh-delete-page">
+  <div class="wh-delete-header">
+    <div class="wh-icon">
+      <i class="bi bi-building-x"></i>
+    </div>
+    <div>
+      <h1 class="wh-delete-title">
+        Delete Warehouse
+      </h1>
+      <div class="wh-delete-sub">
+        Kya aap sure ho ki aap is warehouse ko permanently delete karna chahte ho?  
+        Ye action <strong>undo nahi</strong> kiya ja sakta.
+      </div>
+    </div>
+  </div>
+
+  <div class="wh-danger-box">
+    <div class="wh-danger-title">
+      <i class="bi bi-exclamation-triangle-fill me-1"></i>
+      You are about to delete:
+    </div>
+    <div class="wh-meta-grid">
+      <div>
+        <div class="wh-meta-label">Name</div>
+        <div class="wh-meta-value">{{ object.name }}</div>
+      </div>
+      <div>
+        <div class="wh-meta-label">Status</div>
+        <div class="wh-meta-value">
+          {% if object.is_active == False %}
+            Inactive
+          {% else %}
+            Active
+          {% endif %}
+        </div>
+      </div>
+      <div>
+        <div class="wh-meta-label">Phone</div>
+        <div class="wh-meta-value">
+          {% if object.phone %}
+            {{ object.phone }}
+          {% else %}
+            —
+          {% endif %}
+        </div>
+      </div>
+      <div>
+        <div class="wh-meta-label">Email</div>
+        <div class="wh-meta-value">
+          {% if object.email %}
+            {{ object.email }}
+          {% else %}
+            —
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% if object.address %}
+      <div style="margin-top:8px;">
+        <div class="wh-meta-label">Address</div>
+        <div class="wh-meta-value">{{ object.address }}</div>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="wh-note">
+    <strong>Note:</strong> Agar invoices / stock ledger entries is warehouse se linked hain,  
+    woh delete nahi honge – sirf warehouse master record remove hoga.  
+    Future me is naam se naya warehouse create kar sakte ho, lekin purana record wapas nahi aayega.
+  </div>
+
+  <form method="post" style="margin:0;">
+    {% csrf_token %}
+    <div class="wh-actions">
+      <a href="{% url 'catalog:warehouse_list' %}" class="btn btn-cancel">
+        <i class="bi bi-arrow-left-circle"></i>
+        Cancel
+      </a>
+      <button type="submit" class="btn btn-danger">
+        <i class="bi bi-trash-fill"></i>
+        Yes, delete warehouse
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

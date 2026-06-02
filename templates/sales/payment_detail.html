@@ -1,0 +1,490 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Payment Details · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+:root{
+  --primary:#157347;
+  --primary-dark:#0f5c38;
+  --accent:#2563eb;
+  --muted:#4b5563;
+  --text-dark:#111827;
+  --border:#d1d5db;
+  --card-bg:#ffffff;
+  --soft-bg:#f9fafb;
+}
+
+/* GLOBAL PAGE WRAPPER – same scale as dashboard */
+body{
+  background:#ffffff !important;
+  font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+  color:var(--text-dark);
+}
+.payment-page{
+  width:100%;
+}
+.payment-container{
+  max-width:1150px;
+  margin:0 auto;
+  padding:14px 6px 24px;
+}
+
+/* HEADER (like dashboard/customers) */
+.payment-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:18px;
+  margin-bottom:18px;
+}
+.page-heading{
+  font-weight:600;
+  font-size:1.35rem;
+  color:var(--text-dark);
+}
+.page-sub{
+  color:var(--muted);
+  font-size:13.5px;
+  margin-top:4px;
+}
+.meta-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:8px;
+}
+.meta-chip{
+  font-size:12px;
+  padding:6px 12px;
+  border-radius:999px;
+  background:#eef2ff;
+  color:#1e293b;
+  border:1px solid #e0e7ff;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.meta-dot{
+  width:6px;
+  height:6px;
+  border-radius:999px;
+  background:#3b82f6;
+}
+.header-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+/* Buttons – consistent */
+.payment-page .btn-sm{
+  font-size:0.9rem;
+  padding:0.44rem 1rem;
+  border-radius:9px;
+}
+.payment-page .btn{
+  border-radius:9px;
+}
+.btn-primary{
+  background-color:var(--primary);
+  border-color:var(--primary);
+}
+.btn-primary:hover{
+  background-color:var(--primary-dark);
+  border-color:var(--primary-dark);
+}
+.btn-outline-secondary:hover{
+  border-color:var(--accent);
+  color:var(--accent);
+}
+
+/* MAIN CARD */
+.card-lite{
+  background:var(--card-bg);
+  border-radius:16px;
+  box-shadow:0 10px 30px rgba(15,23,42,0.08);
+  border:1px solid var(--border);
+  padding:18px 18px 14px;
+}
+.section-title{
+  font-weight:600;
+  font-size:15px;
+  margin-bottom:3px;
+  color:var(--text-dark);
+}
+.small-muted{
+  color:var(--muted);
+  font-size:12.5px;
+}
+
+/* TOP STRIP INSIDE CARD */
+.payment-strip{
+  border-radius:14px;
+  padding:14px 16px;
+  background:linear-gradient(120deg, rgba(21,115,71,0.06), rgba(37,99,235,0.04));
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+}
+.icon-circle{
+  width:40px;
+  height:40px;
+  border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:#ecfdf3;
+  font-size:20px;
+}
+.icon-circle.refund{
+  background:#fef2f2;
+}
+
+/* BADGES */
+.badge-pill{
+  border-radius:999px;
+  padding:4px 11px;
+  font-size:11px;
+  font-weight:600;
+}
+.tag-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 10px;
+  border-radius:999px;
+  background:#f9fafb;
+  border:1px solid #e5e7eb;
+  font-size:12px;
+}
+
+/* STAT CARDS */
+.stat-card{
+  background:var(--soft-bg);
+  border-radius:12px;
+  padding:10px 12px;
+  border:1px dashed #e5e7eb;
+}
+.stat-label{
+  font-size:11px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.12em;
+}
+.stat-value{
+  font-size:1.18rem;
+  font-weight:600;
+}
+.stat-value .prefix{
+  font-size:0.9rem;
+  opacity:0.8;
+}
+
+/* INFO BLOCKS */
+.info-block{
+  padding:9px 0;
+  border-bottom:1px dashed #e5e7eb;
+}
+.info-block:last-child{
+  border-bottom:none;
+}
+.info-label{
+  font-size:11.5px;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  color:var(--muted);
+  margin-bottom:2px;
+}
+
+/* FOOTER STRIP */
+.footer-strip{
+  padding-top:10px;
+  margin-top:10px;
+  border-top:1px solid #e5e7eb;
+}
+
+/* Responsive */
+@media (max-width:991.98px){
+  .payment-header{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  .payment-container{
+    padding-inline:8px;
+  }
+}
+@media (max-width:768px){
+  .card-lite{
+    padding:16px 12px 12px;
+  }
+  .payment-strip{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+}
+
+.btn-back-solid{
+  background:#2563eb !important;
+  border-color:#2563eb !important;
+  color:#fff !important;
+  border-radius:9px;
+}
+.btn-back-solid:hover{
+  background:#1e4fd9 !important;
+  border-color:#1e4fd9 !important;
+}
+
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="payment-page">
+  <div class="payment-container">
+
+    <!-- PAGE HEADER (global) -->
+    <div class="payment-header">
+      <div>
+        <h3 class="page-heading mb-0">
+          {% if p.is_refund %}Refund Details{% else %}Payment Details{% endif %}
+        </h3>
+        <div class="page-sub">
+          Entry-level view with amount, method, linked invoice & impact on your books.
+        </div>
+        <div class="meta-row">
+          <!-- Amount chip -->
+          <div class="meta-chip">
+            <span class="meta-dot" style="background:{% if p.is_refund %}#ef4444{% else %}#16a34a{% endif %};"></span>
+            {% if p.is_refund %}-{% else %}+{% endif %}₹{{ p.amount|floatformat:2|intcomma }}
+          </div>
+          <!-- Type chip -->
+          <div class="meta-chip">
+            <span class="meta-dot"></span>
+            {% if p.is_refund %}Refund{% else %}Payment{% endif %} · {{ p.method|default:"Method not set" }}
+          </div>
+          <!-- Invoice chip -->
+          <div class="meta-chip">
+            <span class="meta-dot" style="background:#f97316;"></span>
+            {% if p.invoice %}
+              Invoice #{{ p.invoice.number }}{% if p.invoice.customer %} · {{ p.invoice.customer.name }}{% endif %}
+            {% else %}
+              Not linked to any invoice
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <a href="{% url 'sales:payment_list' %}" class="btn-back-solid btn btn-sm">
+          ← Back to Payments
+        </a>
+        {% if p.invoice %}
+          <a href="{% url 'sales:invoice_detail' p.invoice.pk %}" class="btn btn-primary btn-sm">
+            View Invoice
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- MAIN CARD -->
+    <div class="card-lite">
+
+      <!-- TOP STRIP -->
+      <div class="payment-strip mb-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="icon-circle {% if p.is_refund %}refund{% endif %}">
+            {% if p.is_refund %}↩️{% else %}💸{% endif %}
+          </div>
+          <div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="section-title mb-0">
+                {% if p.is_refund %}
+                  Refund of ₹{{ p.amount|floatformat:2|intcomma }}
+                {% else %}
+                  Payment of ₹{{ p.amount|floatformat:2|intcomma }}
+                {% endif %}
+              </span>
+              {% if p.is_refund %}
+                <span class="badge bg-danger badge-pill">REFUND</span>
+              {% else %}
+                <span class="badge bg-success badge-pill">PAYMENT</span>
+              {% endif %}
+              {% if p.method %}
+                <span class="badge bg-light text-dark badge-pill">{{ p.method }}</span>
+              {% endif %}
+            </div>
+            <div class="small-muted mt-1">
+              {% if p.invoice %}
+                Applied against invoice <strong>{{ p.invoice.number }}</strong>
+                {% if p.invoice.customer %} · {{ p.invoice.customer.name }}{% endif %}
+              {% else %}
+                This entry is not linked to any invoice.
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="text-end">
+          <div class="mb-1">
+            {% if p.date %}
+              <span class="tag-chip">
+                📅 <span>{{ p.date|date:"d M, Y" }}</span>
+              </span>
+            {% endif %}
+          </div>
+          <div class="small-muted">
+            Record ID: #{{ p.id }}
+          </div>
+        </div>
+      </div>
+
+      <!-- TOP STATS -->
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <div class="stat-card">
+            <div class="stat-label">Amount</div>
+            <div class="stat-value {% if p.is_refund %}text-danger{% else %}text-success{% endif %}">
+              <span class="prefix">{% if p.is_refund %}-{% else %}+{% endif %}</span>
+              ₹{{ p.amount|floatformat:2|intcomma }}
+            </div>
+            <div class="small-muted mt-1">
+              {% if p.is_refund %}
+                Reduced from net collections.
+              {% else %}
+                Added to net collections.
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="stat-card">
+            <div class="stat-label">Linked Invoice</div>
+            {% if p.invoice %}
+              <div class="stat-value">#{{ p.invoice.number }}</div>
+              <div class="small-muted mt-1">
+                {{ p.invoice.customer.name|default:"No customer" }}
+              </div>
+            {% else %}
+              <div class="stat-value small-muted">Not linked</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="stat-card">
+            <div class="stat-label">Invoice Snapshot</div>
+            {% if p.invoice %}
+              <div class="mb-1">
+                {% if p.invoice.status == 'paid' %}
+                  <span class="badge bg-success badge-pill">Paid</span>
+                {% elif p.invoice.status == 'partial' %}
+                  <span class="badge bg-warning text-dark badge-pill">Partial</span>
+                {% else %}
+                  <span class="badge bg-secondary badge-pill">Unpaid</span>
+                {% endif %}
+              </div>
+              <div class="small-muted">
+                Net received: ₹{{ p.invoice.paid_amount|floatformat:2|intcomma }}<br>
+                Balance due: ₹{{ p.invoice.balance_due|floatformat:2|intcomma }}
+              </div>
+            {% else %}
+              <div class="small-muted">No invoice data</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <hr class="mb-3">
+
+      <!-- DETAIL ROWS -->
+      <div class="row g-3">
+        <!-- LEFT: Payment info -->
+        <div class="col-md-6">
+          <div class="section-title mb-1">Payment Info</div>
+
+          <div class="info-block">
+            <div class="info-label">Type</div>
+            <div>
+              {% if p.is_refund %}Refund{% else %}Payment{% endif %}
+            </div>
+          </div>
+
+          <div class="info-block">
+            <div class="info-label">Method</div>
+            <div>{{ p.method|default:"—" }}</div>
+          </div>
+
+          <div class="info-block">
+            <div class="info-label">Date</div>
+            <div>{{ p.date|date:"d M, Y" }}</div>
+          </div>
+
+          {% if p.invoice %}
+          <div class="info-block">
+            <div class="info-label">Customer</div>
+            <div>
+              {{ p.invoice.customer.name|default:"—" }}<br>
+              <span class="small-muted">
+                {{ p.invoice.customer.email|default:"" }}
+                {% if p.invoice.customer.phone %} · {{ p.invoice.customer.phone }}{% endif %}
+              </span>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- RIGHT: Note & meta -->
+        <div class="col-md-6">
+          <div class="section-title mb-1">Note & Meta</div>
+
+          <div class="info-block">
+            <div class="info-label">Internal Note</div>
+            {% if p.note %}
+              <div>{{ p.note }}</div>
+            {% else %}
+              <div class="small-muted">No note added for this entry.</div>
+            {% endif %}
+          </div>
+
+          <div class="info-block">
+            <div class="info-label">Record ID</div>
+            <div>#{{ p.id }}</div>
+          </div>
+
+          {% if p.invoice %}
+          <div class="info-block">
+            <div class="info-label">Impact on Invoice</div>
+            <div class="small-muted">
+              {% if p.is_refund %}
+                This refund decreases net received and may increase balance due for the linked invoice.
+              {% else %}
+                This payment increases net received and reduces balance due for the linked invoice.
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="footer-strip d-flex justify-content-between flex-wrap gap-2 mt-2">
+        <div class="small-muted">
+          This entry is part of your finance history and appears in payment / refund reports.
+        </div>
+        {% if p.invoice %}
+          <a href="{% url 'sales:invoice_detail' p.invoice.pk %}" class="btn btn-outline-primary btn-sm">
+            🔎 Open full invoice
+          </a>
+        {% endif %}
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}

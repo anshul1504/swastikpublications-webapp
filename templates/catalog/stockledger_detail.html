@@ -1,0 +1,748 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Ledger Entry #{{ entry.id }} · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+ 
+  :root{
+    --primary:#157347;
+    --primary-dark:#0f5c38;
+    --accent:#2563eb;
+    --muted:#6b7280;
+    --text-dark:#111827;
+    --border:#e5e7eb;
+    --card-bg:#ffffff;
+    --soft-bg:#f3f4f6;
+    --danger:#dc2626;
+  }
+
+  body{
+    background:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    color:var(--text-dark);
+  }
+
+  a{text-decoration:none;color:inherit;}
+
+  .ledger-detail-page{
+    width:100%;
+  }
+  .ledger-detail-container{
+    max-width:1080px;
+    margin:0 auto;
+    padding:20px 10px 32px;
+  }
+
+  /* TOP BAR */
+  .top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:14px;
+    gap:12px;
+  }
+  .back-link{
+    font-size:12.5px;
+    color:var(--muted);
+    border: 1px solid #818181;
+    padding: 10px 12px;
+    background-color: #ffffff;
+    border-radius: 30px;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+  }
+  .back-link:hover{
+    color:var(--accent);
+  }
+  .top-actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .btn-soft{
+    background:#ffffff;
+    border:1px solid #e5e7eb !important;
+    color:#111827;
+    border-radius:9px;
+    font-size:12.5px;
+    padding:6px 12px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .btn-soft:hover{
+    background:#f3f4f6;
+  }
+  .btn-danger-soft{
+    background:#fef2f2;
+    border:1px solid #fecaca;
+    color:#b91c1c;
+    border-radius:9px;
+    font-size:12.5px;
+    padding:6px 12px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .btn-danger-soft:hover{
+    background:#fee2e2;
+  }
+
+  /* HEADER SUMMARY CARD */
+  .header-card{
+    background:linear-gradient(135deg,#ffffff,#f9fafb);
+    border-radius:16px;
+    border:1px solid #e5e7eb;
+    padding:16px 18px;
+    box-shadow:0 10px 30px rgba(15,23,42,0.05);
+    margin-bottom:18px;
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    align-items:flex-start;
+  }
+  .header-main{
+    flex:1 1 auto;
+  }
+  .detail-title{
+    font-size:1.45rem;
+    font-weight:600;
+    color:var(--text-dark);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .entry-id-pill{
+    font-size:11px;
+    border-radius:999px;
+    padding:3px 9px;
+    border:1px dashed #d1d5db;
+    color:#4b5563;
+    background:#f9fafb;
+  }
+  .detail-sub{
+    font-size:13px;
+    color:var(--muted);
+    margin-top:4px;
+  }
+
+  .badge-direction{
+    padding:5px 11px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:600;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+  }
+  .badge-in{background:#ecfdf5;color:#166534;border:1px solid #bbf7d0;}
+  .badge-out{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;}
+  .badge-adj{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;}
+
+  .meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:10px;
+  }
+  .meta-chip{
+    font-size:12px;
+    padding:6px 11px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    background:#ffffff;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .meta-label{
+    font-weight:500;
+    color:#4b5563;
+  }
+  .chip-small{
+    font-size:11px;
+    padding:3px 7px;
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+  }
+
+  .header-side{
+    min-width:210px;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:8px;
+  }
+  .txn-type-pill{
+    font-size:11.5px;
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#ffffff;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .txn-type-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:#9ca3af;
+  }
+
+  .headline-balance{
+    margin-top:4px;
+    text-align:right;
+  }
+  .headline-balance-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:#9ca3af;
+  }
+  .headline-balance-value{
+    font-size:1.3rem;
+    font-weight:600;
+    color:#111827;
+  }
+
+  /* MAIN GRID */
+  .detail-layout{
+    display:grid;
+    grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.3fr);
+    gap:18px;
+  }
+
+  .card{
+    background:var(--card-bg);
+    border-radius:16px;
+    border:1px solid var(--border);
+    padding:14px 16px 16px;
+    box-shadow:0 6px 20px rgba(15,23,42,0.04);
+  }
+  .card-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+  }
+  .card-title{
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-weight:600;
+    color:#6b7280;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .card-title-icon{
+    width:20px;
+    height:20px;
+    border-radius:999px;
+    background:#f3f4f6;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+    color:#4b5563;
+  }
+  .card-sub{
+    font-size:12px;
+    color:#9ca3af;
+  }
+
+  .field-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px 14px;
+    margin-top:6px;
+  }
+  .field-block{
+    min-width:0;
+  }
+  .field-label{
+    font-size:11.5px;
+    color:#6b7280;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+  }
+  .field-value{
+    font-size:13.5px;
+    font-weight:500;
+    color:#111827;
+    margin-top:2px;
+  }
+  .field-muted{
+    color:#9ca3af;
+    font-weight:400;
+  }
+
+  .qty-pill{
+    display:inline-flex;
+    align-items:center;
+    padding:3px 9px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:600;
+  }
+  .qty-in{background:#dcfce7;color:#166534;}
+  .qty-out{background:#fee2e2;color:#b91c1c;}
+  .qty-zero{background:#e5e7eb;color:#374151;}
+
+  .balance-box{
+    margin-top:10px;
+    padding:10px 11px;
+    border-radius:12px;
+    background:#f9fafb;
+    border:1px dashed #e5e7eb;
+    font-size:12.5px;
+  }
+  .balance-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:#9ca3af;
+    margin-bottom:2px;
+  }
+  .balance-value-main{
+    font-size:1.25rem;
+    font-weight:600;
+    color:#111827;
+  }
+  .balance-inline{
+    font-size:12px;
+    color:#6b7280;
+    margin-top:4px;
+  }
+
+  .notes-box{
+    margin-top:8px;
+    padding:9px 10px;
+    border-radius:10px;
+    background:#f9fafb;
+    font-size:12.5px;
+    color:#374151;
+    min-height:40px;
+  }
+
+  .ref-link{
+    font-size:12.5px;
+    color:var(--accent);
+    font-weight:500;
+  }
+
+  /* RIGHT CARD (CONTEXT) */
+  .context-section{
+    margin-top:6px;
+  }
+  .section-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:#9ca3af;
+    margin-bottom:6px;
+  }
+
+  .context-pills{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .context-pill{
+    padding:7px 10px;
+    border-radius:10px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+    font-size:12.5px;
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+  }
+  .context-left{
+    color:#4b5563;
+  }
+  .context-right{
+    font-size:12px;
+    color:#6b7280;
+  }
+
+  .timeline{
+    margin-top:6px;
+    border-left:1px solid #e5e7eb;
+    padding-left:10px;
+  }
+  .timeline-item{
+    margin-bottom:8px;
+    position:relative;
+  }
+  .timeline-dot{
+    width:8px;
+    height:8px;
+    border-radius:999px;
+    background:#10b981;
+    position:absolute;
+    left:-14px;
+    top:4px;
+  }
+  .timeline-main{
+    font-size:12.5px;
+    color:#111827;
+  }
+  .timeline-meta{
+    font-size:11px;
+    color:#9ca3af;
+  }
+
+  .detail-actions{
+    margin-top:12px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
+  @media (max-width:991.98px){
+    .header-card{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+    .header-side{
+      align-items:flex-start;
+    }
+  }
+  @media (max-width:767.98px){
+    .detail-layout{
+      grid-template-columns: minmax(0,1fr);
+    }
+    .ledger-detail-container{
+      padding-inline:8px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ledger-detail-page">
+  <div class="ledger-detail-container">
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <a href="{% url 'catalog:stock_ledger' %}" class="back-link">
+        <i class="bi bi-arrow-left"></i> Back to Stock Ledger
+      </a>
+
+      <div class="top-actions">
+        {% if perms.catalog.change_stockledger or user.is_staff or user.is_superuser %}
+          <a href="{% url 'catalog:stock_ledger_edit' entry.id %}" class="btn-soft">
+            <i class="bi bi-pencil-square"></i> Edit
+          </a>
+        {% endif %}
+        {% if perms.catalog.delete_stockledger or user.is_staff or user.is_superuser %}
+          <a href="{% url 'catalog:stock_ledger_delete' entry.id %}" class="btn-danger-soft">
+  <i class="bi bi-trash me-1"></i> Delete
+</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- HEADER SUMMARY -->
+    <div class="header-card">
+      <div class="header-main">
+        <div class="detail-title">
+          {{ product.name|default:"Ledger Entry" }}
+          <span class="entry-id-pill">#{{ entry.id }}</span>
+        </div>
+        <div class="detail-sub">
+          {{ entry.date|date:"d M Y" }} · {{ entry.date|time:"H:i" }}
+          {% if product and product.sku %}
+            · SKU: {{ product.sku }}
+          {% endif %}
+        </div>
+
+        <div class="meta-row">
+          <!-- Direction -->
+          <div>
+            {% if is_in %}
+              <span class="badge-direction badge-in">
+                <i class="bi bi-arrow-down-circle"></i> In
+              </span>
+            {% elif is_out %}
+              <span class="badge-direction badge-out">
+                <i class="bi bi-arrow-up-circle"></i> Out
+              </span>
+            {% else %}
+              <span class="badge-direction badge-adj">
+                <i class="bi bi-sliders"></i> Adjustment
+              </span>
+            {% endif %}
+          </div>
+
+          <!-- Product -->
+          {% if product %}
+            <div class="meta-chip">
+              <span class="meta-label">Product</span>
+              {{ product.name }}
+            </div>
+          {% endif %}
+
+          <!-- Warehouse -->
+          <div class="meta-chip">
+            <span class="meta-label">Warehouse</span>
+            {% if warehouse %}
+              {{ warehouse.name }}
+            {% else %}
+              <span class="field-muted">Not set</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="header-side">
+        <div class="txn-type-pill">
+          <div class="txn-type-label">Transaction</div>
+          <div>
+            {% if entry.get_ref_type_display %}
+              {{ entry.get_ref_type_display }}
+            {% elif entry.ref_type %}
+              {{ entry.ref_type|cut:"_"|capfirst }}
+            {% else %}
+              <span class="field-muted">Unspecified</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="headline-balance">
+          <div class="headline-balance-label">Balance after entry</div>
+          <div class="headline-balance-value">
+            {{ entry.balance|default:"0" }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN LAYOUT -->
+    <div class="detail-layout">
+
+      <!-- LEFT: MOVEMENT & META -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">
+              <span class="card-title-icon">
+                <i class="bi bi-arrow-left-right"></i>
+              </span>
+              Movement
+            </div>
+            <div class="card-sub">Quantities & running balance</div>
+          </div>
+        </div>
+
+        <div class="field-grid">
+          <div class="field-block">
+            <div class="field-label">In Quantity</div>
+            <div class="field-value">
+              {% if entry.in_qty %}
+                <span class="qty-pill qty-in">+{{ entry.in_qty }}</span>
+              {% else %}
+                <span class="qty-pill qty-zero">0</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="field-block" style="text-align:right;">
+            <div class="field-label">Out Quantity</div>
+            <div class="field-value">
+              {% if entry.out_qty %}
+                <span class="qty-pill qty-out">-{{ entry.out_qty }}</span>
+              {% else %}
+                <span class="qty-pill qty-zero">0</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="field-block">
+            <div class="field-label">Created By</div>
+            <div class="field-value">
+              {% if entry.user %}
+                {% if entry.user.get_full_name %}
+                  {{ entry.user.get_full_name }}
+                {% else %}
+                  {{ entry.user.username }}
+                {% endif %}
+              {% else %}
+                <span class="field-muted">System</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="field-block" style="text-align:right;">
+            <div class="field-label">Entry ID</div>
+            <div class="field-value">
+              #{{ entry.id }}
+            </div>
+          </div>
+        </div>
+
+        <div class="balance-box">
+          <div class="balance-label">Running Balance</div>
+          <div class="balance-value-main">
+            {{ entry.balance|default:"0" }}
+          </div>
+          <div class="balance-inline">
+            {% if prev_balance != None %}
+              Previous: <strong>{{ prev_balance }}</strong>
+              {% if delta > 0 %}
+                · Change: +{{ delta }}
+              {% elif delta < 0 %}
+                · Change: {{ delta }}
+              {% else %}
+                · Change: ±0
+              {% endif %}
+            {% else %}
+              Balance computed from this entry.
+            {% endif %}
+          </div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <div class="field-grid">
+            <div class="field-block">
+              <div class="field-label">Reference</div>
+              <div class="field-value">
+                {% if ref_display %}
+                  {% if entry.ref_type and entry.ref_id %}
+                    <a href="{% url 'catalog:transaction_detail' entry.ref_type entry.ref_id %}" class="ref-link">
+                      {{ ref_display }}
+                    </a>
+                  {% else %}
+                    {{ ref_display }}
+                  {% endif %}
+                {% else %}
+                  <span class="field-muted">No reference</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="field-block" style="text-align:right;">
+              <div class="field-label">Entry Time</div>
+              <div class="field-value">
+                {{ entry.date|date:"d M Y" }} · {{ entry.date|time:"H:i" }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <div class="field-label">Notes</div>
+          <div class="notes-box">
+            {% if entry.notes %}
+              {{ entry.notes }}
+            {% else %}
+              <span class="field-muted">No notes added for this entry.</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="detail-actions">
+          {% if perms.catalog.change_stockledger or user.is_staff or user.is_superuser %}
+            <a href="{% url 'catalog:stock_ledger_edit' entry.id %}" class="btn-soft">
+              <i class="bi bi-pencil-square"></i> Edit Entry
+            </a>
+          {% endif %}
+          {% if perms.catalog.delete_stockledger or user.is_staff or user.is_superuser %}
+            <form method="post"
+                  action="{% url 'catalog:stock_ledger_delete' entry.id %}"
+                  onsubmit="return confirm('Delete this ledger entry? Balances will be recalculated.');">
+              {% csrf_token %}
+              <button type="submit" class="btn-danger-soft">
+                <i class="bi bi-trash"></i> Delete
+              </button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- RIGHT: CONTEXT & TIMELINE -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">
+              <span class="card-title-icon">
+                <i class="bi bi-box-seam"></i>
+              </span>
+              Context
+            </div>
+            <div class="card-sub">Product, warehouse & recent movements</div>
+          </div>
+        </div>
+
+        <!-- Context pills -->
+        <div class="context-section">
+          <div class="section-label">Summary</div>
+          <div class="context-pills">
+            <div class="context-pill">
+              <div class="context-left">
+                Product
+              </div>
+              <div class="context-right">
+                {% if product %}{{ product.name }}{% else %}<span class="field-muted">—</span>{% endif %}
+              </div>
+            </div>
+            <div class="context-pill">
+              <div class="context-left">
+                Warehouse
+              </div>
+              <div class="context-right">
+                {% if warehouse %}{{ warehouse.name }}{% else %}<span class="field-muted">—</span>{% endif %}
+              </div>
+            </div>
+            <div class="context-pill">
+              <div class="context-left">
+                Direction
+              </div>
+              <div class="context-right">
+                {% if is_in %}In{% elif is_out %}Out{% else %}Adjustment{% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="context-section" style="margin-top:14px;">
+          <div class="section-label">Recent Movements (same product & warehouse)</div>
+          {% if related_ledgers %}
+            <div class="timeline">
+              {% for sl in related_ledgers %}
+                <div class="timeline-item">
+                  <div class="timeline-dot"></div>
+                  <div class="timeline-main">
+                    {% if sl.product %}{{ sl.product.name }}{% else %}Entry{% endif %}
+                    ·
+                    {% if sl.in_qty %}+{{ sl.in_qty }}{% endif %}
+                    {% if sl.out_qty %}{% if sl.in_qty %} / {% endif %}-{{ sl.out_qty }}{% endif %}
+                  </div>
+                  <div class="timeline-meta">
+                    {{ sl.date|date:"d M" }} · {{ sl.date|time:"H:i" }}
+                    {% if sl.ref_type %}
+                      · {{ sl.ref_type|cut:"_"|capfirst }}
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="field-muted" style="font-size:12.5px;margin-top:4px;">
+              No other entries found for this product & warehouse.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

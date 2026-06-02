@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Collection Summary</title>
+
+  <!-- Poppins Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --accent: #ea580c;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --bg-soft: #f9fafb;
+      --row-alt: #fcfcfc;
+    }
+
+    @page { size: A4; margin: 18mm 15mm; }
+
+    body {
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 11px;
+      color: var(--text-main);
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+    }
+
+    h1,h2,h3,h4,h5 { margin:0; padding:0; font-weight:600; }
+
+    .statement-wrap { width: 100%; box-sizing: border-box; padding: 6px 0; }
+
+    /* HEADER */
+    .header {
+      padding: 8px 0 10px;
+      display: table;
+      width: 100%;
+      box-sizing: border-box;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-col { display: table-cell; vertical-align: middle; width: 50%; }
+
+    .company-top { display: inline-flex; align-items: flex-start; gap: 10px; margin-bottom: 4px; }
+    .company-logo { width: 72px; height: 72px; border-radius: 6px; object-fit: contain; }
+    .company-name-block { display:flex; flex-direction:column; }
+    .company-name { font-size: 13px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; }
+    .company-details { margin-top: 4px; font-size: 10px; color: var(--text-muted); line-height: 1.45; }
+    .company-detail-line { display:block; margin-top:2px; }
+
+    .header-right { text-align: right; font-size: 10px; line-height: 1.45; }
+    .header-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; letter-spacing: 0.12em; text-transform: uppercase; }
+    .header-sub { font-size: 10px; color: #4b5563; }
+
+    .header-meta { margin-top:6px; font-size: 9.5px; color: var(--text-muted); }
+    .meta-line { display:flex; justify-content:flex-end; gap:8px; }
+    .meta-label { text-transform:uppercase; letter-spacing:0.06em; font-size:9px; color:#9ca3af; }
+    .meta-value { font-size:9.5px; color:var(--text-main); }
+
+    /* CONTENT WRAP */
+    .content-card { padding: 10px 0 12px; background: #ffffff; box-sizing: border-box; }
+
+    .section-title {
+      margin-top: 10px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+    .section-title span { padding-bottom: 2px; border-bottom: 2px solid var(--accent); display:inline-block; }
+
+    .sub { font-size:10px; color:var(--text-muted); }
+
+    /* SUMMARY CARDS */
+    .summary-grid { width:100%; margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; }
+    .summary-card { flex:1 1 30%; border:1px solid var(--border); border-radius:6px; padding:8px 8px; background:#fff; box-sizing:border-box; }
+    .summary-card.highlight { background:var(--bg-soft); }
+    .summary-label { color:var(--text-muted); font-size:9.5px; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px; }
+    .summary-value { font-weight:700; font-size:12px; }
+    .summary-value-strong { color:var(--accent); }
+
+    /* BREAKDOWN TABLE (if any) */
+    table.breakdown { width:100%; border-collapse:collapse; margin-top:8px; font-size:10.5px; }
+    table.breakdown th, table.breakdown td { border:1px solid var(--border); padding:6px 6px; }
+    table.breakdown th { background:var(--bg-soft); font-size:9.5px; text-transform:uppercase; color:var(--text-muted); text-align:left; }
+    table.breakdown tbody tr:nth-child(even) { background:var(--row-alt); }
+    .text-right { text-align:right; }
+
+    /* INVOICES TABLE */
+    table.invoices { width:100%; border-collapse:collapse; margin-top:10px; font-size:10.5px; }
+    table.invoices th, table.invoices td { border:1px solid var(--border); padding:6px 6px; vertical-align:middle; }
+    table.invoices th { background:var(--bg-soft); font-size:9.5px; text-transform:uppercase; color:var(--text-muted); text-align:left; }
+    table.invoices tbody tr:nth-child(even) { background:var(--row-alt); }
+
+    .inv-link { text-decoration:none; color:var(--text-main); font-weight:600; }
+
+    /* FOOTER NOTE */
+    .footer-note { margin-top:10px; font-size:9.5px; color:var(--text-muted); border-top:1px solid var(--border); padding-top:6px; }
+
+    .mt-1{ margin-top:6px; } .mt-2{ margin-top:10px; }
+  </style>
+</head>
+<body>
+  <div class="statement-wrap">
+
+    <!-- HEADER -->
+    <div class="header">
+      <!-- LEFT: COMPANY -->
+      <div class="header-col">
+        {% if company %}
+          <div class="company-top">
+            {% if company.logo %}
+              <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="company-logo">
+            {% endif %}
+            <div class="company-name-block">
+              <div class="company-name">{{ company.name }}</div>
+              <div class="company-details">
+                {% if company.address %}
+                  <div class="company-detail-line">{{ company.address|linebreaksbr }}</div>
+                {% endif %}
+                {% if company.email %}
+                  <div class="company-detail-line">Email: {{ company.email }}</div>
+                {% endif %}
+                {% if company.phone %}
+                  <div class="company-detail-line">Phone: {{ company.phone }}</div>
+                {% endif %}
+                {% if company.gstin %}
+                  <div class="company-detail-line">GSTIN: {{ company.gstin }}</div>
+                {% endif %}
+                {% if company.bank_details %}
+                  <div class="company-detail-line">{{ company.bank_details|linebreaksbr }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% else %}
+          <div class="company-top">
+            <div class="company-name">The Webfix</div>
+          </div>
+          <div class="company-details mt-1">Collection Summary</div>
+        {% endif %}
+      </div>
+
+      <!-- RIGHT: META -->
+      <div class="header-col header-right">
+        <div class="header-title">Collection Summary</div>
+        <div class="header-sub">Outstanding invoices & collections snapshot</div>
+
+        <div class="header-meta">
+          <div class="meta-line">
+            <span class="meta-label">Generated</span>
+            <span class="meta-value">{% if generated_at %}{{ generated_at|date:"M d, Y H:i" }}{% else %}{{ now|default:None|date:"M d, Y H:i" }}{% endif %}</span>
+          </div>
+          <div class="meta-line">
+            <span class="meta-label">Invoices</span>
+            <span class="meta-value">{% if invoice_count %}{{ invoice_count }}{% else %}{{ invoices|length }}{% endif %}</span>
+          </div>
+          <div class="meta-line">
+            <span class="meta-label">Outstanding</span>
+            <span class="meta-value">₹{{ total_outstanding|default:0|floatformat:2 }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content-card">
+
+      <!-- SUMMARY -->
+      <div class="section-title"><span>Statement Summary</span></div>
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="summary-label">Invoices in collection</div>
+          <div class="summary-value">
+            {% if invoice_count %}{{ invoice_count }}{% else %}{{ invoices|length }}{% endif %}
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-label">Total invoice value</div>
+          <div class="summary-value">
+            ₹{{ total_value|default:0|floatformat:2 }}
+          </div>
+        </div>
+
+        <div class="summary-card highlight">
+          <div class="summary-label">Total outstanding</div>
+          <div class="summary-value summary-value-strong">
+            ₹{{ total_outstanding|default:0|floatformat:2 }}
+          </div>
+        </div>
+      </div>
+
+      <!-- OPTIONAL: breakdown by method (if provided) -->
+      {% if by_method %}
+        <div class="section-title mt-2"><span>Collection Breakdown by Method</span></div>
+        <table class="breakdown">
+          <thead>
+            <tr><th>Method</th><th class="text-right">Total Amount (₹)</th></tr>
+          </thead>
+          <tbody>
+            {% for row in by_method %}
+              <tr>
+                <td>{{ row.method|default:"N/A" }}</td>
+                <td class="text-right">₹{{ row.total|floatformat:2 }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+
+      <!-- INVOICES TABLE -->
+      <div class="section-title mt-2"><span>Outstanding Invoices</span></div>
+      <table class="invoices">
+        <thead>
+          <tr>
+            <th>Invoice</th>
+            <th>Date</th>
+            <th>Customer</th>
+            <th class="text-right">Invoice</th>
+            <th class="text-right">Balance</th>
+            <th class="text-right">Days</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inv in invoices %}
+            <tr>
+              <td><a href="{% url 'sales:invoice_detail' inv.id %}" class="inv-link">{{ inv.number }}</a></td>
+              <td>{{ inv.date|date:"d M Y" }}</td>
+              <td>
+                {% if inv.customer %}
+                  {{ inv.customer.name }}{% if inv.customer.company %} — {{ inv.customer.company }}{% endif %}
+                {% else %}
+                  &mdash;
+                {% endif %}
+              </td>
+              <td class="text-right">₹{{ inv.grand_total|floatformat:2 }}</td>
+              <td class="text-right">₹{{ inv.balance_due|floatformat:2 }}</td>
+              <td class="text-right">{{ inv.days_overdue }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" style="text-align:center; padding:12px;">No invoices found.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <!-- OPTIONAL: payments & refunds summary if context provides them -->
+      {% if payments %}
+        <div class="section-title mt-2"><span>Recent Payments</span></div>
+        <table class="payments">
+          <thead>
+            <tr>
+              <th>Date</th><th>Invoice #</th><th>Customer</th><th>Method</th><th class="text-right">Amount (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in payments %}
+              <tr>
+                <td>{{ p.date|date:"M d, Y" }}</td>
+                <td>{% if p.invoice %}{{ p.invoice.number }}{% else %}&mdash;{% endif %}</td>
+                <td>{% if p.invoice and p.invoice.customer %}{{ p.invoice.customer.name }}{% else %}&mdash;{% endif %}</td>
+                <td>{{ p.method }}</td>
+                <td class="text-right">₹{{ p.amount|floatformat:2 }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+
+      {% if refunds %}
+        <div class="section-title mt-2"><span>Recent Refunds</span></div>
+        <table class="refunds">
+          <thead>
+            <tr>
+              <th>Date</th><th>Invoice #</th><th>Customer</th><th>Method</th><th>Note</th><th class="text-right">Amount (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in refunds %}
+              <tr>
+                <td>{{ r.date|date:"M d, Y" }}</td>
+                <td>{% if r.invoice %}{{ r.invoice.number }}{% else %}&mdash;{% endif %}</td>
+                <td>{% if r.invoice and r.invoice.customer %}{{ r.invoice.customer.name }}{% else %}&mdash;{% endif %}</td>
+                <td>{{ r.method }}</td>
+                <td>{{ r.note|default:"" }}</td>
+                <td class="text-right">₹{{ r.amount|floatformat:2 }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+
+      <!-- FOOTER NOTE -->
+      <div class="footer-note">
+        This is a system-generated collection summary from your billing dashboard.
+        If you believe any numbers are incorrect, please contact your accounts team.
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

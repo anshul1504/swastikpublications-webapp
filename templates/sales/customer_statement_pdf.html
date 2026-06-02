@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Customer Statement - {{ customer.name }}</title>
+
+  <!-- Poppins Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ---------- DESIGN TOKENS ---------- */
+    :root {
+      --accent: #ea580c;        /* soft orange accent */
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --bg-soft: #f9fafb;
+      --row-alt: #fcfcfc;
+    }
+
+    /* ---------- PAGE SETUP (A4) ---------- */
+    @page {
+      size: A4;
+      margin: 18mm 15mm;
+    }
+
+    body {
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 11px;
+      color: var(--text-main);
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+    }
+
+    h1, h2, h3, h4, h5 {
+      margin: 0;
+      padding: 0;
+      font-weight: 600;
+    }
+
+    .statement-wrap {
+      width: 100%;
+    }
+
+    /* ---------- HEADER (MINIMAL SAAS STYLE) ---------- */
+    .header {
+      padding: 10px 0 10px;
+      display: table;
+      width: 100%;
+      box-sizing: border-box;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-col {
+      display: table-cell;
+      vertical-align: middle;
+      width: 50%;
+    }
+
+    .header-left {
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .company-top {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 2px;
+    }
+
+    .company-logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 5px;
+      object-fit: contain;
+    }
+
+    .company-name {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+
+   .company-contact {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.company-contact-line {
+  display: block;
+  line-height: 1.4;
+}
+
+    .company-contact span {
+      margin-right: 10px;
+    }
+
+    .header-right {
+      text-align: right;
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .header-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 2px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .header-sub {
+      font-size: 10px;
+      color: #4b5563;
+    }
+
+    .header-meta {
+      margin-top: 5px;
+      font-size: 9.5px;
+      color: var(--text-muted);
+    }
+
+    .meta-line {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    .meta-label {
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 9px;
+      color: #9ca3af;
+    }
+
+    .meta-value {
+      font-size: 9.5px;
+      color: var(--text-main);
+    }
+
+    /* ---------- CONTENT WRAP ---------- */
+    .content-card {
+      padding: 10px 0 12px;
+      background: #ffffff;
+      box-sizing: border-box;
+    }
+
+    .section-title {
+      margin-top: 10px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .section-title span {
+      padding-bottom: 2px;
+      border-bottom: 2px solid var(--accent);
+      display: inline-block;
+    }
+
+    .sub {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* ---------- INFO GRID (CUSTOMER / BILLING) ---------- */
+    .info-grid {
+      width: 100%;
+      margin-top: 6px;
+      border-collapse: collapse;
+    }
+
+    .info-grid td {
+      vertical-align: top;
+      font-size: 11px;
+      padding-right: 10px;
+      padding-top: 2px;
+    }
+
+    .info-label {
+      font-size: 9.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .info-value {
+      font-size: 11px;
+      color: var(--text-main);
+      font-weight: 500;
+      margin-top: 1px;
+    }
+
+    /* ---------- ACCOUNT SUMMARY CARDS ---------- */
+    .summary-grid {
+      width: 100%;
+      margin-top: 7px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .summary-card {
+      flex: 1 1 30%;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 7px;
+      background: #ffffff;
+      box-sizing: border-box;
+    }
+
+    .summary-card.highlight {
+      background: var(--bg-soft);
+    }
+
+    .summary-label {
+      color: var(--text-muted);
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 2px;
+    }
+
+    .summary-value {
+      font-weight: 600;
+      font-size: 11.5px;
+    }
+
+    .summary-value-strong {
+      color: var(--accent);
+    }
+
+    /* ---------- INVOICES TABLE ---------- */
+    table.invoices {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 10.5px;
+    }
+
+    table.invoices th,
+    table.invoices td {
+      border: 1px solid var(--border);
+      padding: 5px 4px;
+    }
+
+    table.invoices th {
+      background: var(--bg-soft);
+      text-align: left;
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    table.invoices tbody tr:nth-child(even) {
+      background: var(--row-alt);
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 9px;
+      font-weight: 500;
+    }
+
+    .status-paid {
+      background: #ecfdf5;
+      color: #15803d;
+    }
+
+    .status-partial {
+      background: #fefce8;
+      color: #854d0e;
+    }
+
+    .status-unpaid {
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+
+    /* ---------- REFUNDS TABLE ---------- */
+    table.refunds {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+      font-size: 10.5px;
+    }
+
+    table.refunds th,
+    table.refunds td {
+      border: 1px solid var(--border);
+      padding: 4px 4px;
+    }
+
+    table.refunds th {
+      background: #fef2f2;
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #b91c1c;
+      text-align: left;
+    }
+
+    table.refunds tbody tr:nth-child(even) {
+      background: #fff7ed;
+    }
+
+
+    .company-name-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.company-details {
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.company-detail-line {
+  display: block;
+  margin-top: 1px;
+}
+
+
+    /* ---------- FOOTER NOTE ---------- */
+    .footer-note {
+      margin-top: 10px;
+      font-size: 9.5px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 5px;
+    }
+
+    .mt-1 { margin-top: 4px; }
+    .mt-2 { margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="statement-wrap">
+
+    <!-- ========== HEADER ========== -->
+    <div class="header">
+      <!-- LEFT: COMPANY DETAILS -->
+<div class="header-col header-left">
+
+  {% if company %}
+    <div class="company-top">
+      {% if company.logo %}
+        <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="company-logo">
+      {% endif %}
+      <div class="company-name-block">
+        <div class="company-name">{{ company.name }}</div>
+
+        <!-- ↓↓↓ COMPANY DETAILS BELOW NAME ↓↓↓ -->
+        <div class="company-details">
+          {% if company.address %}
+            <div class="company-detail-line">{{ company.address|linebreaksbr }}</div>
+          {% endif %}
+
+          {% if company.email %}
+            <div class="company-detail-line">Email: {{ company.email }}</div>
+          {% endif %}
+
+          {% if company.phone %}
+            <div class="company-detail-line">Phone: {{ company.phone }}</div>
+          {% endif %}
+
+          {% if company.gstin %}
+            <div class="company-detail-line">GSTIN: {{ company.gstin }}</div>
+          {% endif %}
+
+          {% if company.bank_details %}
+            <div class="company-detail-line">{{ company.bank_details|linebreaksbr }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  {% else %}
+    <div class="company-top">
+      <div class="company-name">The Webfix</div>
+    </div>
+    <div class="company-detail-line">Customer Statement</div>
+  {% endif %}
+
+</div>
+
+
+      <!-- RIGHT: STATEMENT META -->
+      <div class="header-col header-right">
+        <div class="header-title">Customer Statement</div>
+        <div class="header-sub">
+          {{ customer.name }}{% if customer.company %} · {{ customer.company }}{% endif %}
+        </div>
+
+        <div class="header-meta">
+          <div class="meta-line">
+            <span class="meta-label">Statement Date</span>
+            <span class="meta-value">{{ now|date:"M d, Y" }}</span>
+          </div>
+          <div class="meta-line">
+            <span class="meta-label">Generated On</span>
+            <span class="meta-value">{{ now|date:"M d, Y H:i" }}</span>
+          </div>
+          {% if from_date and to_date %}
+            <div class="meta-line">
+              <span class="meta-label">Period</span>
+              <span class="meta-value">
+                {{ from_date|date:"M d, Y" }} – {{ to_date|date:"M d, Y" }}
+              </span>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== CONTENT CARD ========== -->
+    <div class="content-card">
+
+      <!-- CUSTOMER DETAILS -->
+      <div class="section-title"><span>Customer Details</span></div>
+      <table class="info-grid">
+        <tr>
+          <td width="52%">
+            <div class="info-label">Name</div>
+            <div class="info-value">{{ customer.name }}</div>
+
+            {% if customer.company %}
+              <div class="mt-1">
+                <div class="info-label">Company</div>
+                <div class="info-value">{{ customer.company }}</div>
+              </div>
+            {% endif %}
+
+            {% if customer.email %}
+              <div class="mt-1">
+                <div class="info-label">Email</div>
+                <div class="info-value">{{ customer.email }}</div>
+              </div>
+            {% endif %}
+
+            
+          </td>
+
+          <td width="48%">
+            {% if customer.phone %}
+              <div class="mt-1">
+                <div class="info-label">Phone</div>
+                <div class="info-value">{{ customer.phone }}</div>
+              </div>
+            {% endif %}
+            
+            {% if customer.billing_address %}
+              <div class="info-label">Billing Address</div>
+              <div class="info-value">
+                {{ customer.billing_address|linebreaksbr }}
+              </div>
+            {% endif %}
+
+            {% if customer.gstin %}
+              <div class="mt-1">
+                <div class="info-label">GSTIN</div>
+                <div class="info-value">{{ customer.gstin }}</div>
+              </div>
+            {% endif %}
+
+            {% if customer.pan %}
+              <div class="mt-1">
+                <div class="info-label">PAN</div>
+                <div class="info-value">{{ customer.pan }}</div>
+              </div>
+            {% endif %}
+          </td>
+        </tr>
+      </table>
+
+      <!-- ACCOUNT SUMMARY -->
+      <div class="section-title"><span>Account Summary</span></div>
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="summary-label">Total Invoices</div>
+          <div class="summary-value">{{ invoices|length }}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Total Spent</div>
+          <div class="summary-value summary-value-strong">
+            ₹{{ total_spent|floatformat:2 }}
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Total Paid</div>
+          <div class="summary-value">
+            ₹{{ total_paid|floatformat:2 }}
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Total Refunded</div>
+          <div class="summary-value">
+            ₹{{ total_refunded|floatformat:2 }}
+          </div>
+        </div>
+        <div class="summary-card highlight">
+          <div class="summary-label">Net Received</div>
+          <div class="summary-value summary-value-strong">
+            ₹{{ net_received|floatformat:2 }}
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Pending Balance</div>
+          <div class="summary-value">
+            ₹{{ pending_balance|floatformat:2 }}
+          </div>
+        </div>
+      </div>
+
+      <!-- INVOICES TABLE -->
+      <div class="section-title"><span>Invoices</span></div>
+      <table class="invoices">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th class="text-right">Total</th>
+            <th class="text-right">Paid</th>
+            <th class="text-right">Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inv in invoices %}
+          <tr>
+            <td>{{ inv.number }}</td>
+            <td>{{ inv.date|date:"M d, Y" }}</td>
+            <td>
+              {% if inv.status == 'paid' %}
+                <span class="status-pill status-paid">Paid</span>
+              {% elif inv.status == 'partial' %}
+                <span class="status-pill status-partial">Partial</span>
+              {% else %}
+                <span class="status-pill status-unpaid">Unpaid</span>
+              {% endif %}
+            </td>
+            <td class="text-right">₹{{ inv.grand_total|floatformat:2 }}</td>
+            <td class="text-right">₹{{ inv.paid_amount|floatformat:2 }}</td>
+            <td class="text-right">₹{{ inv.balance_due|floatformat:2 }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <!-- REFUNDS TABLE (only if any refunds exist) -->
+      {% if refunds or legacy_refunds %}
+        <div class="section-title"><span>Refunds</span></div>
+
+        <table class="refunds">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Invoice #</th>
+              <th>Method</th>
+              <th>Note</th>
+              <th class="text-right">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in refunds %}
+              <tr>
+                <td>{{ r.date|date:"M d, Y" }}</td>
+                <td>{% if r.invoice %}{{ r.invoice.number }}{% endif %}</td>
+                <td>{{ r.method }}</td>
+                <td>{{ r.note }}</td>
+                <td class="text-right">₹{{ r.amount|floatformat:2 }}</td>
+              </tr>
+            {% endfor %}
+
+            {% for lr in legacy_refunds %}
+              <tr>
+                <td>{{ lr.date|date:"M d, Y" }}</td>
+                <td>{% if lr.invoice %}{{ lr.invoice.number }}{% endif %}</td>
+                <td>Refund</td>
+                <td>{{ lr.note }}</td>
+                <td class="text-right">₹{{ lr.amount|floatformat:2 }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+
+      <!-- FOOTER NOTE -->
+      <div class="footer-note">
+        {% if statement_note %}
+          {{ statement_note }}
+        {% else %}
+          This is a system-generated customer statement from your billing dashboard.
+          Please contact us if any corrections are required.
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

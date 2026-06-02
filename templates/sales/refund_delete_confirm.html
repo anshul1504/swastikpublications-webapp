@@ -1,0 +1,499 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Delete Refund · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root{
+    --primary:#157347;
+    --primary-dark:#0f5c38;
+    --accent:#2563eb;
+    --muted:#6b7280;
+    --text-dark:#111827;
+    --border:#e5e7eb;
+    --card-bg:#ffffff;
+    --soft-bg:#f9fafb;
+    --danger:#dc2626;
+    --danger-dark:#b91c1c;
+  }
+
+  body{
+    background:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    color:var(--text-dark);
+  }
+
+  .refund-delete-page{
+    width:100%;
+    padding:20px 8px 28px;
+  }
+  .refund-delete-container{
+    max-width:1100px;
+    margin:0 auto;
+  }
+
+  /* Header */
+  .page-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+  .page-heading{
+    font-weight:600;
+    font-size:1.5rem;
+    margin-bottom:4px;
+    color:var(--text-dark);
+  }
+  .page-sub{
+    font-size:13px;
+    color:var(--muted);
+  }
+  .header-actions .btn{
+    border-radius:9px;
+    font-size:0.9rem;
+  }
+  .header-actions .btn-outline-secondary:hover{
+    border-color:var(--accent);
+    color:var(--accent);
+  }
+
+  /* Chips */
+  .chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:10px;
+  }
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:5px 11px;
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+    font-size:11.5px;
+    color:#374151;
+  }
+  .chip strong{ font-weight:600; }
+
+  /* Layout */
+  .refund-delete-layout{
+    display:flex;
+    gap:18px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+  .delete-main{
+    flex:1 1 0;
+    min-width:280px;
+  }
+  .delete-side{
+    flex:0 0 320px;
+    max-width:360px;
+  }
+
+  .card-lite{
+    background:var(--card-bg);
+    border-radius:16px;
+    border:1px solid var(--border);
+    box-shadow:0 8px 26px rgba(15,23,42,0.06);
+    padding:18px 18px 16px;
+  }
+
+  .warning-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 10px;
+    border-radius:999px;
+    border:1px solid #fecaca;
+    background:#fef2f2;
+    color:#b91c1c;
+    font-size:11.5px;
+    font-weight:500;
+    margin-bottom:10px;
+  }
+
+  .section-title{
+    font-size:14.5px;
+    font-weight:600;
+    margin-bottom:4px;
+  }
+  .small-muted{
+    font-size:12.5px;
+    color:var(--muted);
+  }
+
+  .summary-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--muted);
+    margin-bottom:2px;
+  }
+  .summary-value{
+    font-size:14px;
+    font-weight:600;
+    color:var(--text-dark);
+  }
+  .summary-sub{
+    font-size:12.5px;
+    color:var(--muted);
+  }
+
+  .list-group-item{
+    font-size:13.5px;
+  }
+
+  .note-box{
+    border-radius:10px;
+    background:var(--soft-bg);
+    border:1px dashed var(--border);
+    padding:9px 11px;
+    font-size:12.5px;
+    color:var(--muted);
+  }
+
+  .btn{
+    border-radius:10px;
+    font-size:13px;
+  }
+  .btn-danger{
+    background-color:var(--danger);
+    border-color:var(--danger);
+  }
+  .btn-danger:hover{
+    background-color:var(--danger-dark);
+    border-color:var(--danger-dark);
+  }
+
+  /* Right side: invoice snapshot */
+  .summary-block{
+    border-radius:12px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+    padding:10px 12px;
+    margin-bottom:10px;
+  }
+  .summary-value-main{
+    font-size:15px;
+    font-weight:700;
+  }
+  .summary-value-sub{
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  .summary-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:6px;
+    margin-top:6px;
+  }
+  .summary-pill{
+    border-radius:10px;
+    background:#ffffff;
+    border:1px solid #e5e7eb;
+    padding:6px 8px;
+    text-align:left;
+  }
+  .summary-pill-label{
+    font-size:11px;
+    color:var(--muted);
+  }
+  .summary-pill-value{
+    font-size:13px;
+    font-weight:700;
+  }
+  .pill-total .summary-pill-value{ color:#0f172a; }
+  .pill-paid .summary-pill-value{ color:var(--primary-dark); }
+  .pill-due .summary-pill-value{ color:var(--danger); }
+
+  .status-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 9px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:600;
+  }
+  .status-paid{
+    background:rgba(22,163,74,0.08);
+    color:#15803d;
+  }
+  .status-partial{
+    background:rgba(249,115,22,0.08);
+    color:#c2410c;
+  }
+  .status-unpaid{
+    background:rgba(239,68,68,0.08);
+    color:#b91c1c;
+  }
+
+  @media(max-width:991.98px){
+    .refund-delete-layout{
+      flex-direction:column;
+    }
+    .delete-side{
+      max-width:100%;
+    }
+  }
+
+  @media(max-width:575.98px){
+    .card-lite{
+      padding:16px 12px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="refund-delete-page">
+  <div class="refund-delete-container">
+
+    <!-- HEADER -->
+    <div class="page-header">
+      <div>
+        <h3 class="page-heading mb-0">Delete Refund</h3>
+        <div class="page-sub">
+          This will remove the refund entry and recalculate the linked invoice and customer balance.
+        </div>
+
+        <div class="chip-row">
+          <div class="chip">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            Refund amount: <strong>₹{{ refund.amount|floatformat:2 }}</strong>
+          </div>
+          <div class="chip">
+            <i class="bi bi-calendar2-day"></i>
+            {{ refund.date|date:"M d, Y" }}
+          </div>
+          <div class="chip">
+            <i class="bi bi-credit-card-2-front"></i>
+            {{ refund.method|default:"Refund" }}
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <a href="{% url 'sales:refund_detail' refund.id %}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-arrow-left"></i> Back to Refund
+        </a>
+      </div>
+    </div>
+
+    <div class="refund-delete-layout">
+
+      <!-- LEFT: MAIN CONFIRM CARD -->
+      <div class="delete-main">
+        <div class="card-lite">
+
+          <div class="warning-chip">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            Once deleted, this refund cannot be recovered from the UI.
+          </div>
+
+          <div class="mb-2">
+            <div class="section-title">Confirm Deletion</div>
+            <div class="small-muted">
+              Deleting this refund will:
+            </div>
+          </div>
+
+          <ul class="small-muted mb-3 ps-3">
+            <li>Remove this refund entry from the customer’s payment history.</li>
+            <li>Recalculate the linked invoice’s <strong>paid amount</strong> and <strong>balance due</strong>.</li>
+            <li>Adjust your refund totals and analytics accordingly.</li>
+          </ul>
+
+          <!-- High-level summary -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <div class="summary-label">Refund Amount</div>
+              <div class="summary-value text-danger">
+                ₹{{ refund.amount|floatformat:2 }}
+              </div>
+              <div class="summary-sub">
+                Dated {{ refund.date|date:"M d, Y" }}
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="summary-label">Method</div>
+              <div class="summary-value">
+                {{ refund.method|default:"Refund" }}
+              </div>
+              {% if refund.invoice %}
+                <div class="summary-sub">
+                  Invoice {{ refund.invoice.number }}
+                </div>
+              {% endif %}
+            </div>
+            <div class="col-md-4">
+              <div class="summary-label">Customer</div>
+              <div class="summary-value">
+                {% if refund.invoice and refund.invoice.customer %}
+                  {{ refund.invoice.customer.name }}
+                {% else %}
+                  —
+                {% endif %}
+              </div>
+              {% if refund.invoice and refund.invoice.customer and refund.invoice.customer.email %}
+                <div class="summary-sub">
+                  {{ refund.invoice.customer.email }}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Detailed list -->
+          <div class="mb-3">
+            <div class="section-title">Refund Details</div>
+          </div>
+
+          <ul class="list-group mb-3">
+            <li class="list-group-item d-flex justify-content-between">
+              <span><strong>Invoice</strong></span>
+              <span>
+                {% if refund.invoice %}
+                  {{ refund.invoice.number }}
+                {% else %}
+                  —
+                {% endif %}
+              </span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span><strong>Date</strong></span>
+              <span>{{ refund.date|date:"M d, Y" }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span><strong>Amount</strong></span>
+              <span class="text-danger">₹{{ refund.amount|floatformat:2 }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span><strong>Method</strong></span>
+              <span>{{ refund.method|default:"Refund" }}</span>
+            </li>
+            {% if refund.note %}
+              <li class="list-group-item">
+                <strong>Internal Note</strong>
+                <div class="mt-1 small">
+                  {{ refund.note }}
+                </div>
+              </li>
+            {% endif %}
+          </ul>
+
+          <div class="note-box mb-3">
+            <strong>Impact:</strong> After deletion, this amount will no longer be treated as refunded.
+            The related invoice will be re-evaluated using your central payment & status logic.
+          </div>
+
+          <!-- Actions -->
+          <form method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-between flex-wrap gap-2">
+              <a href="{% url 'sales:refund_detail' refund.id %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Cancel
+              </a>
+              <button class="btn btn-danger" type="submit">
+                <i class="bi bi-trash3 me-1"></i> Permanently Delete Refund
+              </button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+
+      <!-- RIGHT: INVOICE SNAPSHOT (READ ONLY) -->
+      <div class="delete-side">
+        <div class="card-lite">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <div class="section-title mb-0">Linked Invoice Snapshot</div>
+              <div class="small-muted">
+                Current invoice values before deleting this refund.
+              </div>
+            </div>
+          </div>
+
+          {% if refund.invoice %}
+            <div class="summary-block">
+              <div class="summary-label">Invoice</div>
+              <div class="summary-value-main">
+                {{ refund.invoice.number }}
+              </div>
+              <div class="summary-value-sub">
+                {% if refund.invoice.customer %}
+                  {{ refund.invoice.customer.name }} •
+                {% endif %}
+                {{ refund.invoice.date|date:"M d, Y" }}
+              </div>
+            </div>
+
+            {% comment %} Status badge approximate from status value {% endcomment %}
+            <div style="margin-bottom:8px;">
+              {% if refund.invoice.status == 'paid' %}
+                <span class="status-badge status-paid">
+                  <span class="dot" style="width:7px;height:7px;border-radius:999px;background:#16a34a;"></span>
+                  Paid
+                </span>
+              {% elif refund.invoice.status == 'partial' %}
+                <span class="status-badge status-partial">
+                  <span class="dot" style="width:7px;height:7px;border-radius:999px;background:#f97316;"></span>
+                  Partial
+                </span>
+              {% else %}
+                <span class="status-badge status-unpaid">
+                  <span class="dot" style="width:7px;height:7px;border-radius:999px;background:#ef4444;"></span>
+                  Unpaid
+                </span>
+              {% endif %}
+            </div>
+
+            <div class="summary-grid mb-2">
+              <div class="summary-pill pill-total">
+                <div class="summary-pill-label">Total</div>
+                <div class="summary-pill-value">
+                  ₹{{ refund.invoice.grand_total|default:0|floatformat:2|intcomma }}
+                </div>
+              </div>
+              <div class="summary-pill pill-paid">
+                <div class="summary-pill-label">Paid</div>
+                <div class="summary-pill-value">
+                  ₹{{ refund.invoice.paid_amount|default:0|floatformat:2|intcomma }}
+                </div>
+              </div>
+              <div class="summary-pill pill-due">
+                <div class="summary-pill-label">Balance</div>
+                <div class="summary-pill-value">
+                  ₹{{ refund.invoice.balance_due|default:0|floatformat:2|intcomma }}
+                </div>
+              </div>
+            </div>
+
+            <div class="small-muted">
+              After deleting this refund, system will treat this amount as not refunded,
+              and will recompute paid & balance using your main helpers.
+            </div>
+          {% else %}
+            <div class="summary-block">
+              <div class="summary-label">Invoice</div>
+              <div class="summary-value-main">No invoice linked</div>
+              <div class="summary-value-sub">
+                This refund is not associated with any invoice.
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}

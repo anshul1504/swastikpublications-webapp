@@ -1,0 +1,781 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Products · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --primary:#157347;
+    --primary-dark:#0f5c38;
+    --accent:#2563eb;
+    --muted:#6b7280;
+    --text-dark:#111827;
+    --border:#e5e7eb;
+    --card-bg:#ffffff;
+    --soft-bg:#f9fafb;
+    --danger:#dc2626;
+    --success:#16a34a;
+  }
+
+  body{
+    background:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    color:var(--text-dark);
+  }
+
+  .products-page{
+    width:100%;
+  }
+  .products-container{
+    max-width:1150px;
+    margin:0 auto;
+    padding:14px 6px 20px;
+  }
+
+  /* HEADER */
+  .products-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:18px;
+    margin-bottom:14px;
+  }
+  .page-heading{
+    font-weight:600;
+    color:var(--text-dark);
+    font-size:1.45rem;
+  }
+  .page-sub{
+    color:var(--muted);
+    font-size:13.5px;
+    margin-top:4px;
+  }
+  .meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:8px;
+  }
+  .meta-chip{
+    font-size:12px;
+    padding:6px 12px;
+    border-radius:999px;
+    background:#eef2ff;
+    color:#1e293b;
+    border:1px solid #e0e7ff;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .meta-dot{
+    width:6px;
+    height:6px;
+    border-radius:999px;
+    background:#16a34a;
+  }
+
+  .header-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:flex-end;
+  }
+  .products-page .btn-sm{
+    font-size:0.9rem;
+    padding:0.45rem 1.05rem;
+    border-radius:9px;
+  }
+  .products-page .btn{
+    border-radius:9px;
+  }
+  .btn-primary{
+    background-color:var(--primary);
+    border-color:var(--primary);
+  }
+  .btn-primary:hover{
+    background-color:var(--primary-dark);
+    border-color:var(--primary-dark);
+  }
+  .btn-outline-secondary{
+    border-color:#cbd5f5;
+    color:#374151;
+  }
+  .btn-outline-secondary:hover{
+    border-color:var(--accent);
+    color:var(--accent);
+    background:#eff6ff;
+  }
+
+  /* KPI ROW */
+  .kpi-row{
+    margin-bottom:14px;
+  }
+  .kpi{
+    background:var(--card-bg);
+    border-radius:14px;
+    padding:12px 14px;
+    box-shadow:0 6px 20px rgba(15,23,42,0.04);
+    border:1px solid var(--border);
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+  }
+  .kpi-icon{
+    width:32px;
+    height:32px;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:17px;
+    flex-shrink:0;
+  }
+  .kpi-icon.green{ background:#dcfce7; color:#15803d; }
+  .kpi-icon.blue{ background:#dbeafe; color:#1d4ed8; }
+  .kpi-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--muted);
+  }
+  .kpi-value{
+    font-size:1.15rem;
+    font-weight:600;
+    color:var(--text-dark);
+    margin-top:2px;
+  }
+  .kpi-hint{
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  /* MAIN CARD */
+  .card-lite{
+    background:var(--card-bg);
+    border-radius:16px;
+    box-shadow:0 4px 18px rgba(0,0,0,0.03);
+    border:1px solid var(--border);
+    padding:16px 18px;
+  }
+  .section-title{
+    font-weight:600;
+    font-size:15px;
+    margin-bottom:3px;
+    color:var(--text-dark);
+  }
+  .small-muted{
+    color:var(--muted);
+    font-size:12.5px;
+  }
+
+  .tools-bar{
+    margin-bottom:14px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .tools-bar-left{
+    max-width:360px;
+  }
+
+  /* FILTER ROW */
+  .filters-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:12px;
+  }
+  .search-bar{
+    position:relative;
+    flex:1;
+    min-width:240px;
+    max-width:360px;
+  }
+  .search-bar input{
+    border-radius:10px;
+    font-size:0.85rem;
+    padding-left:34px;
+    border:1px solid var(--border);
+  }
+  .search-bar input:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(21,115,71,0.16);
+  }
+  .search-bar i{
+    position:absolute;
+    top:8px;
+    left:10px;
+    color:#9ca3af;
+    font-size:0.9rem;
+  }
+
+  .filters-right{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:flex-end;
+  }
+  .filter-select{
+    font-size:12.5px;
+    border-radius:999px;
+    padding:5px 10px;
+    border:1px solid #e5e7eb;
+  }
+  .btn-filter{
+    border-radius:999px;
+    font-size:12.5px;
+    padding:6px 14px;
+  }
+  .btn-reset{
+    font-size:12px;
+    color:var(--muted);
+    text-decoration:none;
+  }
+  .btn-reset:hover{
+    color:var(--accent);
+    text-decoration:underline;
+  }
+
+  /* TABLE */
+  .table thead th{
+    border-bottom:0;
+    font-weight:600;
+    font-size:11.5px;
+    color:#374151;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    background:var(--soft-bg);
+  }
+  .table tbody td{
+    font-size:13.5px;
+    vertical-align:middle;
+    color:#1f2937;
+  }
+  .table tbody tr:hover{
+    background:#f9fafb;
+  }
+
+  /* SKU / NAME */
+  .sku-pill{
+    display:inline-flex;
+    align-items:center;
+    font-family:"JetBrains Mono","Fira Code",monospace;
+    font-size:12px;
+    padding:4px 9px;
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+  }
+  .sku-meta{
+    font-size:11px;
+    color:#9ca3af;
+  }
+  .product-name{
+    font-weight:600;
+    font-size:13.5px;
+    margin-bottom:2px;
+  }
+  .product-desc{
+    font-size:12px;
+    color:#6b7280;
+    max-width:280px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  /* PILL BADGES */
+  .type-pill,
+  .stock-pill,
+  .track-pill,
+  .status-pill{
+    display:inline-flex;
+    align-items:center;
+    padding:3px 9px;
+    border-radius:999px;
+    font-size:11.5px;
+    font-weight:500;
+    gap:4px;
+  }
+
+  .type-pill.book{
+    background:#eff6ff;
+    border:1px solid #bfdbfe;
+    color:#1d4ed8;
+  }
+  .type-pill.set{
+    background:#fef3c7;
+    border:1px solid #fde68a;
+    color:#92400e;
+  }
+  .type-pill.digital{
+    background:#ecfeff;
+    border:1px solid #a5f3fc;
+    color:#0e7490;
+  }
+  .type-pill.other{
+    background:#f3f4f6;
+    border:1px solid #e5e7eb;
+    color:#374151;
+  }
+
+  .stock-pill.untracked{
+    background:#f3f4f6;
+    border:1px solid #e5e7eb;
+    color:#4b5563;
+  }
+  .stock-pill.zero{
+    background:#fee2e2;
+    border:1px solid #fecaca;
+    color:#b91c1c;
+  }
+  .stock-pill.low{
+    background:#fef3c7;
+    border:1px solid #fde68a;
+    color:#92400e;
+  }
+  .stock-pill.ok{
+    background:#dcfce7;
+    border:1px solid #bbf7d0;
+    color:#166534;
+  }
+
+  .track-pill.yes{
+    background:#dcfce7;
+    border:1px solid #bbf7d0;
+    color:#166534;
+  }
+  .track-pill.no{
+    background:#f3f4f6;
+    border:1px solid #e5e7eb;
+    color:#4b5563;
+  }
+
+  .status-pill.active{
+    background:#ecfdf5;
+    border:1px solid #bbf7d0;
+    color:#166534;
+  }
+  .status-pill.inactive{
+    background:#fef2f2;
+    border:1px solid #fecaca;
+    color:#b91c1c;
+  }
+
+  .price-main{
+    font-weight:600;
+    font-size:13.5px;
+  }
+  .price-mrp{
+    font-size:11.5px;
+    color:#9ca3af;
+    text-decoration:line-through;
+  }
+
+  /* ACTIONS */
+  .action-btns .btn{
+    border-radius:8px;
+    font-size:0.78rem;
+    padding:5px 9px;
+  }
+
+  .empty-state{
+    text-align:center;
+    padding:32px 0;
+    color:var(--muted);
+    font-size:0.9rem;
+  }
+
+  /* PAGINATION FOOTER */
+  .products-footer{
+    margin-top:12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    font-size:12.5px;
+    color:var(--muted);
+  }
+  .pagination .page-link{
+    border-radius:8px;
+    font-size:12px;
+  }
+
+  @media (max-width:991.98px){
+    .products-header{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+    .products-container{
+      padding-inline:8px;
+    }
+  }
+
+  @media (max-width:575.98px){
+    .card-lite{
+      padding:14px 12px;
+    }
+    .tools-bar{
+      align-items:flex-start;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="products-page">
+  <div class="products-container">
+
+    <!-- HEADER -->
+    <div class="products-header">
+      <div>
+        <h3 class="page-heading mb-0">Products</h3>
+        <div class="page-sub">
+          All SKUs – physical, digital, sets, and services in your catalog.
+        </div>
+        <div class="meta-row">
+          <div class="meta-chip">
+            <span class="meta-dot"></span>
+            In catalog: <strong>{{ total_count }}</strong> products
+          </div>
+          <div class="meta-chip">
+            <span class="meta-dot" style="background:#3b82f6;"></span>
+            Currently showing: <strong>{{ filtered_count }}</strong> products
+          </div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <!-- Import Excel -->
+        <form method="post"
+              action="{% url 'catalog:product_import_xlsx' %}"
+              enctype="multipart/form-data"
+              class="d-inline">
+          {% csrf_token %}
+          <label class="btn btn-outline-secondary btn-sm mb-0">
+            <i class="bi bi-file-earmark-arrow-up me-1"></i> Import Excel
+            <input type="file" name="file" accept=".xlsx" style="display:none" onchange="this.form.submit();">
+          </label>
+        </form>
+
+        <!-- Export Excel -->
+        <form method="get"
+              action="{% url 'catalog:product_export_xlsx' %}"
+              class="d-inline">
+          {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+          {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+          {% if track %}<input type="hidden" name="track" value="{{ track }}">{% endif %}
+          <button type="submit" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export Excel
+          </button>
+        </form>
+
+        <!-- Add Product -->
+        <a href="{% url 'catalog:product_add' %}" class="btn btn-primary btn-sm">
+          <i class="bi bi-plus-lg me-1"></i> Add Product
+        </a>
+      </div>
+    </div>
+
+    <!-- KPI ROW -->
+    <div class="row g-3 kpi-row">
+      <div class="col-md-6">
+        <div class="kpi">
+          <div class="kpi-icon green">
+            <i class="bi bi-box-seam"></i>
+          </div>
+          <div>
+            <div class="kpi-label">Total Products</div>
+            <div class="kpi-value">{{ total_count }}</div>
+            <div class="kpi-hint">All items in your catalog</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="kpi">
+          <div class="kpi-icon blue">
+            <i class="bi bi-funnel"></i>
+          </div>
+          <div>
+            <div class="kpi-label">Filtered View</div>
+            <div class="kpi-value">{{ filtered_count }}</div>
+            <div class="kpi-hint">
+              Respecting current search & filters
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN CARD -->
+    <div class="card-lite">
+
+      <div class="tools-bar">
+        <div class="tools-bar-left">
+          <div class="section-title mb-0" style="font-size:14px;">Product Catalog</div>
+          <div class="small-muted">
+            Search, filter and manage all products. Use Excel tools above for bulk updates.
+          </div>
+        </div>
+      </div>
+
+      <!-- 🔍 FILTERS ROW – SINGLE GET FORM -->
+      <form method="get" class="filters-row">
+        <!-- Search -->
+        <div class="search-bar">
+          <i class="bi bi-search"></i>
+          <input
+            type="text"
+            name="q"
+            class="form-control"
+            placeholder="Search by name, SKU, ISBN, description…"
+            value="{{ q }}"
+          >
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-right">
+          <div>
+            <label class="small-muted d-block mb-1">Status</label>
+            <select name="status" class="filter-select">
+              <option value="">All</option>
+              <option value="active" {% if status == "active" %}selected{% endif %}>Active</option>
+              <option value="inactive" {% if status == "inactive" %}selected{% endif %}>Inactive</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="small-muted d-block mb-1">Stock Tracking</label>
+            <select name="track" class="filter-select">
+              <option value="">All</option>
+              <option value="yes" {% if track == "yes" %}selected{% endif %}>Tracking enabled</option>
+              <option value="no" {% if track == "no" %}selected{% endif %}>Tracking disabled</option>
+            </select>
+          </div>
+
+          <div class="d-flex align-items-end gap-2">
+            <button class="btn btn-primary btn-sm btn-filter" type="submit">
+              <i class="bi bi-funnel me-1"></i> Apply
+            </button>
+            <a href="{% url 'catalog:product_list' %}" class="btn-reset">Reset</a>
+          </div>
+        </div>
+      </form>
+
+      <!-- TABLE -->
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Product</th>
+              <th>Type</th>
+              <th class="text-end">Price</th>
+              <th class="text-end">MRP</th>
+              <th class="text-center">Stock</th>
+              <th class="text-center">Track</th>
+              <th class="text-center">Status</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in products %}
+            <tr>
+              <!-- SKU -->
+              <td>
+                <div class="sku-pill">{{ p.sku }}</div>
+                {% if p.hsn_code %}<div class="sku-meta mt-1">HSN: {{ p.hsn_code }}</div>{% endif %}
+                {% if p.isbn %}
+                  <div class="sku-meta mt-1">ISBN: {{ p.isbn }}</div>
+                {% endif %}
+              </td>
+
+              <!-- Name + desc -->
+              <td>
+                <div class="product-name">{{ p.name }}</div>
+                {% if p.author or p.edition or p.academic_session %}
+                  <div class="product-desc">
+                    {% if p.author %}Author: {{ p.author }}{% endif %}
+                    {% if p.edition %}{% if p.author %} · {% endif %}{{ p.edition }}{% endif %}
+                    {% if p.academic_session %} · Session {{ p.academic_session }}{% endif %}
+                  </div>
+                {% endif %}
+                {% if p.description %}
+                  <div class="product-desc" title="{{ p.description }}">{{ p.description }}</div>
+                {% endif %}
+              </td>
+
+              <!-- Type -->
+              <td>
+                {% if p.product_type == "BOOK" %}
+                  <span class="type-pill book">
+                    <i class="bi bi-book"></i> Book
+                  </span>
+                {% elif p.product_type == "SET" %}
+                  <span class="type-pill set">
+                    <i class="bi bi-box-seam"></i> Set
+                  </span>
+                {% elif p.product_type == "DIGITAL" %}
+                  <span class="type-pill digital">
+                    <i class="bi bi-file-earmark-binary"></i> Digital
+                  </span>
+                {% else %}
+                  <span class="type-pill other">
+                    <i class="bi bi-box"></i> Other
+                  </span>
+                {% endif %}
+              </td>
+
+              <!-- Price -->
+              <td class="text-end">
+                <span class="price-main">₹{{ p.price|floatformat:2|intcomma }}</span>
+              </td>
+
+              <!-- MRP -->
+              <td class="text-end">
+                {% if p.mrp %}
+                  <span class="price-mrp">₹{{ p.mrp|floatformat:2|intcomma }}</span>
+                {% else %}
+                  <span class="small-muted">—</span>
+                {% endif %}
+              </td>
+
+              <!-- Stock -->
+              <td class="text-center">
+                {% with stock=p.available_stock %}
+                  {% if stock is None %}
+                    <span class="stock-pill untracked">
+                      <i class="bi bi-dash-circle"></i> Untracked
+                    </span>
+                  {% elif stock <= 0 %}
+                    <span class="stock-pill zero">
+                      <i class="bi bi-exclamation-triangle"></i> 0
+                    </span>
+                  {% elif p.reorder_level and stock <= p.reorder_level %}
+                    <span class="stock-pill low">
+                      <i class="bi bi-exclamation-circle"></i> {{ stock }}
+                    </span>
+                  {% else %}
+                    <span class="stock-pill ok">
+                      <i class="bi bi-check-circle"></i> {{ stock }}
+                    </span>
+                  {% endif %}
+                {% endwith %}
+              </td>
+
+              <!-- Track -->
+              <td class="text-center">
+                {% if p.track_stock %}
+                  <span class="track-pill yes">
+                    <i class="bi bi-toggle-on"></i> Yes
+                  </span>
+                {% else %}
+                  <span class="track-pill no">
+                    <i class="bi bi-toggle-off"></i> No
+                  </span>
+                {% endif %}
+              </td>
+
+              <!-- Status -->
+              <td class="text-center">
+                {% if p.active %}
+                  <span class="status-pill active">
+                    <i class="bi bi-circle-fill"></i> Active
+                  </span>
+                {% else %}
+                  <span class="status-pill inactive">
+                    <i class="bi bi-circle-fill"></i> Inactive
+                  </span>
+                {% endif %}
+              </td>
+
+              <!-- Actions -->
+              <td class="text-center action-btns">
+                <a class="btn btn-outline-secondary btn-sm"
+                   href="{% url 'catalog:product_detail' p.id %}">
+                  View
+                </a>
+                <a class="btn btn-outline-secondary btn-sm"
+                   href="{% url 'catalog:product_edit' p.id %}">
+                  Edit
+                </a>
+                <a class="btn btn-outline-secondary btn-sm"
+                   href="{% url 'catalog:product_delete' p.id %}">
+                  Delete
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="9" class="empty-state">
+                <i class="bi bi-box-seam d-block mb-2" style="font-size:2rem;"></i>
+                No products found for the current filters.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if is_paginated %}
+      <div class="products-footer">
+        <div>
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+          <span class="ms-1">
+            · Showing {{ products|length }} of {{ filtered_count }} filtered products
+          </span>
+        </div>
+        <nav>
+          <ul class="pagination pagination-sm mb-0">
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ page_obj.previous_page_number }}&q={{ q }}&status={{ status }}&track={{ track }}">
+                  ‹
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">‹</span></li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+              {% if num == page_obj.number %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+              {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                <li class="page-item">
+                  <a class="page-link"
+                     href="?page={{ num }}&q={{ q }}&status={{ status }}&track={{ track }}">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ page_obj.next_page_number }}&q={{ q }}&status={{ status }}&track={{ track }}">
+                  ›
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">›</span></li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // abhi koi extra JS zaroorat nahi; search + filters same form se GET ho rahe hain
+</script>
+{% endblock %}

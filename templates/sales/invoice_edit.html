@@ -1,0 +1,1060 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Edit Invoice · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  body{
+    background-color: #ffffff !important;
+  }
+:root{
+  --card-bg:#ffffff;
+  --muted:#6b7280;
+  --brand:#ff6a00;
+  --soft:#f8fafc;
+  --radius:12px;
+  --border:#e5e7eb;
+  --ink:#0f172a;
+}
+
+/* page wrapper */
+.invoice-page {
+  max-width: 1140px;
+  margin: 0 auto;
+}
+
+/* top header */
+.page-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+}
+.page-title {
+  font-size:1.3rem;
+  font-weight:600;
+  color:var(--ink);
+}
+.header-actions {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+/* main container */
+.invoice-shell {
+  background:var(--card-bg);
+  border-radius:14px;
+  box-shadow:0 10px 30px rgba(15,23,42,0.06);
+  border:1px solid rgba(148,163,184,0.22);
+  padding:16px 18px 18px;
+}
+
+/* slim meta bar */
+.invoice-meta {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:4px 2px 10px;
+  border-bottom:1px solid #e5e7eb;
+  margin-bottom:10px;
+}
+.meta-left {
+  display:flex;
+  gap:16px;
+  flex-wrap:wrap;
+  font-size:0.8rem;
+  color:#6b7280;
+}
+.meta-pill {
+  padding:3px 9px;
+  border-radius:999px;
+  border:1px solid #e5e7eb;
+  background:#f9fafb;
+  font-size:0.78rem;
+  color:#4b5563;
+}
+.meta-right {
+  font-size:0.8rem;
+  color:#6b7280;
+}
+
+/* section card */
+.section-card {
+  border-radius:10px;
+  border:1px solid #e5e7eb;
+  background:#fff;
+  padding:14px 14px 12px;
+  margin-bottom:10px;
+}
+.block-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+.block-title {
+  font-size:0.95rem;
+  font-weight:600;
+  color:#111827;
+}
+.block-sub {
+  font-size:0.8rem;
+  color:#9ca3af;
+}
+
+/* small text */
+.small-muted {
+  color:var(--muted);
+  font-size:0.8rem;
+}
+
+/* totals card */
+.sum-card{
+  background:var(--soft);
+  padding:10px;
+  border-radius:9px;
+  border:1px dashed #d1d5db;
+  font-size:0.86rem;
+}
+
+/* table tweaks */
+.table thead th {
+  font-size:0.72rem;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:#6b7280;
+  border-bottom:1px solid #e5e7eb;
+}
+.table tbody td {
+  vertical-align:middle;
+  font-size:0.86rem;
+}
+.table .form-control {
+  height:auto;
+  padding:6px 8px;
+  font-size:0.86rem;
+}
+
+/* buttons – comfortable size */
+.btn-outline-secondary,
+.btn-outline-primary,
+.btn-outline-danger,
+.btn-outline-success,
+.btn-primary,
+.btn-success {
+  font-size:0.92rem;
+  padding:0.42rem 0.95rem;
+  border-radius:8px;
+}
+
+/* small buttons */
+.btn-sm {
+  font-size:0.9rem;
+  padding:0.35rem 0.9rem;
+}
+
+/* status badge */
+#statusBadge{
+  padding:4px 9px;
+  border-radius:999px;
+  font-weight:600;
+  font-size:0.78rem;
+}
+
+/* company preview */
+#company-preview{
+  border-left:3px solid var(--brand);
+  padding:6px 9px;
+  border-radius:8px;
+  background:linear-gradient(90deg, rgba(255,106,0,0.04), transparent);
+}
+
+/* misc */
+.product-select { min-width:220px; }
+.remove-row,
+.remove-payment,
+.remove-refund{
+  min-width:30px;
+  height:30px;
+  padding:0;
+}
+.manual-product{ width:100%; }
+
+/* payment & refund rows */
+.payment-row .form-control,
+.payment-row .form-select,
+.refund-row .form-control,
+.refund-row .form-select{
+  font-size:13px;
+}
+
+/* responsive */
+@media (max-width:768px){
+  .invoice-shell{ padding:12px 10px 14px; }
+  .section-card{ padding:10px 10px 8px; }
+  .page-header{ flex-direction:column; align-items:flex-start; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="invoice-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-title">Edit Invoice</div>
+    <div class="header-actions">
+      <a class="btn btn-outline-secondary" href="{% url 'sales:invoice_list' %}">Back</a>
+      <button form="invoiceForm" class="btn btn-success">
+        <i class="bi bi-save me-1"></i>Update
+      </button>
+      <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#refundModal">
+        Quick Refund
+      </button>
+    </div>
+  </div>
+
+  <div class="invoice-shell">
+
+    <!-- Meta strip -->
+    <div class="invoice-meta">
+      <div class="meta-left">
+        <span>Invoice # {{ inv.number }}</span>
+        <span class="meta-pill">{{ inv.customer.name|default:"No customer" }}</span>
+      </div>
+      <div class="meta-right">
+        {{ inv.date|date:"d M, Y" }}
+      </div>
+    </div>
+
+    <form id="invoiceForm" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- Invoice details + status + customer -->
+      <div class="section-card">
+        <div class="block-header">
+          <div class="block-title">Invoice Details</div>
+        </div>
+
+        <div class="row g-3 align-items-end mb-2">
+          <div class="col-md-4">
+            <label class="form-label">Invoice #</label>
+            <input class="form-control" name="number" value="{{ inv.number }}" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Date</label>
+            <input type="date" class="form-control" name="date" value="{{ inv.date|date:'Y-m-d' }}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Customer</label>
+            <select class="form-select" name="customer" id="customerSelect" required>
+              <option value="">-- Select customer --</option>
+              {% for c in customers %}
+                <option value="{{ c.id }}" {% if inv.customer and c.id == inv.customer.id %}selected{% endif %}>
+                  {{ c.name }}{% if c.phone %} — {{ c.phone }}{% endif %}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <div class="row g-3 align-items-center">
+          <div class="col-md-3">
+            <div class="small-muted">Invoice Status</div>
+            <div id="statusBadge"
+                 class="badge"
+                 data-initial-status="{{ inv.status|default:'unpaid' }}">
+              Unpaid
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="form-check mt-2">
+              <input class="form-check-input"
+                     type="checkbox"
+                     id="manualStatusToggle"
+                     name="manual_status"
+                     value="{% if inv.manual_status %}1{% else %}0{% endif %}"
+                     {% if inv.manual_status %}checked{% endif %}>
+              <label class="form-check-label small" for="manualStatusToggle">Manually set status</label>
+            </div>
+          </div>
+
+          <div class="col-md-5" id="manualStatusControls" style="{% if inv.manual_status %}display:block;{% else %}display:none;{% endif %};">
+            <select name="status" id="statusSelect" class="form-select form-select-sm" data-current-status="{{ inv.status|default:'unpaid' }}">
+              <option value="unpaid">Unpaid</option>
+              <option value="partial">Partial</option>
+              <option value="paid">Paid</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Company Selection + Preview -->
+      <div class="section-card">
+        <div class="block-header">
+          <div class="block-title">Company</div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Company (Select)</label>
+            <select id="id_company" name="company" class="form-select">
+              <option value="">-- Select Company (optional) --</option>
+              {% for c in companies %}
+                <option value="{{ c.id }}" {% if inv.company and inv.company.id == c.id %}selected{% endif %}>{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <div id="company-preview" style="{% if inv.company %}display:block;{% else %}display:none;{% endif %}">
+              {% if inv.company %}
+                <strong id="cp_name">{{ inv.company.name }}</strong>
+                <div id="cp_address" class="small-muted">{{ inv.company.address|linebreaksbr }}</div>
+                <div id="cp_gstin" class="small-muted">
+                  {% if inv.company.gstin %}GSTIN: {{ inv.company.gstin }}{% endif %}
+                </div>
+                <div id="cp_phone" class="small-muted">
+                  {% if inv.company.phone %}Phone: {{ inv.company.phone }}{% endif %}
+                </div>
+                <div id="cp_logo_wrap" style="margin-top:6px;">
+                  {% if inv.company.logo %}
+                    <img id="cp_logo" src="{{ inv.company.logo.url }}" style="max-height:50px;">
+                  {% else %}
+                    <img id="cp_logo" style="display:none; max-height:50px;">
+                  {% endif %}
+                </div>
+              {% else %}
+                <strong id="cp_name"></strong>
+                <div id="cp_address" class="small-muted"></div>
+                <div id="cp_gstin" class="small-muted"></div>
+                <div id="cp_phone" class="small-muted"></div>
+                <div id="cp_logo_wrap" style="margin-top:6px;">
+                  <img id="cp_logo" style="display:none; max-height:50px;">
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Billing/Shipping -->
+      <div class="section-card">
+        <div class="block-header">
+          <div class="block-title">Addresses</div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Billing Address</label>
+            <textarea id="billingAddress" name="billing_address" class="form-control" rows="3">{{ inv.billing_address }}</textarea>
+          </div>
+          <div class="col-md-6">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="form-label mb-0">Shipping Address</label>
+              <div class="form-check small">
+                <input class="form-check-input" type="checkbox" id="sameAsBilling">
+                <label class="form-check-label" for="sameAsBilling">
+                  Same as billing
+                </label>
+              </div>
+            </div>
+            <textarea id="shippingAddress" name="shipping_address" class="form-control" rows="3">{{ inv.shipping_address }}</textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div class="section-card">
+        <div class="block-header">
+          <div class="block-title">Items / Services</div>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="addItemBtn">+ Add Row</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table align-middle" id="itemsTable">
+            <thead>
+              <tr>
+                <th>Item / Service</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Tax %</th>
+                <th>Discount %</th>
+                <th class="text-end">Line Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+  {% for item in inv.items.all %}
+  <tr class="item-row">
+    <td>
+      <!-- HIDDEN product[] field: BACKEND ke liye -->
+      <input type="hidden" name="product[]" value="
+        {% if item.product_id %}
+          {{ item.product_id }}
+        {% elif item.saved_item_id %}
+          saved:{{ item.saved_item_id }}
+        {% else %}
+          manual
+        {% endif %}
+      ">
+
+      <!-- Visible description (tumhari existing field) -->
+      <input type="text"
+             name="manual_product[]"
+             class="form-control"
+             value="{{ item.description }}">
+      {% if item.product %}
+        <div class="small text-muted mt-1">
+          {% if item.product.author %}{{ item.product.author }}{% endif %}
+          {% if item.product.edition %}{% if item.product.author %} · {% endif %}{{ item.product.edition }}{% endif %}
+          {% if item.product.academic_session %} · {{ item.product.academic_session }}{% endif %}
+          {% if item.product.hsn_code %} · HSN {{ item.product.hsn_code }}{% endif %}
+        </div>
+      {% endif %}
+    </td>
+
+    <td style="width:110px;">
+      <input type="number"
+             step="0.01"
+             name="qty[]"
+             class="form-control qty"
+             value="{{ item.quantity }}">
+    </td>
+
+    <td style="width:120px;">
+      <input type="number"
+             step="0.01"
+             name="rate[]"
+             class="form-control rate"
+             value="{{ item.rate }}">
+    </td>
+
+    <td style="width:110px;">
+      <input type="number"
+             step="1"
+             name="tax[]"
+             class="form-control tax"
+             value="{{ item.tax_rate }}">
+    </td>
+
+    <td style="width:110px;">
+      <input type="number"
+             step="0.01"
+             name="discount[]"
+             class="form-control discount"
+             value="{{ item.discount_percent }}">
+    </td>
+
+    <td style="width:130px;" class="text-end">
+      <span class="line-total">
+        ₹{{ item.line_total|default:"0.00" }}
+      </span>
+    </td>
+
+    <td style="width:40px;" class="text-center">
+      <button type="button"
+              class="btn btn-link text-danger p-0 btn-remove-row">
+        <i class="bi bi-x-circle"></i>
+      </button>
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+
+          </table>
+        </div>
+      </div>
+
+      <!-- Payments + Refunds -->
+      <div class="row g-3">
+        <!-- PAYMENTS -->
+        <div class="col-md-6">
+          <div class="section-card h-100">
+            <div class="block-header">
+              <div class="block-title">Payments</div>
+            </div>
+
+            <div id="paymentsWrap">
+              {% for pay in payments %}
+              <div class="payment-row d-flex gap-2 mb-2">
+                <input class="form-control payment-amount" type="number" step="0.01" name="payment_amount[]" value="{{ pay.amount }}">
+                <input class="form-control" type="date" name="payment_date[]" value="{{ pay.date|date:'Y-m-d' }}">
+                <select class="form-select" name="payment_method[]">
+                  <option {% if pay.method == 'Cash' %}selected{% endif %}>Cash</option>
+                  <option {% if pay.method == 'UPI' %}selected{% endif %}>UPI</option>
+                  <option {% if pay.method == 'Card' %}selected{% endif %}>Card</option>
+                  <option {% if pay.method == 'Bank Transfer' %}selected{% endif %}>Bank Transfer</option>
+                </select>
+                <button type="button" class="btn btn-outline-danger remove-payment">✕</button>
+              </div>
+              {% empty %}
+              <div class="payment-row d-flex gap-2 mb-2">
+                <input class="form-control payment-amount" type="number" step="0.01" name="payment_amount[]" placeholder="Amount">
+                <input class="form-control" type="date" name="payment_date[]" value="{{ today|date:'Y-m-d' }}">
+                <select class="form-select" name="payment_method[]">
+                  <option>Cash</option>
+                  <option>UPI</option>
+                  <option>Card</option>
+                  <option>Bank Transfer</option>
+                </select>
+                <button type="button" class="btn btn-outline-danger remove-payment">✕</button>
+              </div>
+              {% endfor %}
+            </div>
+            <button type="button" id="addPaymentBtn" class="btn btn-outline-secondary btn-sm mt-1">+ Add Payment</button>
+          </div>
+        </div>
+
+        <!-- REFUNDS -->
+        <div class="col-md-6">
+          <div class="section-card h-100">
+            <div class="block-header">
+              <div class="block-title">Refunds</div>
+            </div>
+
+            <div id="refundsWrap">
+              {% for r in refunds %}
+              <div class="refund-row d-flex gap-2 mb-2">
+                <input class="form-control refund-amount" type="number" step="0.01" name="refund_amount[]" value="{{ r.amount }}">
+                <input class="form-control" type="date" name="refund_date[]" value="{{ r.date|date:'Y-m-d' }}">
+                <select class="form-select" name="refund_method[]">
+                  <option {% if r.method == 'Refund' %}selected{% endif %}>Refund</option>
+                  <option {% if r.method == 'Bank Transfer' %}selected{% endif %}>Bank Transfer</option>
+                  <option {% if r.method == 'UPI' %}selected{% endif %}>UPI</option>
+                  <option {% if r.method == 'Card' %}selected{% endif %}>Card</option>
+                </select>
+                <input class="form-control" type="text" name="refund_note[]" value="{{ r.note }}" placeholder="Note">
+                <button type="button" class="btn btn-outline-danger remove-refund">✕</button>
+              </div>
+              {% empty %}
+              <div class="refund-row d-flex gap-2 mb-2">
+                <input class="form-control refund-amount" type="number" step="0.01" name="refund_amount[]" placeholder="Amount">
+                <input class="form-control" type="date" name="refund_date[]" value="{{ today|date:'Y-m-d' }}">
+                <select class="form-select" name="refund_method[]">
+                  <option>Refund</option>
+                  <option>Bank Transfer</option>
+                  <option>UPI</option>
+                  <option>Card</option>
+                </select>
+                <input class="form-control" type="text" name="refund_note[]" placeholder="Note">
+                <button type="button" class="btn btn-outline-danger remove-refund">✕</button>
+              </div>
+              {% endfor %}
+            </div>
+            <button type="button" id="addRefundBtn" class="btn btn-outline-secondary btn-sm mt-1">+ Add Refund</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary cards (SWAPPED: left = Payment & Refund, right = Invoice Summary) -->
+      <div class="row g-3 mt-2">
+        <div class="col-md-6">
+          <div class="section-card h-100">
+            <div class="block-header">
+              <div class="block-title">Payment & Refund Summary</div>
+            </div>
+            <div class="sum-card">
+              <div class="d-flex justify-content-between mt-1 text-success">
+                <div>Payments</div>
+                <div id="paidTotal">{{ inv.paid_amount|default:"0.00" }}</div>
+              </div>
+              <div class="d-flex justify-content-between mt-1 text-danger">
+                <div>Refunded</div>
+                <div id="refundTotal">{{ total_refunded|default:"0.00" }}</div>
+              </div>
+              <div class="d-flex justify-content-between mt-1">
+                <div class="small-muted">Net Received</div>
+                <div id="netReceived">0.00</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="section-card h-100">
+            <div class="block-header">
+              <div class="block-title">Invoice Summary</div>
+            </div>
+            <div class="sum-card">
+              <div class="d-flex justify-content-between mb-1">
+                <div class="small-muted">Subtotal</div>
+                <div id="subtotal">{{ inv.subtotal|default:"0.00" }}</div>
+              </div>
+              <div class="d-flex justify-content-between mb-1">
+                <div class="small-muted">Total Discount</div>
+                <div id="discountTotal">{{ inv.discount_total|default:"0.00" }}</div>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <div class="small-muted">Total Tax</div>
+                <div id="taxTotal">{{ inv.tax_total|default:"0.00" }}</div>
+              </div>
+              <hr class="my-2">
+              <div class="d-flex justify-content-between">
+                <strong>Grand Total</strong>
+                <strong id="grandTotal">{{ inv.grand_total|default:"0.00" }}</strong>
+              </div>
+              <div class="d-flex justify-content-between mt-2">
+                <strong>Balance Due</strong>
+                <strong id="balanceTotal">{{ inv.balance_due|default:"0.00" }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bank Details -->
+      <div class="section-card mt-2">
+        <div class="block-header">
+          <div class="block-title">Bank Details</div>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Account Holder</label>
+            <input name="bank_name" class="form-control" value="{{ inv.bank_name }}" placeholder="Account holder name">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Bank Name</label>
+            <input name="bank_branch" class="form-control" value="{{ inv.bank_branch }}" placeholder="Bank & Branch">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Account No.</label>
+            <input name="account_number" class="form-control" value="{{ inv.account_number }}" placeholder="1234 5678 9012">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">IFSC</label>
+            <input name="ifsc" class="form-control" value="{{ inv.ifsc }}" placeholder="IFSC code">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">UPI</label>
+            <input name="upi" class="form-control" value="{{ inv.upi }}" placeholder="yourupi@bank">
+          </div>
+        </div>
+      </div>
+
+      <!-- Terms & Notes -->
+      <div class="section-card">
+        <div class="block-header">
+          <div class="block-title">Terms & Notes</div>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-8">
+            <label class="form-label">Terms & Conditions</label>
+            <textarea name="terms" class="form-control" rows="4">{{ inv.terms }}</textarea>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Notes (optional)</label>
+            <textarea name="notes" class="form-control" rows="4">{{ inv.notes }}</textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mt-2">
+        <button type="submit" class="btn btn-primary">Update Invoice</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Quick Refund Modal -->
+<div class="modal fade" id="refundModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'sales:refund_add' %}" class="modal-content">
+      {% csrf_token %}
+      <div class="modal-header">
+        <h5 class="mb-0">Add Refund</h5>
+        <button class="btn-close" data-bs-dismiss="modal" type="button"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" name="invoice" value="{{ inv.id }}">
+        <div class="mb-2">
+          <label class="form-label">Amount</label>
+          <input type="number" step="0.01" name="amount" class="form-control" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Method</label>
+          <select name="method" class="form-select">
+            <option>Refund</option>
+            <option>Bank Transfer</option>
+            <option>UPI</option>
+            <option>Card</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Note (optional)</label>
+          <textarea name="note" class="form-control" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-danger" type="submit">Submit Refund</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+
+  // ---------- helpers ----------
+  function money(v){
+    return "₹" + Number(v || 0).toFixed(2);
+  }
+  function qs(sel){ return document.querySelector(sel); }
+  function qsa(sel){ return Array.from(document.querySelectorAll(sel)); }
+  function parseNum(v){
+    return parseFloat((v || '0').toString().replace(/[^0-9.\-]/g, '')) || 0;
+  }
+
+  const tbody        = qs('#itemsTable tbody');
+  const paymentsWrap = qs('#paymentsWrap');
+  const refundsWrap  = qs('#refundsWrap');
+
+  // billing / shipping sync
+  const billingAddress  = qs('#billingAddress');
+  const shippingAddress = qs('#shippingAddress');
+  const sameAsBilling   = qs('#sameAsBilling');
+
+  if (sameAsBilling && billingAddress && shippingAddress){
+    function syncShippingFromBilling(){
+      if (sameAsBilling.checked){
+        shippingAddress.value = billingAddress.value;
+        shippingAddress.readOnly = true;
+        shippingAddress.classList.add('bg-light');
+      } else {
+        shippingAddress.readOnly = false;
+        shippingAddress.classList.remove('bg-light');
+      }
+    }
+    sameAsBilling.addEventListener('change', syncShippingFromBilling);
+    billingAddress.addEventListener('input', function(){
+      if (sameAsBilling.checked){
+        shippingAddress.value = billingAddress.value;
+      }
+    });
+    // initial state (optional: don't auto-check, just keep editable)
+    syncShippingFromBilling();
+  }
+
+  // ---------- company auto-fill (AJAX) ----------
+  const companySelect = qs('#id_company');
+  const cpPreview = qs('#company-preview');
+  const cpName = qs('#cp_name'),
+        cpAddress = qs('#cp_address'),
+        cpGstin = qs('#cp_gstin'),
+        cpPhone = qs('#cp_phone'),
+        cpLogo = qs('#cp_logo');
+
+  if (companySelect){
+    companySelect.addEventListener('change', function(){
+      const id = this.value;
+      if (!id){
+        cpPreview.style.display = 'none';
+        cpName.textContent='';
+        cpAddress.innerHTML='';
+        cpGstin.textContent='';
+        cpPhone.textContent='';
+        cpLogo.style.display='none';
+        return;
+      }
+      const urlTpl = '{% url "sales:api_company_info" 0 %}';
+      const url = urlTpl.replace('/0/', '/' + id + '/');
+      fetch(url)
+        .then(r=>{ if(!r.ok) throw new Error('no'); return r.json(); })
+        .then(data=>{
+          cpPreview.style.display='block';
+          cpName.textContent = data.name || '';
+          cpAddress.innerHTML = data.address ? data.address.replace(/\n/g,'<br>') : '';
+          cpGstin.textContent = data.gstin ? ('GSTIN: ' + data.gstin) : '';
+          cpPhone.textContent = data.phone ? ('Phone: ' + data.phone) : '';
+          if (data.logo_url){
+            cpLogo.src = data.logo_url;
+            cpLogo.style.display='block';
+          } else {
+            cpLogo.style.display='none';
+          }
+        })
+        .catch(e=>{
+          console.error(e);
+          cpPreview.style.display='none';
+        });
+    });
+  }
+
+  // ---------- status badge ----------
+  const statusBadge    = qs('#statusBadge');
+  const manualToggle   = qs('#manualStatusToggle');
+  const manualControls = qs('#manualStatusControls');
+  const statusSelect   = qs('#statusSelect');
+
+  function updateStatusBadge(status){
+    statusBadge.className = 'badge';
+    if (status === 'paid'){
+      statusBadge.classList.add('bg-success');
+      statusBadge.textContent = 'Paid';
+    } else if (status === 'partial'){
+      statusBadge.classList.add('bg-warning','text-dark');
+      statusBadge.textContent = 'Partial';
+    } else {
+      statusBadge.classList.add('bg-secondary');
+      statusBadge.textContent = 'Unpaid';
+    }
+  }
+
+  function computeAutoStatus(){
+    const grandText = qs('#grandTotal').textContent;
+    const grand = parseNum(grandText);
+    let paid = 0;
+    qsa('input[name="payment_amount[]"]').forEach(i=>{
+      paid += parseNum(i.value);
+    });
+    if (grand > 0 && paid >= grand) return 'paid';
+    if (paid > 0 && paid < grand) return 'partial';
+    return 'unpaid';
+  }
+
+  if (statusBadge){
+    const initialStatus = statusBadge.dataset.initialStatus || 'unpaid';
+    if (statusSelect){
+      const curr = statusSelect.dataset.currentStatus || initialStatus;
+      statusSelect.value = curr;
+      updateStatusBadge(curr);
+    } else {
+      updateStatusBadge(initialStatus);
+    }
+  }
+
+  if (manualToggle && manualToggle.checked){
+    manualControls.style.display = 'block';
+  }
+
+  if (manualToggle){
+    manualToggle.addEventListener('change', function(){
+      if (this.checked){
+        manualControls.style.display='block';
+        this.value='1';
+        if (statusSelect) updateStatusBadge(statusSelect.value);
+      } else {
+        manualControls.style.display='none';
+        this.value='0';
+        updateStatusBadge(computeAutoStatus());
+      }
+    });
+  }
+
+  if (statusSelect){
+    statusSelect.addEventListener('change', ()=>{
+      if (manualToggle && manualToggle.checked){
+        updateStatusBadge(statusSelect.value);
+      }
+    });
+  }
+
+  // ---------- items calc + summary ----------
+  function recalc(){
+    let subtotal = 0, taxTotal = 0, discTotal = 0;
+
+    // ITEMS CALC
+    qsa('tr.item-row').forEach(tr=>{
+      const qty  = parseNum(tr.querySelector('.qty').value);
+      const rate = parseNum(tr.querySelector('.rate').value);
+      const tax  = parseNum(tr.querySelector('.tax').value);
+      const disc = parseNum(tr.querySelector('.discount').value);
+
+      const line    = qty * rate;
+      const discAmt = line * (disc/100);
+      const taxed   = (line - discAmt) * (tax/100);
+      const total   = (line - discAmt) + taxed;
+
+      tr.querySelector('.amount').value = total.toFixed(2);
+
+      subtotal  += line;
+      discTotal += discAmt;
+      taxTotal  += taxed;
+    });
+
+    const grand = subtotal - discTotal + taxTotal;
+
+    const subEl   = qs('#subtotal');
+    const discEl  = qs('#discountTotal');
+    const taxEl   = qs('#taxTotal');
+    const grandEl = qs('#grandTotal');
+    if (subEl)   subEl.textContent   = money(subtotal);
+    if (discEl)  discEl.textContent  = money(discTotal);
+    if (taxEl)   taxEl.textContent   = money(taxTotal);
+    if (grandEl) grandEl.textContent = money(grand);
+
+    // PAYMENTS SUM
+    let paid = 0;
+    qsa('.payment-amount').forEach(i=>{
+      paid += parseNum(i.value);
+    });
+
+    // REFUNDS SUM
+    let refunded = 0;
+    qsa('.refund-amount').forEach(i=>{
+      refunded += parseNum(i.value);
+    });
+
+    const net     = paid - refunded;
+    const balance = grand - net;
+
+    const paidEl   = qs('#paidTotal');
+    const refundEl = qs('#refundTotal');
+    const netEl    = qs('#netReceived');
+    const balEl    = qs('#balanceTotal');
+
+    if (paidEl)   paidEl.textContent   = money(paid);
+    if (refundEl) refundEl.textContent = money(refunded);
+    if (netEl)    netEl.textContent    = money(net);
+    if (balEl)    balEl.textContent    = money(balance);
+
+    if (!manualToggle || !manualToggle.checked){
+      updateStatusBadge(computeAutoStatus());
+    }
+  }
+
+  function attachRowEvents(row){
+    row.querySelectorAll('.qty, .rate, .tax, .discount').forEach(i=>{
+      i.addEventListener('input', recalc);
+    });
+    const rem = row.querySelector('.remove-row');
+    if (rem){
+      rem.addEventListener('click', ()=>{
+        row.remove();
+        if (qsa('tr.item-row').length === 0){
+          addItemRow();
+        }
+        recalc();
+      });
+    }
+  }
+
+  function addItemRow(){
+    const tr = document.createElement('tr');
+    tr.classList.add('item-row');
+    tr.innerHTML = `
+      <td><input type="text" name="manual_product[]" class="form-control" placeholder="Item name"></td>
+      <td><input type="number" step="0.01" name="qty[]" class="form-control qty" value="1"></td>
+      <td><input type="number" step="0.01" name="rate[]" class="form-control rate" value="0"></td>
+      <td><input type="number" step="0.01" name="tax[]" class="form-control tax" value="0"></td>
+      <td><input type="number" step="0.01" name="discount[]" class="form-control discount" value="0"></td>
+      <td><input type="text" readonly name="amount[]" class="form-control text-end amount" value="0.00"></td>
+      <td><button type="button" class="btn btn-sm btn-outline-danger remove-row">✕</button></td>`;
+    tbody.appendChild(tr);
+    attachRowEvents(tr);
+  }
+
+  qsa('tr.item-row').forEach(r=> attachRowEvents(r));
+  const addItemBtn = qs('#addItemBtn');
+  if (addItemBtn){
+    addItemBtn.addEventListener('click', addItemRow);
+  }
+
+  // ---------- payments ----------
+  function attachPaymentEvents(row){
+    const rem = row.querySelector('.remove-payment');
+    if (rem){
+      rem.addEventListener('click', ()=>{
+        row.remove();
+        if (paymentsWrap && paymentsWrap.querySelectorAll('.payment-row').length === 0){
+          addPaymentRow();
+        }
+        recalc();
+      });
+    }
+    const amt = row.querySelector('.payment-amount');
+    if (amt){
+      amt.addEventListener('input', recalc);
+    }
+  }
+
+  function addPaymentRow(){
+    if (!paymentsWrap) return;
+    const div = document.createElement('div');
+    div.className = 'payment-row d-flex gap-2 mb-2';
+    div.innerHTML = `
+      <input class="form-control payment-amount" type="number" step="0.01" name="payment_amount[]" placeholder="Amount">
+      <input class="form-control" type="date" name="payment_date[]" value="{{ today|date:'Y-m-d' }}">
+      <select class="form-select" name="payment_method[]">
+        <option>Cash</option>
+        <option>UPI</option>
+        <option>Card</option>
+        <option>Bank Transfer</option>
+      </select>
+      <button type="button" class="btn btn-outline-danger remove-payment">✕</button>`;
+    paymentsWrap.appendChild(div);
+    attachPaymentEvents(div);
+  }
+
+  if (paymentsWrap){
+    qsa('.payment-row').forEach(p=> attachPaymentEvents(p));
+    const addPaymentBtn = qs('#addPaymentBtn');
+    if (addPaymentBtn){
+      addPaymentBtn.addEventListener('click', addPaymentRow);
+    }
+  }
+
+  // ---------- refunds ----------
+  function attachRefundEvents(row){
+    const rem = row.querySelector('.remove-refund');
+    if (rem){
+      rem.addEventListener('click', ()=>{
+        row.remove();
+        if (refundsWrap && refundsWrap.querySelectorAll('.refund-row').length === 0){
+          addRefundRow();
+        }
+        recalc();
+      });
+    }
+    const amt = row.querySelector('.refund-amount');
+    if (amt){
+      amt.addEventListener('input', recalc);
+    }
+  }
+
+  function addRefundRow(){
+    if (!refundsWrap) return;
+    const div = document.createElement('div');
+    div.className = 'refund-row d-flex gap-2 mb-2';
+    div.innerHTML = `
+      <input class="form-control refund-amount" type="number" step="0.01" name="refund_amount[]" placeholder="Amount">
+      <input class="form-control" type="date" name="refund_date[]" value="{{ today|date:'Y-m-d' }}">
+      <select class="form-select" name="refund_method[]">
+        <option>Refund</option>
+        <option>Bank Transfer</option>
+        <option>UPI</option>
+        <option>Card</option>
+      </select>
+      <input class="form-control" type="text" name="refund_note[]" placeholder="Note">
+      <button type="button" class="btn btn-outline-danger remove-refund">✕</button>`;
+    refundsWrap.appendChild(div);
+    attachRefundEvents(div);
+  }
+
+  if (refundsWrap){
+    qsa('.refund-row').forEach(r=> attachRefundEvents(r));
+    const addRefundBtn = qs('#addRefundBtn');
+    if (addRefundBtn){
+      addRefundBtn.addEventListener('click', addRefundRow);
+    }
+  }
+
+  // initial recalc
+  recalc();
+
+  const form = qs('#invoiceForm');
+  if (form){
+    form.addEventListener('submit', function(){
+      recalc();
+    });
+  }
+
+});
+</script>
+{% endblock %}

@@ -1,0 +1,637 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Add Warehouse · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  body{
+    background:#ffffff !important;
+  }
+  a{
+    text-decoration:none;
+  }
+
+  .warehouse-page{
+    max-width:960px;
+    margin:26px auto 32px;
+    padding:0 14px;
+    font-family:"Poppins",system-ui,Segoe UI,Roboto,sans-serif;
+  }
+
+  /* HEADER */
+  .wh-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:14px;
+    margin-bottom:16px;
+  }
+  .wh-title-wrap{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+  }
+  .wh-icon-pill{
+    width:38px;
+    height:38px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,#16a34a,#0f766e);
+    color:#ecfdf3;
+  }
+  .wh-header-title{
+    font-size:1.45rem;
+    font-weight:700;
+    color:#111827;
+  }
+  .wh-header-sub{
+    font-size:0.9rem;
+    color:#6b7280;
+  }
+  .wh-badge-row{
+    margin-top:6px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .wh-badge{
+    font-size:0.72rem;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    padding:4px 9px;
+    border-radius:999px;
+    background:#e0f2fe;
+    color:#075985;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .wh-badge span.dot{
+    width:7px;
+    height:7px;
+    border-radius:999px;
+    background:#22c55e;
+  }
+
+  .wh-header-actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .btn-ghost{
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    padding:8px 13px;
+    font-size:0.8rem;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    color:#374151;
+    background:#ffffff;
+  }
+  .btn-ghost:hover{
+    background:#f9fafb;
+    border-color:#d1d5db;
+  }
+
+  /* FORM SHELL */
+  .form-shell{
+    background:#ffffff;
+    padding:22px 24px 20px;
+    border-radius:18px;
+    border:1px solid rgba(15,23,42,0.06);
+  }
+
+  .form-header-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:14px;
+  }
+  .form-header-left span.label{
+    font-size:0.78rem;
+    text-transform:uppercase;
+    letter-spacing:.16em;
+    color:#9ca3af;
+  }
+  .form-header-left h2{
+    font-size:1.05rem;
+    margin:4px 0 0;
+    font-weight:600;
+    color:#111827;
+  }
+  .form-step{
+    font-size:0.78rem;
+    color:#6b7280;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:1.1fr 1.1fr;
+    gap:18px 20px;
+    margin-top:6px;
+  }
+  .full{
+    grid-column:1 / -1;
+  }
+
+  label{
+    font-weight:600;
+    margin-bottom:6px;
+    display:block;
+    font-size:0.86rem;
+    color:#111827;
+  }
+  .label-hint{
+    font-size:0.75rem;
+    color:#9ca3af;
+    font-weight:400;
+    margin-left:1px;
+  }
+
+  .form-control{
+    border-radius:10px;
+    padding:9px 12px;
+    border:1px solid #e5e7eb;
+    width:100%;
+    font-size:0.86rem;
+    transition:border-color .14s ease, box-shadow .14s ease, background-color .14s ease;
+    background:#f9fafb;
+  }
+  .form-control:focus{
+    outline:none;
+    border-color:#16a34a;
+    box-shadow:0 0 0 1px rgba(22,163,74,0.12);
+    background:#ffffff;
+  }
+  textarea.form-control{
+    min-height:90px;
+    resize:vertical;
+  }
+
+  .text-danger.small{
+    font-size:0.78rem;
+  }
+
+  .alert{
+    padding:9px 12px;
+    border-radius:9px;
+    margin-bottom:10px;
+    font-size:0.82rem;
+  }
+
+  /* OPENING BLOCK */
+  .opening-block{
+    border-radius:14px;
+    border:1px dashed #d1d5db;
+    background:#f9fafb;
+    padding:10px 12px 12px;
+  }
+  .opening-title{
+    font-size:0.86rem;
+    font-weight:600;
+    color:#111827;
+    margin-bottom:4px;
+  }
+  .opening-sub{
+    font-size:0.78rem;
+    color:#6b7280;
+    margin-bottom:8px;
+  }
+
+  .opening-days{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .opening-days label{
+    margin:0;
+    padding:6px 10px;
+    border-radius:10px;
+    border:1px solid #e5e7eb;
+    background:#ffffff;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:0.8rem;
+    font-weight:500;
+    color:#111827;
+    cursor:pointer;
+  }
+  .opening-days input[type="checkbox"]{
+    width:14px;
+    height:14px;
+    cursor:pointer;
+  }
+  .opening-time-row{
+    display:flex;
+    gap:10px;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    margin-top:10px;
+  }
+  .opening-time-info{
+    align-self:flex-end;
+    font-size:0.8rem;
+    color:#6b7280;
+  }
+  .opening-example{
+    margin-top:7px;
+    font-size:0.75rem;
+    color:#9ca3af;
+  }
+  .opening-example code{
+    background:#111827;
+    color:#e5e7eb;
+    padding:2px 6px;
+    border-radius:999px;
+    font-size:0.72rem;
+  }
+
+  /* IS ACTIVE TOGGLE ROW */
+  .toggle-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    border-radius:12px;
+    background:#f9fafb;
+    border:1px solid #e5e7eb;
+    margin-top:2px;
+  }
+  .toggle-row label{
+    margin:0;
+    font-weight:600;
+  }
+  .toggle-note{
+    font-size:0.8rem;
+    color:#6b7280;
+  }
+
+  /* ACTIONS */
+  .form-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:22px;
+  }
+  .btn-outline{
+    background:#ffffff;
+    border:1px solid #e5e7eb;
+    padding:9px 14px;
+    border-radius:999px;
+    font-size:0.86rem;
+    color:#374151;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .btn-outline:hover{
+    background:#f9fafb;
+    border-color:#d1d5db;
+  }
+
+  .btn-solid{
+    background:linear-gradient(135deg,#16a34a,#15803d);
+    color:#ffffff;
+    padding:10px 18px;
+    border-radius:999px;
+    border:0;
+    cursor:pointer;
+    font-size:0.88rem;
+    font-weight:600;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    transition:transform .12s ease, opacity .12s ease;
+  }
+  .btn-solid:hover{
+    transform:translateY(-1px);
+    opacity:0.97;
+  }
+
+  @media(max-width:768px){
+    .wh-header{
+      flex-direction:column;
+    }
+    .form-shell{
+      padding:18px 16px 16px;
+    }
+    .grid{
+      grid-template-columns:1fr;
+      gap:14px;
+    }
+    .form-actions{
+      flex-direction:column-reverse;
+      align-items:stretch;
+    }
+    .form-actions .btn-solid,
+    .form-actions .btn-outline{
+      justify-content:center;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="warehouse-page">
+
+  <!-- Page Header -->
+  <div class="wh-header">
+    <div class="wh-title-wrap">
+      <div class="wh-icon-pill">
+        <i class="bi bi-buildings"></i>
+      </div>
+      <div>
+        <div class="wh-header-title">Add Warehouse</div>
+
+        <div class="wh-badge-row">
+          <div class="wh-badge">
+            <span class="dot"></span>
+            Inventory-ready location
+          </div>
+          <div class="wh-badge">
+            <i class="bi bi-cloud-check"></i>
+            Linked with stock &amp; reports
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wh-header-actions">
+      <a href="{% url 'catalog:warehouse_list' %}" class="btn-ghost">
+        <i class="bi bi-arrow-left"></i>
+        Back to warehouses
+      </a>
+    </div>
+  </div>
+
+  <!-- Form Card -->
+  <div class="form-shell">
+    <div class="form-header-row">
+      <div class="form-header-left">
+        <span class="label">Warehouse details</span>
+        <h2>Core information &amp; operating hours</h2>
+      </div>
+      <div class="form-step">
+        Step 1 of 1 &middot; Quick setup
+      </div>
+    </div>
+
+    {# Messages #}
+    {% if messages %}
+      <div style="margin-bottom:10px;">
+        {% for m in messages %}
+          <div class="alert alert-{{ m.tags }}">{{ m }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="post" novalidate id="warehouseForm">
+      {% csrf_token %}
+
+      {# Non-field errors #}
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <div class="grid">
+
+        <!-- NAME -->
+        <div class="full">
+          <label for="{{ form.name.id_for_label }}">
+            Warehouse Name <span style="color:#dc2626">*</span>
+            <span class="label-hint">For example: “Main City Warehouse” or “Central Storage”.</span>
+          </label>
+          {{ form.name|add_class:"form-control" }}
+          {% if form.name.errors %}
+            <div class="text-danger small mt-1">{{ form.name.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+
+        <!-- CODE -->
+        <div>
+          <label for="{{ form.code.id_for_label }}">
+            Warehouse Code
+            <span class="label-hint">Short internal reference (optional).</span>
+          </label>
+          {{ form.code|add_class:"form-control" }}
+          {% if form.code.errors %}
+            <div class="text-danger small mt-1">{{ form.code.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+
+        <!-- MANAGER -->
+        <div>
+          <label for="{{ form.manager_name.id_for_label }}">
+            Manager Name
+            <span class="label-hint">Primary in-charge for this location.</span>
+          </label>
+          {{ form.manager_name|add_class:"form-control" }}
+          {% if form.manager_name.errors %}
+            <div class="text-danger small mt-1">{{ form.manager_name.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+
+        <!-- ADDRESS -->
+        <div class="full">
+          <label for="{{ form.address.id_for_label }}">
+            Address
+            <span class="label-hint">Complete address for logistics, dispatch and billing.</span>
+          </label>
+          {{ form.address|add_class:"form-control" }}
+          {% if form.address.errors %}
+            <div class="text-danger small mt-1">{{ form.address.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+
+        <!-- PHONE -->
+        <div>
+          <label for="{{ form.phone.id_for_label }}">
+            Phone
+            <span class="label-hint">Contact number for coordination.</span>
+          </label>
+          {{ form.phone|add_class:"form-control" }}
+          {% if form.phone.errors %}
+            <div class="text-danger small mt-1">{{ form.phone.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+
+        <!-- EMAIL -->
+        <div>
+          <label for="{{ form.email.id_for_label }}">
+            Email
+            <span class="label-hint">For alerts and warehouse communication.</span>
+          </label>
+          {{ form.email|add_class:"form-control" }}
+          {% if form.email.errors %}
+            <div class="text-danger small mt-1">{{ form.email.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+
+        <!-- OPENING HOURS (days + time pickers) -->
+        <div class="full">
+          <label>
+            Opening Days &amp; Time
+            <span class="label-hint">Control visibility of working days for the team.</span>
+          </label>
+          <div class="opening-block">
+            <div class="opening-title">Working schedule</div>
+            <div class="opening-sub">
+              Select the days and optional time window when this warehouse is usually operational.
+            </div>
+
+            <div class="opening-days" id="opening-days">
+              <label><input type="checkbox" name="opening_days" value="Mon" class="form-check-input"> Mon</label>
+              <label><input type="checkbox" name="opening_days" value="Tue" class="form-check-input"> Tue</label>
+              <label><input type="checkbox" name="opening_days" value="Wed" class="form-check-input"> Wed</label>
+              <label><input type="checkbox" name="opening_days" value="Thu" class="form-check-input"> Thu</label>
+              <label><input type="checkbox" name="opening_days" value="Fri" class="form-check-input"> Fri</label>
+              <label><input type="checkbox" name="opening_days" value="Sat" class="form-check-input"> Sat</label>
+              <label><input type="checkbox" name="opening_days" value="Sun" class="form-check-input"> Sun</label>
+            </div>
+
+            <div class="opening-time-row">
+              <div>
+                <div class="label-hint" style="margin:0 0 4px;">From</div>
+                <input type="time" name="opening_time_from" id="opening_time_from" class="form-control">
+              </div>
+              <div>
+                <div class="label-hint" style="margin:0 0 4px;">To</div>
+                <input type="time" name="opening_time_to" id="opening_time_to" class="form-control">
+              </div>
+              <div class="opening-time-info">
+                Time is optional. Leave it blank if you only want to store working days.
+              </div>
+            </div>
+
+            <div class="opening-example">
+              Example stored value:&nbsp;
+              <code>Mon,Tue,Wed,Thu,Fri 09:30–18:00</code>
+            </div>
+          </div>
+        </div>
+
+        <!-- NOTES -->
+        <div class="full">
+          <label for="{{ form.notes.id_for_label }}">
+            Notes
+            <span class="label-hint">Special instructions, loading details, parking or restrictions.</span>
+          </label>
+          {{ form.notes|add_class:"form-control" }}
+          {% if form.notes.errors %}
+            <div class="text-danger small mt-1">{{ form.notes.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+
+        <!-- IS ACTIVE -->
+        <div class="full">
+          <div class="toggle-row">
+            <div style="display:flex;align-items:center;gap:8px;">
+              {{ form.is_active }}
+              <label for="{{ form.is_active.id_for_label }}">Active warehouse</label>
+            </div>
+            <div class="toggle-note">
+              Inactive warehouses will be hidden from day-to-day selections but will stay in history and reports.
+            </div>
+          </div>
+          {% if form.is_active.errors %}
+            <div class="text-danger small mt-1">{{ form.is_active.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+
+        {# Hidden opening_hours field (ModelForm widget) - JS will fill this before submit #}
+        <div style="display:none;">
+          {{ form.opening_hours }}
+        </div>
+
+      </div> {# grid end #}
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <a class="btn-outline" href="{% url 'catalog:warehouse_list' %}">
+          <i class="bi bi-arrow-left-circle"></i>
+          Cancel
+        </a>
+        <button class="btn-solid" type="submit" id="saveWarehouseBtn">
+          <i class="bi bi-check-lg"></i>
+          Save Warehouse
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+  var form = document.getElementById('warehouseForm');
+  if (!form) return;
+
+  function assembleOpeningHours() {
+    // collect checked days
+    var checked = form.querySelectorAll('input[name="opening_days"]:checked');
+    var days = Array.prototype.map.call(checked, function(inp){ return inp.value; });
+    var from = document.getElementById('opening_time_from').value || '';
+    var to = document.getElementById('opening_time_to').value || '';
+    var parts = [];
+
+    if (days.length) {
+      parts.push(days.join(','));
+    }
+    if (from || to) {
+      parts.push((from || '') + (from || to ? '–' : '') + (to || ''));
+    }
+    return parts.join(' ');
+  }
+
+  form.addEventListener('submit', function(e){
+    // trim name (client-side)
+    var nameInput = form.querySelector('[name="name"]');
+    if(nameInput) nameInput.value = nameInput.value.trim();
+
+    // simple required validation
+    if (nameInput && !nameInput.value) {
+      e.preventDefault();
+      alert('Please enter warehouse name.');
+      nameInput.focus();
+      return false;
+    }
+
+    // set hidden opening_hours (if present)
+    var hidden = form.querySelector('input[name="{{ form.opening_hours.name }}"]');
+    if (hidden) {
+      hidden.value = assembleOpeningHours();
+    }
+  });
+
+  // populate from hidden opening_hours in edit mode
+  (function populateFromHidden(){
+    var hidden = form.querySelector('input[name="{{ form.opening_hours.name }}"]');
+    if (!hidden) return;
+    var val = hidden.value || '';
+    if (!val) return;
+    var parts = val.split(' ');
+    var dayPart = parts[0] || '';
+    var timePart = parts.slice(1).join(' ') || '';
+    if (dayPart) {
+      dayPart.split(',').forEach(function(d){
+        var cb = form.querySelector('input[name="opening_days"][value="'+d+'"]');
+        if (cb) cb.checked = true;
+      });
+    }
+    if (timePart) {
+      var t = timePart.split('–');
+      if (t.length) document.getElementById('opening_time_from').value = t[0] || '';
+      if (t.length>1) document.getElementById('opening_time_to').value = t[1] || '';
+    }
+  })();
+
+})();
+</script>
+{% endblock %}

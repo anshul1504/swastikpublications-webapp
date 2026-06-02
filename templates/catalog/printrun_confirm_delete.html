@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Delete Batch · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  body{
+    background-color:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+  }
+
+  .delete-page-shell{
+    max-width:780px;
+    margin:32px auto 40px;
+    padding:0 8px;
+  }
+
+  .delete-page-card{
+    background:#ffffff;
+    border-radius:18px;
+    border:1px solid #e2e8f0;
+    box-shadow:0 10px 30px rgba(15,23,42,0.06);
+    padding:22px 24px 24px;
+  }
+
+  .delete-header{
+    display:flex;
+    justify-content:space-between;
+    gap:14px;
+    align-items:flex-start;
+    margin-bottom:18px;
+  }
+
+  .delete-title-wrap{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .delete-icon{
+    width:40px;
+    height:40px;
+    border-radius:14px;
+    background:linear-gradient(135deg,#fee2e2,#fecaca);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#b91c1c;
+    font-size:20px;
+  }
+
+  .delete-title{
+    font-size:1.45rem;
+    font-weight:600;
+    color:#b91c1c;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .delete-sub{
+    font-size:13px;
+    color:#6b7280;
+    margin-top:4px;
+  }
+
+  .delete-badge{
+    font-size:11px;
+    padding:5px 10px;
+    border-radius:999px;
+    border:1px solid #fecaca;
+    background:#fef2f2;
+    color:#b91c1c;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .batch-summary{
+    margin-top:4px;
+    margin-bottom:16px;
+    padding:12px 14px;
+    border-radius:14px;
+    background:#f9fafb;
+    border:1px solid #e5e7eb;
+  }
+
+  .bs-header{
+    font-size:13px;
+    font-weight:600;
+    color:#111827;
+    margin-bottom:8px;
+  }
+
+  .bs-main-line{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    margin-bottom:6px;
+  }
+
+  .bs-batch{
+    font-size:15px;
+    font-weight:600;
+    color:#111827;
+  }
+
+  .bs-chip{
+    font-size:11px;
+    border-radius:999px;
+    padding:3px 9px;
+    border:1px solid #e5e7eb;
+    background:#ffffff;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+  }
+
+  .bs-chip-product{
+    border-color:#bfdbfe;
+    background:#eff6ff;
+    color:#1d4ed8;
+  }
+
+  .bs-chip-warehouse{
+    border-color:#ddd6fe;
+    background:#eef2ff;
+    color:#4f46e5;
+  }
+
+  .bs-chip-qty{
+    border-color:#bbf7d0;
+    background:#dcfce7;
+    color:#166534;
+  }
+
+  .bs-meta{
+    font-size:12px;
+    color:#6b7280;
+  }
+
+  .danger-box{
+    background:#fef2f2;
+    border:1px solid #fecaca;
+    padding:14px 14px 12px;
+    border-radius:14px;
+    color:#991b1b;
+    font-size:13px;
+    margin-bottom:18px;
+  }
+
+  .danger-title{
+    font-weight:600;
+    margin-bottom:6px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .danger-list{
+    padding-left:18px;
+    margin:0;
+  }
+  .danger-list li{
+    margin-bottom:3px;
+  }
+
+  .effect-box{
+    margin-top:10px;
+    padding:10px 12px;
+    border-radius:12px;
+    background:#fefce8;
+    border:1px dashed #facc15;
+    font-size:12.5px;
+    color:#854d0e;
+  }
+
+  .soft-note{
+    margin-top:12px;
+    font-size:12px;
+    color:#6b7280;
+  }
+
+  .btn-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:22px;
+  }
+
+  .btn{
+    padding:10px 22px;
+    border-radius:10px;
+    font-size:14px;
+    font-weight:500;
+    transition:0.18s;
+    cursor:pointer;
+    border:none;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    text-decoration:none;
+  }
+
+  .btn-cancel{
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    color:#475569;
+  }
+  .btn-cancel:hover{
+    background:#f1f5f9;
+    border-color:#cbd5e1;
+  }
+
+  .btn-danger{
+    background:#dc2626;
+    color:#ffffff;
+  }
+  .btn-danger:hover{
+    background:#b91c1c;
+    box-shadow:0 4px 12px rgba(239,68,68,0.3);
+    transform:translateY(-1px);
+  }
+
+  @media (max-width:575.98px){
+    .delete-page-card{
+      padding:18px 16px 20px;
+    }
+    .delete-header{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+    .btn-actions{
+      flex-direction:column-reverse;
+      align-items:stretch;
+    }
+    .btn{
+      justify-content:center;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="delete-page-shell">
+  <div class="delete-page-card">
+
+    <!-- HEADER -->
+    <div class="delete-header">
+      <div>
+        <div class="delete-title-wrap">
+          <div class="delete-icon">
+            <i class="bi bi-trash-fill"></i>
+          </div>
+          <h1 class="delete-title mb-0">
+            Delete batch
+          </h1>
+        </div>
+        <div class="delete-sub">
+          You’re about to permanently remove this goods receipt batch from your stock history.
+        </div>
+      </div>
+
+      <div>
+        <span class="delete-badge">
+          <i class="bi bi-exclamation-triangle-fill" style="font-size:11px;"></i>
+          This action cannot be undone
+        </span>
+      </div>
+    </div>
+
+    <!-- BATCH SUMMARY -->
+    <div class="batch-summary">
+      <div class="bs-header">Batch to delete</div>
+      <div class="bs-main-line">
+        <span class="bs-batch">
+          {% if pr.batch_no %}{{ pr.batch_no }}{% else %}PR-{{ pr.id }}{% endif %}
+        </span>
+
+        {% if product %}
+          <span class="bs-chip bs-chip-product">
+            <i class="bi bi-box-seam"></i>
+            {{ product.name }}
+            {% if product.sku %}
+              · {{ product.sku }}
+            {% endif %}
+          </span>
+        {% endif %}
+
+        {% if warehouse %}
+          <span class="bs-chip bs-chip-warehouse">
+            <i class="bi bi-shop"></i>
+            {{ warehouse.name }}
+          </span>
+        {% endif %}
+
+        <span class="bs-chip bs-chip-qty">
+          <i class="bi bi-arrow-down-circle"></i>
+          Received: {{ pr.received_qty|default:0 }}
+        </span>
+
+        <span class="bs-chip">
+          <i class="bi bi-check-circle"></i>
+          Available: {{ available|default:0 }}
+        </span>
+      </div>
+
+      <div class="bs-meta">
+        {% if pr.print_date %}
+          Print date: {{ pr.print_date|date:"d M Y" }}
+        {% endif %}
+        {% if pr.notes %}
+          · {{ pr.notes|truncatechars:120 }}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- DANGER BOX -->
+    <div class="danger-box">
+      <div class="danger-title">
+        <i class="bi bi-shield-exclamation"></i>
+        Please confirm you understand:
+      </div>
+      <ul class="danger-list">
+        <li>This batch and its received quantity will be reversed from stock balances.</li>
+        <li>System will create a balancing ledger entry before deleting this batch.</li>
+        <li>Existing invoices / out movements will remain, but available stock will adjust.</li>
+      </ul>
+
+      <div class="effect-box">
+        {% if available and available > 0 %}
+          Deleting this batch will <strong>reduce available stock by {{ available }}</strong>
+          for this product–warehouse combination (if not already consumed).
+        {% else %}
+          This batch appears fully consumed. Deletion will mainly affect running balances and
+          history; no free stock is currently available from this batch.
+        {% endif %}
+      </div>
+
+      <div class="soft-note">
+        If you only need to correct quantity, prefer using a stock adjustment instead of deleting
+        the entire batch.
+      </div>
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <form method="post">
+      {% csrf_token %}
+      <div class="btn-actions">
+        <a href="{% url 'catalog:pr_detail' pr.id %}" class="btn btn-cancel">
+          <i class="bi bi-arrow-left-circle"></i>
+          Keep batch
+        </a>
+
+        <button type="submit" class="btn btn-danger">
+          <i class="bi bi-trash"></i>
+          Yes, delete this batch
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

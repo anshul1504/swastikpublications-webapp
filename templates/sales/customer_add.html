@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+{% block title %}Add Customer · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+:root{
+  --brand:#ff6a00;
+  --border:#e5e7eb;
+  --muted:#6b7280;
+  --ink:#0f172a;
+  --soft:#f9fafb;
+}
+.btn-back {
+  border-radius:10px;
+  padding:8px 20px;
+  font-size:0.92rem;
+  font-weight:500;
+  background:#ffffff;
+  border:1px solid #d1d5db;
+  color:#374151;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  text-decoration:none;
+  transition:all .22s ease;
+}
+
+/* Solid hover */
+.btn-back:hover {
+  background:#87193e;          /* Solid green hover */
+  border-color:#87193e;
+  color:#ffffff !important;    /* Text fully white */
+  transform:translateY(-2px);  /* Premium lift effect */
+}
+
+.btn-back i {
+  font-size:1rem;
+  color:#64748b;
+  transition:color .22s ease;
+}
+
+.btn-back:hover i {
+  color:#ffffff !important; /* Icon white on hover */
+}
+
+
+/* global page */
+body{
+  background:#ffffff !important;
+  font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  color:var(--ink);
+}
+
+/* wrapper */
+.customer-page{
+  max-width:960px;
+  margin:0 auto;
+  padding:10px 0 30px;
+}
+
+/* header */
+.page-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+}
+.page-title{
+  font-size:1.3rem;
+  font-weight:600;
+  color:var(--ink);
+}
+.page-sub{
+  font-size:0.86rem;
+  color:var(--muted);
+}
+.page-header-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+/* card */
+.form-shell{
+  background:#fff;
+  border-radius:14px;
+  border:1px solid rgba(148,163,184,0.25);
+  box-shadow:0 10px 30px rgba(15,23,42,0.07);
+  padding:18px 20px 20px;
+}
+
+/* section title */
+.section-title{
+  font-size:0.9rem;
+  font-weight:600;
+  color:#111827;
+  margin-bottom:6px;
+}
+.section-sub{
+  font-size:0.8rem;
+  color:var(--muted);
+  margin-bottom:10px;
+  border-bottom:1px solid #f1f5f9;
+  padding-bottom:4px;
+}
+
+/* form controls */
+label{
+  font-weight:500;
+  color:#334155;
+  font-size:0.9rem;
+}
+.form-control,
+.form-select,
+textarea{
+  border-radius:10px;
+  border:1px solid #d1d5db;
+  font-size:0.88rem;
+  padding:7px 10px;
+}
+textarea{
+  resize:vertical;
+}
+.form-control:focus,
+.form-select:focus,
+textarea:focus{
+  border-color:var(--brand);
+  box-shadow:0 0 0 3px rgba(255,106,0,0.16);
+}
+
+/* helper text */
+.text-hint{
+  font-size:0.78rem;
+  color:var(--muted);
+}
+
+/* buttons */
+.btn{
+  border-radius:10px;
+  font-size:0.9rem;
+  padding:0.45rem 1.1rem;
+}
+.btn-success{
+  background:#198754;
+  border-color:#198754;
+}
+.btn-success:hover{
+  background:#166a43;
+  border-color:#166a43;
+}
+.btn-outline-secondary{
+  border-color:#cbd5f5;
+  color:#374151;
+}
+.btn-outline-secondary:hover{
+  border-color:#64748b;
+  color:#111827;
+}
+
+/* same as billing checkbox line */
+.inline-check{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:6px;
+  margin-bottom:4px;
+}
+.inline-check label{
+  margin-bottom:0;
+}
+
+/* responsive */
+@media (max-width: 767.98px){
+  .page-header{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  .form-shell{
+    padding:14px 12px 16px;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="customer-page">
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <div class="page-title">Add Customer</div>
+      <div class="page-sub">
+        Create a new customer record with contact, business & address details.
+      </div>
+    </div>
+    <div class="page-header-actions">
+      <a href="{% url 'sales:customer_list' %}" class="btn-back">
+  <i class="bi bi-arrow-left"></i> Back to Customers
+</a>
+    </div>
+  </div>
+
+  <!-- Main card -->
+  <div class="form-shell">
+    <form method="post">
+      {% csrf_token %}
+
+      <!-- Basic Info -->
+      <div class="mb-2">
+        <div class="section-title">Basic Information</div>
+        <div class="section-sub">Primary details used across invoices & reports.</div>
+      </div>
+
+      <div class="row g-3 mb-2">
+        <div class="col-md-6">
+          <label for="name" class="form-label">
+            Full Name <span class="text-danger">*</span>
+          </label>
+          <input name="name" id="name" class="form-control" required placeholder="Enter full name">
+        </div>
+        <div class="col-md-6">
+          <label for="company" class="form-label">Company Name</label>
+          <input name="company" id="company" class="form-control" placeholder="Company or Organization">
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label for="email" class="form-label">Email Address</label>
+          <input name="email" id="email" class="form-control" type="email" placeholder="customer@example.com">
+        </div>
+        <div class="col-md-6">
+          <label for="phone" class="form-label">Phone Number</label>
+          <input name="phone" id="phone" class="form-control" placeholder="+91 99999 99999">
+        </div>
+      </div>
+
+      <!-- Business Info -->
+      <div class="mb-2 mt-1">
+        <div class="section-title">Business Information</div>
+        <div class="section-sub">Tax, classification & reference fields.</div>
+      </div>
+
+      <div class="row g-3 mb-2">
+        <div class="col-md-4">
+          <label for="customer_type" class="form-label">Customer Type</label>
+          <select name="customer_type" id="customer_type" class="form-select">
+            <option value="">Select type</option>
+            <option value="Individual">Individual</option>
+            <option value="Business">Business</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="industry" class="form-label">Industry / Sector</label>
+          <input name="industry" id="industry" class="form-control" placeholder="e.g. Retail, IT, Finance">
+        </div>
+        <div class="col-md-4">
+          <label for="pan" class="form-label">PAN Number</label>
+          <input name="pan" id="pan" class="form-control" placeholder="ABCDE1234F">
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label for="gstin" class="form-label">GSTIN</label>
+          <input name="gstin" id="gstin" class="form-control" placeholder="22AAAAA0000A1Z5">
+        </div>
+        <div class="col-md-6">
+          <label for="website" class="form-label">Website</label>
+          <input name="website" id="website" class="form-control" placeholder="https://example.com">
+        </div>
+      </div>
+
+      <!-- Address -->
+      <div class="mb-2 mt-1">
+        <div class="section-title">Address Information</div>
+        <div class="section-sub">Used for invoice billing & shipping.</div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label for="billing_address" class="form-label">Billing Address</label>
+          <textarea name="billing_address" id="billing_address" rows="3" class="form-control" placeholder="Enter billing address"></textarea>
+        </div>
+        <div class="col-md-6">
+          <div class="inline-check">
+            <label for="shipping_address" class="form-label mb-0">Shipping Address</label>
+            <div class="form-check small">
+              <input class="form-check-input" type="checkbox" id="sameAsBilling">
+              <label class="form-check-label" for="sameAsBilling">
+                Same as billing
+              </label>
+            </div>
+          </div>
+          <textarea name="shipping_address" id="shipping_address" rows="3" class="form-control" placeholder="Enter shipping address"></textarea>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="mb-2 mt-1">
+        <div class="section-title">Additional Notes</div>
+        <div class="section-sub">Optional internal notes for your team.</div>
+      </div>
+
+      <div class="mb-1">
+        <textarea name="notes" rows="3" class="form-control" placeholder="Any special details or preferences about this customer…"></textarea>
+      </div>
+
+      <!-- Actions -->
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <a href="{% url 'sales:customer_list' %}" class="btn-back">
+          Cancel
+        </a>
+        <button class="btn btn-success">
+          Save Customer
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const billing = document.getElementById('billing_address');
+  const shipping = document.getElementById('shipping_address');
+  const same = document.getElementById('sameAsBilling');
+
+  if (billing && shipping && same){
+    function sync() {
+      if (same.checked) {
+        shipping.value = billing.value;
+        shipping.readOnly = true;
+        shipping.classList.add('bg-light');
+      } else {
+        shipping.readOnly = false;
+        shipping.classList.remove('bg-light');
+      }
+    }
+    same.addEventListener('change', sync);
+    billing.addEventListener('input', function(){
+      if (same.checked) shipping.value = billing.value;
+    });
+    sync();
+  }
+});
+</script>
+{% endblock %}

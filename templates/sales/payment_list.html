@@ -1,0 +1,610 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Payments · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --primary:#157347;
+    --primary-dark:#0f5c38;
+    --accent:#2563eb;
+    --muted:#6b7280;
+    --text-dark:#111827;
+    --border:#e5e7eb;
+    --card-bg:#ffffff;
+    --soft-bg:#f9fafb;
+    --danger:#dc2626;
+    --success:#16a34a;
+  }
+
+  body{
+    background:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    color:var(--text-dark);
+  }
+
+  .payments-page{
+    width:100%;
+  }
+  .payments-container{
+    max-width:1150px;
+    margin:0 auto;
+    padding:14px 6px 20px;
+  }
+
+  /* HEADER */
+  .payments-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:18px;
+    margin-bottom:14px;
+  }
+  .page-heading{
+    font-weight:600;
+    color:var(--text-dark);
+    font-size:1.45rem;
+  }
+  .page-sub{
+    color:var(--muted);
+    font-size:13.5px;
+    margin-top:4px;
+  }
+  .meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:8px;
+  }
+  .meta-chip{
+    font-size:12px;
+    padding:6px 12px;
+    border-radius:999px;
+    background:#eef2ff;
+    color:#1e293b;
+    border:1px solid #e0e7ff;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .meta-dot{
+    width:6px;
+    height:6px;
+    border-radius:999px;
+    background:#16a34a;
+  }
+
+  .header-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:flex-end;
+  }
+  .payments-page .btn-sm{
+    font-size:0.9rem;
+    padding:0.45rem 1.05rem;
+    border-radius:9px;
+  }
+  .payments-page .btn{
+    border-radius:9px;
+  }
+  .btn-primary{
+    background-color:var(--primary);
+    border-color:var(--primary);
+  }
+  .btn-primary:hover{
+    background-color:var(--primary-dark);
+    border-color:var(--primary-dark);
+  }
+  .btn-outline-secondary{
+    border-color:#cbd5f5;
+    color:#374151;
+  }
+  .btn-outline-secondary:hover{
+    border-color:var(--accent);
+    color:var(--accent);
+    background:#eff6ff;
+  }
+
+  /* KPI ROW */
+  .kpi-row{
+    margin-bottom:14px;
+  }
+  .kpi{
+    background:var(--card-bg);
+    border-radius:14px;
+    padding:12px 14px;
+    box-shadow:0 6px 20px rgba(15,23,42,0.04);
+    border:1px solid var(--border);
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+  }
+  .kpi-icon{
+    width:32px;
+    height:32px;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:17px;
+    flex-shrink:0;
+  }
+  .kpi-icon.green{ background:#dcfce7; color:#15803d; }
+  .kpi-icon.blue{ background:#dbeafe; color:#1d4ed8; }
+  .kpi-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--muted);
+  }
+  .kpi-value{
+    font-size:1.15rem;
+    font-weight:600;
+    color:var(--text-dark);
+    margin-top:2px;
+  }
+  .kpi-hint{
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  /* MAIN CARD */
+  .card-lite{
+    background:var(--card-bg);
+    border-radius:16px;
+    box-shadow:0 4px 18px rgba(0,0,0,0.03);
+    border:1px solid var(--border);
+    padding:16px 18px;
+  }
+  .section-title{
+    font-weight:600;
+    font-size:15px;
+    margin-bottom:3px;
+    color:var(--text-dark);
+  }
+  .small-muted{
+    color:var(--muted);
+    font-size:12.5px;
+  }
+
+  /* STATEMENT BAR */
+  .statement-bar{
+    margin-bottom:14px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:flex-end;
+    justify-content:space-between;
+  }
+  .statement-bar-left{
+    max-width:360px;
+  }
+  .statement-bar-right{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:flex-end;
+  }
+  .statement-select{
+    font-size:12.5px;
+    border-radius:999px;
+    padding:5px 10px;
+    border:1px solid #e5e7eb;
+    min-width:160px;
+  }
+  .statement-date{
+    font-size:12.5px;
+    border-radius:999px;
+    padding:5px 10px;
+    border:1px solid #e5e7eb;
+  }
+
+  /* FILTER ROW */
+  .filters-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:12px;
+  }
+  .search-bar{
+    position:relative;
+    flex:1;
+    min-width:240px;
+    max-width:360px;
+  }
+  .search-bar input{
+    border-radius:10px;
+    font-size:0.85rem;
+    padding-left:34px;
+    border:1px solid var(--border);
+  }
+  .search-bar input:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(21,115,71,0.16);
+  }
+  .search-bar i{
+    position:absolute;
+    top:8px;
+    left:10px;
+    color:#9ca3af;
+    font-size:0.9rem;
+  }
+
+  .filters-right{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:flex-end;
+  }
+  .filter-select{
+    font-size:12.5px;
+    border-radius:999px;
+    padding:5px 10px;
+    border:1px solid #e5e7eb;
+  }
+  .btn-filter{
+    border-radius:999px;
+    font-size:12.5px;
+    padding:6px 14px;
+  }
+  .btn-reset{
+    font-size:12px;
+    color:var(--muted);
+    text-decoration:none;
+  }
+  .btn-reset:hover{
+    color:var(--accent);
+    text-decoration:underline;
+  }
+
+  /* TABLE */
+  .table thead th{
+    border-bottom:0;
+    font-weight:600;
+    font-size:11.5px;
+    color:#374151;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    background:var(--soft-bg);
+  }
+  .table tbody td{
+    font-size:13.5px;
+    vertical-align:middle;
+    color:#1f2937;
+  }
+  .table tbody tr:hover{
+    background:#f9fafb;
+  }
+
+  /* Method / Type pill */
+  .method-pill{
+    display:inline-flex;
+    align-items:center;
+    padding:3px 9px;
+    border-radius:999px;
+    font-size:11.5px;
+    background:#eff6ff;
+    border:1px solid #bfdbfe;
+    color:#1d4ed8;
+    font-weight:500;
+  }
+
+  .amount-positive{
+    color:var(--success);
+    font-weight:600;
+  }
+  .amount-negative{
+    color:var(--danger);
+    font-weight:600;
+  }
+
+  .action-btns .btn{
+    border-radius:8px;
+    font-size:0.78rem;
+    padding:5px 9px;
+  }
+
+  .empty-state{
+    text-align:center;
+    padding:32px 0;
+    color:var(--muted);
+    font-size:0.9rem;
+  }
+
+  @media (max-width:991.98px){
+    .payments-header{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+    .payments-container{
+      padding-inline:8px;
+    }
+    .statement-bar{
+      align-items:flex-start;
+    }
+  }
+
+  @media (max-width:575.98px){
+    .card-lite{
+      padding:14px 12px;
+    }
+    .statement-bar-right{
+      flex-direction:column;
+      align-items:stretch;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="payments-page">
+  <div class="payments-container">
+
+    <!-- HEADER -->
+    <div class="payments-header">
+      <div>
+        <h3 class="page-heading mb-0">Payments</h3>
+        <div class="page-sub">
+          All recorded payments and refunds linked to your invoices.
+        </div>
+        <div class="meta-row">
+          <div class="meta-chip">
+            <span class="meta-dot"></span>
+            Net received (filtered): <strong>₹{{ total_received|floatformat:2|intcomma }}</strong>
+          </div>
+          <div class="meta-chip">
+            <span class="meta-dot" style="background:#3b82f6;"></span>
+            Today’s net: <strong>₹{{ total_today|floatformat:2|intcomma }}</strong>
+          </div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a href="{% url 'sales:payment_add' %}" class="btn btn-primary btn-sm">
+          <i class="bi bi-plus-lg me-1"></i> Add Payment
+        </a>
+
+        <form method="get" action="{% url 'sales:payment_export_csv' %}" class="d-inline">
+          {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+          {% if period %}<input type="hidden" name="period" value="{{ period }}">{% endif %}
+          {% if method %}<input type="hidden" name="method" value="{{ method }}">{% endif %}
+          <button type="submit" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-filetype-csv me-1"></i> Export CSV
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- STATEMENT DOWNLOAD BAR -->
+    <div class="card-lite statement-bar">
+      <div class="statement-bar-left">
+        <div class="section-title mb-0" style="font-size:14px;">Payments Statement</div>
+        <div class="small-muted">
+          Download a PDF summary of collections & refunds for any period.
+        </div>
+      </div>
+      <div class="statement-bar-right">
+        <form method="get" action="{% url 'sales:payments_statement_pdf' %}" class="d-flex flex-wrap gap-2 align-items-end">
+          <div>
+            <label class="small-muted d-block mb-1">Period</label>
+            <select name="period" id="statementPeriod" class="statement-select">
+              <option value="quarter">Quarterly (last 3 months)</option>
+              <option value="half">Half-yearly (last 6 months)</option>
+              <option value="year">Yearly (last 12 months)</option>
+              <option value="custom">Custom date range</option>
+            </select>
+          </div>
+          <div id="statementCustomDates" class="d-flex flex-wrap gap-2" style="display:none;">
+            <div>
+              <label class="small-muted d-block mb-1">From</label>
+              <input type="date" name="from" class="statement-date">
+            </div>
+            <div>
+              <label class="small-muted d-block mb-1">To</label>
+              <input type="date" name="to" class="statement-date">
+            </div>
+          </div>
+          <div>
+            <button type="submit" class="btn btn-success btn-sm">
+              <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- KPI row (only 2 now) -->
+    <div class="row g-3 kpi-row">
+      <div class="col-md-6">
+        <div class="kpi">
+          <div class="kpi-icon green">
+            <i class="bi bi-wallet2"></i>
+          </div>
+          <div>
+            <div class="kpi-label">Net Received (Result)</div>
+            <div class="kpi-value">₹ {{ total_received|floatformat:2|intcomma }}</div>
+            <div class="kpi-hint">Payments − refunds (current filters)</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="kpi">
+          <div class="kpi-icon blue">
+            <i class="bi bi-calendar2-day"></i>
+          </div>
+          <div>
+            <div class="kpi-label">Received Today</div>
+            <div class="kpi-value">₹ {{ total_today|floatformat:2|intcomma }}</div>
+            <div class="kpi-hint">All payments & refunds for today</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN CARD -->
+    <div class="card-lite">
+
+      <!-- Filters row -->
+      <div class="filters-row">
+        <form class="search-bar" method="get" action="">
+          <i class="bi bi-search"></i>
+          <input
+            type="text"
+            name="q"
+            class="form-control"
+            placeholder="Search invoice number, customer, note…"
+            value="{{ q }}"
+          >
+          {% if period %}<input type="hidden" name="period" value="{{ period }}">{% endif %}
+          {% if method %}<input type="hidden" name="method" value="{{ method }}">{% endif %}
+        </form>
+
+        <div class="filters-right">
+          <form method="get" class="d-flex flex-wrap gap-2">
+            {% if q %}
+              <input type="hidden" name="q" value="{{ q }}">
+            {% endif %}
+
+            <div>
+              <label class="small-muted d-block mb-1">Period</label>
+              <select name="period" class="filter-select">
+                <option value="">All</option>
+                <option value="today" {% if period == "today" %}selected{% endif %}>Today</option>
+                <option value="this_week" {% if period == "this_week" %}selected{% endif %}>This week</option>
+                <option value="this_month" {% if period == "this_month" %}selected{% endif %}>This month</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="small-muted d-block mb-1">Payment Mode</label>
+              <select name="method" class="filter-select">
+                <option value="">All</option>
+                <option value="Cash" {% if method == "Cash" %}selected{% endif %}>Cash</option>
+                <option value="UPI" {% if method == "UPI" %}selected{% endif %}>UPI</option>
+                <option value="Bank Transfer" {% if method == "Bank Transfer" %}selected{% endif %}>Bank Transfer</option>
+                <option value="Card" {% if method == "Card" %}selected{% endif %}>Card</option>
+                <option value="Cheque" {% if method == "Cheque" %}selected{% endif %}>Cheque</option>
+                <option value="Refund" {% if method == "Refund" %}selected{% endif %}>Refund</option>
+              </select>
+            </div>
+
+            <div class="d-flex align-items-end gap-2">
+              <button class="btn btn-primary btn-sm btn-filter" type="submit">
+                <i class="bi bi-funnel me-1"></i> Apply
+              </button>
+              <a href="{% url 'sales:payment_list' %}" class="btn-reset">Reset</a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Invoice</th>
+              <th>Customer</th>
+              <th>Type / Mode</th>
+              <th class="text-end">Amount</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in payments %}
+            <tr>
+              <!-- Date -->
+              <td>{{ p.date|date:"M d, Y" }}</td>
+
+              <!-- Invoice -->
+              <td>
+                {% if p.invoice %}
+                  <a href="{% url 'sales:invoice_detail' p.invoice.id %}">{{ p.invoice.number }}</a>
+                {% else %}
+                  <span class="small-muted">—</span>
+                {% endif %}
+              </td>
+
+              <!-- Customer -->
+              <td>
+                {% if p.invoice and p.invoice.customer %}
+                  {{ p.invoice.customer.name }}
+                {% else %}
+                  <span class="small-muted">—</span>
+                {% endif %}
+              </td>
+
+              <!-- Type / Mode -->
+              <td>
+                <div class="d-flex flex-column">
+                  <span class="method-pill">{{ p.method }}</span>
+                  <span class="small-muted mt-1">
+                    {% if p.is_refund %}
+                      Refund entry
+                    {% else %}
+                      Payment received
+                    {% endif %}
+                  </span>
+                </div>
+              </td>
+
+              <!-- Amount -->
+              <td class="text-end">
+                {% if p.is_refund %}
+                  <span class="amount-negative">−₹{{ p.amount|floatformat:2|intcomma }}</span>
+                {% else %}
+                  <span class="amount-positive">₹{{ p.amount|floatformat:2|intcomma }}</span>
+                {% endif %}
+              </td>
+
+              <!-- Actions -->
+              <td class="text-center action-btns">
+                <a class="btn btn-outline-secondary btn-sm"
+                   href="{% url 'sales:payment_detail' p.id %}">
+                  View
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="empty-state">
+                <i class="bi bi-credit-card-2-front d-block mb-2" style="font-size:2rem;"></i>
+                No payments found for the current filters.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Statement period: show/hide custom date range
+  const stmtPeriod = document.getElementById('statementPeriod');
+  const stmtCustom = document.getElementById('statementCustomDates');
+
+  function toggleStatementDates() {
+    if (!stmtPeriod || !stmtCustom) return;
+    if (stmtPeriod.value === 'custom') {
+      stmtCustom.style.display = 'flex';
+    } else {
+      stmtCustom.style.display = 'none';
+    }
+  }
+
+  if (stmtPeriod) {
+    stmtPeriod.addEventListener('change', toggleStatementDates);
+    toggleStatementDates();
+  }
+</script>
+{% endblock %}

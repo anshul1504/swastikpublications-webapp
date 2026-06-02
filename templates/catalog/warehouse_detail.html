@@ -1,0 +1,940 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}{{ warehouse.name|default:"Warehouse" }} · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root{
+    --primary:#157347;
+    --primary-soft:#e9f7f0;
+    --primary-strong:#0f5c38;
+    --accent:#2563eb;
+    --accent-soft:#e0edff;
+    --muted:#6b7280;
+    --ink:#0f172a;
+    --card:#ffffff;
+    --border:#e5e7eb;
+    --radius:16px;
+    --shadow-soft:0 10px 30px rgba(15,23,42,0.06);
+  }
+
+  body {
+    background:#f3f4f6 !important;
+    font-family:"Poppins", Inter, system-ui, -apple-system, "Segoe UI", Roboto;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  a { text-decoration:none; }
+
+  /* PAGE WRAPPER */
+  .detail-page{
+    max-width:1200px;
+    margin:18px auto 16px;
+    padding:0 16px 12px;
+  }
+
+  /* TOP BAR / BREADCRUMB */
+  .detail-topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .detail-breadcrumb{
+    font-size:12px;
+    color:var(--muted);
+  }
+  .detail-breadcrumb a{
+    color:var(--muted);
+  }
+  .detail-breadcrumb a:hover{
+    color:var(--accent);
+  }
+
+  /* HERO – light */
+  .hero{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:18px;
+    margin-bottom:12px;
+    border-radius:var(--radius);
+    padding:16px 18px 12px;
+    background:linear-gradient(135deg,#ffffff,#f9fafb);
+    border:1px solid #e5e7eb;
+    box-shadow:var(--shadow-soft);
+  }
+
+  .hero-left{
+    display:flex;
+    gap:16px;
+    align-items:center;
+  }
+
+  .hero-avatar{
+    width:64px;
+    height:64px;
+    border-radius:18px;
+    display:grid;
+    place-items:center;
+    font-size:26px;
+    color:#0f172a;
+    background:linear-gradient(135deg,#dcfce7,#bbf7d0);
+    border:1px solid #bbf7d0;
+  }
+
+  .hero-title h1{
+    margin:0;
+    font-size:1.45rem;
+    font-weight:700;
+    letter-spacing:-0.02em;
+    color:var(--ink);
+  }
+  .hero-sub{
+    margin-top:4px;
+    font-size:0.9rem;
+    color:var(--muted);
+    max-width:520px;
+  }
+
+  .hero-meta{
+    margin-top:8px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .hero-chip{
+    font-size:11px;
+    padding:5px 10px;
+    border-radius:999px;
+    background:#f3f4f6;
+    border:1px solid #e5e7eb;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    color:#4b5563;
+  }
+  .hero-chip-dot{
+    width:7px;
+    height:7px;
+    border-radius:999px;
+    background:#22c55e;
+  }
+  .hero-chip-dot.red{ background:#f97316; }
+  .hero-chip-dot.muted{ background:#9ca3af; }
+
+  /* ACTION BUTTONS */
+  .action-group{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+
+  .btn-solid{
+    background:linear-gradient(135deg,#22c55e,#16a34a);
+    color:#fff;
+    border:none;
+    padding:8px 15px;
+    border-radius:999px;
+    font-weight:600;
+    font-size:0.9rem;
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    
+    transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+  }
+  .btn-solid:hover{
+    transform:translateY(-1px);
+    filter:brightness(1.02);
+    
+  }
+
+  .btn-outline{
+    background:#ffffff;
+    border:1px solid #d1d5db;
+    padding:8px 13px;
+    border-radius:999px;
+    color:#111827;
+    font-weight:500;
+    font-size:0.87rem;
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    transition:all .15s ease;
+  }
+  .btn-outline:hover{
+    background:#f9fafb;
+  }
+
+  .dropdown-toggle{
+    border-radius:999px !important;
+    font-size:0.86rem;
+  }
+
+  /* LAYOUT GRID */
+  .grid{
+    display:grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.1fr);
+    gap:14px;
+    align-items:stretch;
+    margin:4px 0 2px;   /* yahi se gap kam */
+  }
+
+  /* CARD */
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    border:1px solid var(--border);
+    box-shadow:var(--shadow-soft);
+    padding:14px 16px 12px;
+  }
+
+  .card-header-inline{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:8px;
+  }
+
+  .card-title{
+    font-size:0.96rem;
+    font-weight:600;
+    color:var(--ink);
+  }
+  .card-subtitle{
+    font-size:0.82rem;
+    color:var(--muted);
+  }
+
+  /* DETAILS */
+  .detail-label{
+    font-size:0.78rem;
+    font-weight:600;
+    color:#4b5563;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+  }
+  .detail-value{
+    font-size:0.94rem;
+    color:var(--ink);
+    text-align:left;
+  }
+
+  .detail-block{
+    padding:8px 0;
+    border-bottom:1px dashed #e5e7eb;
+  }
+  .detail-block:last-of-type{
+    border-bottom:none;
+  }
+
+  .detail-two-cols{
+    display:flex;
+    gap:18px;
+    flex-wrap:wrap;
+  }
+  .detail-two-cols > div{
+    flex:0 0 50%;
+    max-width:50%;
+    min-width:220px;
+  }
+
+  .badge-status{
+    border-radius:999px;
+    padding:5px 11px;
+    font-size:0.78rem;
+    font-weight:600;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .badge-status.active{
+    background:var(--primary-soft);
+    color:var(--primary-strong);
+    border:1px solid rgba(34,197,94,0.4);
+  }
+  .badge-status.inactive{
+    background:#f3f4f6;
+    color:#6b7280;
+    border:1px solid #e5e7eb;
+  }
+
+  /* KPI STACK (RIGHT SUMMARY) */
+  .kpi-stack{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-top:4px;
+  }
+  .kpi{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:8px 11px;
+    border-radius:12px;
+    background:#f9fafb;
+    border:1px solid #e5e7eb;
+  }
+  .kpi-main{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .kpi-icon{
+    width:36px;
+    height:36px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    font-size:18px;
+    background:#ffffff;
+    border:1px solid #e5e7eb;
+  }
+  .kpi-value{
+    font-size:1.02rem;
+    font-weight:600;
+  }
+  .kpi-label{
+    font-size:0.8rem;
+    color:var(--muted);
+  }
+  .kpi-meta{
+    font-size:0.78rem;
+    color:var(--muted);
+  }
+
+  /* QUICK ACTIONS */
+  .quick-actions-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:8px;
+  }
+  .quick-pill{
+    border-radius:999px;
+    padding:7px 12px;
+    border:1px solid var(--border);
+    background:#f9fafb;
+    font-size:0.83rem;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    color:#111827;
+  }
+  .quick-pill:hover{
+    background:#f3f4f6;
+  }
+
+  /* SPARKLINE */
+  .sparkline-wrap{
+    margin-top:8px;
+    border-radius:14px;
+    padding:8px 10px 6px;
+    background:linear-gradient(135deg,#eff6ff,#ffffff);
+    border:1px dashed #dbeafe;
+  }
+  .sparkline-label{
+    font-size:0.8rem;
+    color:#4b5563;
+    margin-bottom:4px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+
+  /* BOTTOM: TABLE */
+  .section-block{
+    margin-top:6px;   /* bahut kam gap */
+  }
+  .section-heading{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:8px;
+  }
+  .section-title{
+    font-size:0.96rem;
+    font-weight:600;
+  }
+  .chip-soft{
+    font-size:0.78rem;
+    border-radius:999px;
+    padding:4px 9px;
+    background:var(--accent-soft);
+    color:#1d4ed8;
+    border:1px solid #bfdbfe;
+  }
+
+  .table-sm thead th{
+    font-size:0.75rem;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:#4b5563;
+    border-bottom:1px solid #e5e7eb;
+  }
+  .table-sm tbody td{
+    font-size:0.82rem;
+    vertical-align:middle;
+  }
+  .table-sm tbody tr:hover{
+    background:#f9fafb;
+  }
+
+  /* MODALS */
+  .modal-content{
+    border-radius:14px;
+  }
+
+  @media (max-width: 992px){
+    .grid{
+      grid-template-columns:1fr;
+    }
+    .hero{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+  }
+
+  @media (max-width: 576px){
+    .hero{
+      padding:14px 13px;
+    }
+    .hero-title h1{
+      font-size:1.25rem;
+    }
+  }
+
+  a:focus, button:focus{
+    outline:2px solid rgba(37,99,235,0.4);
+    outline-offset:2px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-page">
+
+  <!-- Top bar / breadcrumb -->
+  <div class="detail-topbar">
+    <div class="detail-breadcrumb">
+      <a href="{% url 'catalog:warehouse_list' %}">Warehouses</a>
+      <span> / </span>
+      <span>{{ warehouse.name|default:"Warehouse" }}</span>
+    </div>
+    <div class="small text-muted">
+      ID #{{ warehouse.id }}{% if warehouse.code %} · Code: {{ warehouse.code }}{% endif %}
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-avatar" aria-hidden="true">
+        <i class="bi bi-building"></i>
+      </div>
+      <div class="hero-title">
+        <h1>{{ warehouse.name|default:"Warehouse" }}</h1>
+        <div class="hero-sub">
+          {{ warehouse.address|truncatechars:140|default:"No address provided" }}
+        </div>
+        <div class="hero-meta">
+          <div class="hero-chip">
+            <span class="hero-chip-dot{% if not warehouse.is_active %} muted{% endif %}"></span>
+            Status: {% if warehouse.is_active %}Active{% else %}Inactive{% endif %}
+          </div>
+          <div class="hero-chip">
+            <span class="hero-chip-dot red"></span>
+            Created {{ warehouse.created_at|date:"d M Y" }} · Updated {{ warehouse.updated_at|date:"d M Y" }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-group" role="group" aria-label="warehouse actions">
+      <a href="{% url 'catalog:warehouse_list' %}" class="btn-outline" title="Back to list">
+        <i class="bi bi-chevron-left"></i> Back
+      </a>
+      <a href="{% url 'catalog:warehouse_edit' warehouse.id %}" class="btn-solid" title="Edit warehouse">
+        <i class="bi bi-pencil"></i> Edit
+      </a>
+
+      <div class="dropdown">
+        <button class="btn-outline dropdown-toggle" type="button" id="moreActions" data-bs-toggle="dropdown" aria-expanded="false">
+          More
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="moreActions">
+          <li>
+            <a class="dropdown-item" href="{% url 'catalog:warehouse_export' %}?q={{ warehouse.name|urlencode }}">
+              <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="{% url 'catalog:warehouse_export_xlsx' %}?q={{ warehouse.name|urlencode }}">
+              <i class="bi bi-file-earmark-excel me-1"></i> Export Excel
+            </a>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <a class="dropdown-item text-danger"
+               data-bs-toggle="modal"
+               data-bs-target="#deleteModal"
+               data-delete-url="{% url 'catalog:warehouse_delete' warehouse.id %}"
+               data-name="{{ warehouse.name|escape }}">
+              <i class="bi bi-trash me-1"></i> Delete Warehouse
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRID -->
+  <div class="grid">
+    <!-- LEFT COLUMN: DETAILS -->
+    <div>
+      <div class="card" aria-live="polite">
+        <div class="card-header-inline">
+          <div>
+            <div class="card-title">Warehouse details</div>
+            <div class="card-subtitle">Operational & contact info</div>
+          </div>
+          <span class="badge-status {% if warehouse.is_active %}active{% else %}inactive{% endif %}">
+            {% if warehouse.is_active %}
+              <span class="hero-chip-dot"></span> Active
+            {% else %}
+              <span class="hero-chip-dot muted"></span> Inactive
+            {% endif %}
+          </span>
+        </div>
+
+        <!-- Contact -->
+        <div class="detail-block">
+          <div class="detail-label">Contact</div>
+          <div class="detail-value mt-1">
+            <span data-field="phone">{{ warehouse.phone|default:"—" }}</span>
+            &nbsp; · &nbsp;
+            {% if warehouse.email %}
+              <a href="mailto:{{ warehouse.email }}" data-field="email">{{ warehouse.email }}</a>
+            {% else %}
+              <span data-field="email">—</span>
+            {% endif %}
+          </div>
+          <div class="card-subtitle mt-1">
+            Use for dispatch, transport & communication.
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div class="detail-block">
+          <div class="detail-label">Address</div>
+          <div class="detail-value mt-1" style="white-space:pre-wrap;" data-field="address">
+            {{ warehouse.address|default:"—" }}
+          </div>
+        </div>
+
+        <!-- Manager + Opening hours (clean 2 col) -->
+        <div class="detail-block">
+          <div class="detail-two-cols">
+            <div>
+              <div class="detail-label">Manager</div>
+              <div class="detail-value mt-1">
+                <span data-field="manager_name">{{ warehouse.manager_name|default:"—" }}</span>
+              </div>
+            </div>
+            <div>
+              <div class="detail-label">Opening hours</div>
+              <div class="detail-value mt-1">
+                <span data-field="opening_hours">
+                  {{ warehouse.opening_hours|default:"—" }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="detail-block" style="border-bottom:none;">
+          <div class="detail-label">Internal notes</div>
+          <div class="card-subtitle mt-1">
+            <span data-field="notes">
+              {% if warehouse.notes %}{{ warehouse.notes }}{% else %}No internal notes yet.{% endif %}
+            </span>
+          </div>
+        </div>
+
+        
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: SUMMARY + SPARKLINE + QUICK ACTIONS -->
+    <div>
+      <div class="card">
+        <div class="card-header-inline">
+          <div>
+            <div class="card-title">Warehouse summary</div>
+            <div class="card-subtitle">
+              Last sync:
+              {% if last_sync %}
+                <strong>{{ last_sync|date:"d M Y H:i" }}</strong>
+              {% else %}
+                <strong>Never</strong>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="kpi-stack">
+          <div class="kpi">
+            <div class="kpi-main">
+              <div class="kpi-icon">
+                <i class="bi bi-box-seam"></i>
+              </div>
+              <div>
+                <div class="kpi-value">{{ stock_count|default:"—" }}</div>
+                <div class="kpi-label">Unique SKUs in this warehouse</div>
+              </div>
+            </div>
+            <div class="kpi-meta">Live snapshot</div>
+          </div>
+
+          <div class="kpi">
+            <div class="kpi-main">
+              <div class="kpi-icon">
+                <i class="bi bi-stack"></i>
+              </div>
+              <div>
+                <div class="kpi-value">{{ stock_qty|default:"—"|intcomma }}</div>
+                <div class="kpi-label">Total quantity on hand</div>
+              </div>
+            </div>
+            <div class="kpi-meta">Units across all SKUs</div>
+          </div>
+
+          <div class="kpi">
+            <div class="kpi-main">
+              <div class="kpi-icon">
+                <i class="bi bi-arrow-left-right"></i>
+              </div>
+              <div>
+                <div class="kpi-value">{{ transfers_count|default:"—" }}</div>
+                <div class="kpi-label">Transfers & movements</div>
+              </div>
+            </div>
+            <div class="kpi-meta">Count of transfer-tagged entries</div>
+          </div>
+        </div>
+
+        <div class="sparkline-wrap">
+          <div class="sparkline-label">
+            <span>Stock trend</span>
+            <span class="card-subtitle">Last 20 checkpoints</span>
+          </div>
+          <div style="height:86px;">
+            <canvas id="stockSparkline" aria-label="Stock trend"></canvas>
+          </div>
+        </div>
+
+        <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:8px;">
+          <a href="{% url 'catalog:warehouse_export' %}?q={{ warehouse.name|urlencode }}" class="quick-pill">
+            <i class="bi bi-download"></i> Export CSV
+          </a>
+          <a href="{% url 'catalog:warehouse_export_xlsx' %}?q={{ warehouse.name|urlencode }}" class="quick-pill">
+            <i class="bi bi-file-earmark-excel"></i> Export XLSX
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="card section-block" style="margin-top:6px;">
+        <div class="card-header-inline">
+          <div>
+            <div class="card-title">Quick actions</div>
+            <div class="card-subtitle">Frequently used operations</div>
+          </div>
+        </div>
+
+        <div class="quick-actions-grid">
+          <a class="quick-pill" href="{% url 'catalog:warehouse_edit' warehouse.id %}">
+            <i class="bi bi-pencil-square"></i> Edit warehouse
+          </a>
+          <a class="quick-pill" href="{% url 'catalog:warehouse_add' %}">
+            <i class="bi bi-plus-circle"></i> New warehouse
+          </a>
+          <button class="quick-pill" type="button"
+                  data-bs-toggle="modal"
+                  data-bs-target="#deleteModal"
+                  data-delete-url="{% url 'catalog:warehouse_delete' warehouse.id %}"
+                  data-name="{{ warehouse.name|escape }}">
+            <i class="bi bi-trash"></i> Delete
+          </button>
+
+          <form id="deactivateForm" method="post" action="{% url 'catalog:warehouse_deactivate' warehouse.id %}">
+            {% csrf_token %}
+            <button type="submit" class="quick-pill" id="btnDeactivate" title="Deactivate or activate warehouse">
+              <i class="bi bi-toggle-off"></i>
+              {% if warehouse.is_active %}Deactivate{% else %}Activate{% endif %}
+            </button>
+          </form>
+        </div>
+
+        <div class="card-subtitle mt-2">
+          Tip: Prefer <strong>Deactivate</strong> instead of delete to preserve stock history.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+
+</div>
+
+<!-- INLINE EDIT MODAL -->
+<div class="modal fade" id="inlineEditModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form id="inlineEditForm" method="post" action="{% url 'catalog:warehouse_inline_update' warehouse.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Quick edit – {{ warehouse.name }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <p class="card-subtitle mb-2">
+            Update only commonly used fields. For full edit, use the main “Edit warehouse” form.
+          </p>
+
+          {% if has_manager %}
+            <div class="mb-2">
+              <label class="form-label">Manager name</label>
+              <input name="manager_name" id="inline_manager_name" class="form-control"
+                     value="{{ warehouse.manager_name|default_if_none:'' }}">
+            </div>
+          {% endif %}
+
+          {% if has_opening %}
+            <div class="mb-2">
+              <label class="form-label">Opening hours</label>
+              <input name="opening_hours" id="inline_opening_hours" class="form-control"
+                     value="{{ warehouse.opening_hours|default_if_none:'' }}"
+                     placeholder="e.g. Mon–Sat 10:00–18:00">
+            </div>
+          {% endif %}
+
+          {% if has_notes %}
+            <div class="mb-2">
+              <label class="form-label">Internal notes</label>
+              <textarea name="notes" id="inline_notes" class="form-control" rows="3">{{ warehouse.notes|default_if_none:'' }}</textarea>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="" id="deleteForm">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Delete warehouse</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Are you sure you want to permanently delete
+            <strong id="deleteName">this warehouse</strong>?
+          </p>
+          <div class="card-subtitle mt-1">
+            This action cannot be undone. Prefer deactivating if you only want to hide it.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Yes, delete</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+/* Delete modal wiring */
+(function(){
+  const deleteModal = document.getElementById('deleteModal');
+  if(!deleteModal) return;
+  deleteModal.addEventListener('show.bs.modal', function(e){
+    const btn = e.relatedTarget;
+    const url = btn && btn.getAttribute('data-delete-url');
+    const name = btn && btn.getAttribute('data-name') || 'this warehouse';
+    const form = document.getElementById('deleteForm');
+    if(form && url) form.action = url;
+    const n = document.getElementById('deleteName');
+    if(n) n.textContent = name;
+  });
+  deleteModal.addEventListener('hidden.bs.modal', function(){
+    const form = document.getElementById('deleteForm');
+    if(form) form.action = '';
+    const n = document.getElementById('deleteName');
+    if(n) n.textContent = 'this warehouse';
+  });
+})();
+
+/* Inline edit AJAX */
+(function(){
+  const inlineForm = document.getElementById('inlineEditForm');
+  if(!inlineForm) return;
+
+  inlineForm.addEventListener('submit', function(ev){
+    ev.preventDefault();
+    const url = inlineForm.action;
+    const formData = new FormData(inlineForm);
+
+    fetch(url, {
+      method: 'POST',
+      body: formData,
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if(!data || !data.ok){
+        alert(data && data.error ? data.error : 'Update failed');
+        return;
+      }
+      const updated = data.updated || {};
+
+      const setText = (field, val) => {
+        const el = document.querySelector('[data-field="'+field+'"]');
+        if(!el) return;
+        el.textContent = (val === null || val === '') ? '—' : val;
+      };
+
+      if(updated.manager_name !== undefined) setText('manager_name', updated.manager_name);
+      if(updated.opening_hours !== undefined) setText('opening_hours', updated.opening_hours);
+      if(updated.notes !== undefined) setText('notes', updated.notes);
+      if(updated.phone !== undefined) setText('phone', updated.phone);
+      if(updated.email !== undefined){
+        const el = document.querySelector('[data-field="email"]');
+        if(el && updated.email){
+          el.innerHTML = '<a href="mailto:'+updated.email+'">'+updated.email+'</a>';
+        } else if(el){
+          el.textContent = '—';
+        }
+      }
+
+      const modalEl = document.getElementById('inlineEditModal');
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if(modal) modal.hide();
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Network error while updating.');
+    });
+  });
+})();
+
+/* Deactivate / activate AJAX */
+(function(){
+  const form = document.getElementById('deactivateForm');
+  if(!form) return;
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    if(!confirm('Toggle active status for this warehouse?')) return;
+    const fd = new FormData(form);
+    fetch(form.action, {
+      method: 'POST',
+      body: fd,
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if(!data || !data.ok){
+        alert(data && data.error ? data.error : 'Failed to update status');
+        return;
+      }
+      const isActive = !!data.is_active;
+
+      const badge = document.querySelector('.badge-status');
+      if(badge){
+        badge.classList.toggle('active', isActive);
+        badge.classList.toggle('inactive', !isActive);
+        badge.innerHTML = (isActive
+          ? '<span class="hero-chip-dot"></span> Active'
+          : '<span class="hero-chip-dot muted"></span> Inactive');
+      }
+
+      const btn = document.getElementById('btnDeactivate');
+      if(btn){
+        btn.innerHTML = '<i class="bi bi-toggle-off"></i> ' + (isActive ? 'Deactivate' : 'Activate');
+      }
+
+      alert('Status updated');
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Network error');
+    });
+  });
+})();
+
+/* Stock sparkline (Chart.js) */
+(function(){
+  const canvas = document.getElementById('stockSparkline');
+  if(!canvas) return;
+  const labels = JSON.parse('{{ spark_labels_json|default:"[]"|escapejs }}');
+  const values = JSON.parse('{{ spark_values_json|default:"[]"|escapejs }}');
+
+  new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        fill: true,
+        tension: 0.35,
+        pointRadius: 0,
+        backgroundColor: 'rgba(37,99,235,0.08)',
+        borderColor: 'rgba(37,99,235,0.95)',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{ display:false },
+        tooltip:{
+          mode:'index',
+          intersect:false
+        }
+      },
+      scales:{
+        x:{ display:false },
+        y:{ display:false }
+      }
+    }
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,536 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Collection Center · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root{
+    --primary:#157347;
+    --primary-dark:#0f5c38;
+    --accent:#2563eb;
+    --muted:#4b5563;
+    --text-dark:#111827;
+    --border:#d1d5db;
+    --card-bg:#ffffff;
+    --soft-bg:#f9fafb;
+    --danger:#dc2626;
+    --radius:12px;
+    --shadow:0 6px 20px rgba(0,0,0,0.04);
+    --shadow-hover:0 14px 28px rgba(0,0,0,0.07);
+  }
+
+  body{
+    background:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    color:var(--text-dark);
+  }
+
+  .container-wide{
+    max-width:1150px;
+    margin:0 auto;
+    padding:18px 12px 40px;
+  }
+
+  /* Header */
+  .page-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:18px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+  }
+  .page-heading{
+    font-size:1.5rem;
+    font-weight:600;
+    margin:0;
+    color:var(--text-dark);
+  }
+  .page-sub{
+    color:var(--muted);
+    font-size:13.5px;
+    margin-top:6px;
+  }
+
+  /* Chips */
+  .meta-chips{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:12px;
+  }
+  .chip{
+    background:#f9fafb;
+    color:#1e293b;
+    border:1px solid #e5e7eb;
+    padding:8px 14px;
+    border-radius:999px;
+    font-size:12.5px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-weight:500;
+  }
+  .chip strong{ font-weight:600; color:var(--text-dark); }
+  .chip.danger{ background:#fff7ed; border-color:#fed7aa; }
+
+  /* Header Actions - fixed spacing */
+  .header-actions{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+
+  .header-actions .btn{
+    padding:9px 14px;
+    border-radius:9px;
+    font-weight:600;
+    font-size:0.95rem;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border:1px solid var(--border);
+    background:#fff;
+    color:var(--text-dark);
+    text-decoration:none;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+
+  .header-actions .btn-sm{ padding:7px 10px; font-size:0.9rem; }
+
+  .btn-outline{
+    background:transparent;
+    border:1.2px solid var(--border);
+  }
+  .btn-outline:hover{
+    border-color:var(--accent);
+    color:var(--accent);
+    background:#f8fafc;
+  }
+
+  .btn-primary{
+    background:var(--primary-dark) !important;
+    color:#fff !important;
+    border:none;
+    
+  }
+  .btn-primary:hover{ background-color: #d44f4f !important; color: #fff; transform:translateY(-2px); }
+
+  /* Export Buttons - separate and aligned */
+  .export-buttons{
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+  .btn-export{
+    padding:8px 12px;
+    border-radius:9px;
+    border:1px solid var(--border);
+    background:#ffffff;
+    color:#374151;
+    font-weight:600;
+    font-size:0.92rem;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    transition:all .18s ease;
+  }
+  .btn-export:hover{
+    background:#2c5e86;
+    color:#fff;
+    border-color:#2c5e86;
+    transform:translateY(-1px);
+  }
+  /* subtle spacing fix for header overflow on small screens */
+  @media (max-width:880px){
+    .header-actions{ gap:8px; justify-content:flex-end; }
+  }
+
+  /* KPI Cards */
+  .kpi-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:14px;
+    margin:22px 0;
+  }
+  .kpi{
+    background:var(--card-bg);
+    border-radius:14px;
+    padding:14px;
+    border:1px solid var(--border);
+    display:flex;
+    gap:14px;
+    align-items:center;
+  }
+  .kpi-icon{
+    width:46px;
+    height:46px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    font-size:20px;
+    flex-shrink:0;
+  }
+  .kpi h6{ font-size:11.5px; color:var(--muted); margin:0; text-transform:uppercase; letter-spacing:.06em; }
+  .kpi .value{ font-size:20px; font-weight:700; color:var(--text-dark); }
+  .kpi .value.danger{ color:var(--danger); }
+
+  /* Filter Card */
+  .filter-card{ background:var(--card-bg); border-radius:12px; padding:14px; border:1px solid var(--border); margin-bottom:18px; }
+  .filter-row{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+  .search-box{ position:relative; max-width:420px; flex:1; }
+  .search-box i{ position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); }
+  .search-box input{ width:100%; padding:11px 14px 11px 40px; border-radius:10px; border:1px solid var(--border); font-size:0.95rem; }
+  select.styled, input.small, .form-select{ padding:10px 12px; border-radius:10px; border:1px solid var(--border); font-size:0.95rem; min-width:160px; }
+  select.styled:focus, input.small:focus, .form-select:focus{ outline:none; box-shadow:0 0 0 4px rgba(21,115,71,0.08); border-color:var(--primary); }
+
+  /* Table Card */
+  .table-card{ border-radius:14px; overflow:hidden; border:1px solid var(--border); background:var(--card-bg); }
+  .table thead th{ background:var(--soft-bg); padding:14px 18px; font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:#374151; border-bottom:1px solid var(--border); text-align:left; }
+  .table tbody td{ padding:14px 18px; font-size:13.6px; color:var(--text-dark); vertical-align:middle; }
+  .table tbody tr:hover{ background:#f9fafb; }
+
+  .badge, .chip-status{ padding:6px 10px; border-radius:999px; font-weight:600; font-size:12px; display:inline-flex; align-items:center; gap:8px; }
+  .badge-paid{ background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; }
+  .badge-partial{ background:#fff7ed; color:#92400e; border:1px solid #fed7aa; }
+  .badge-unpaid{ background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
+
+  .balance-pill{ display:inline-block; padding:8px 12px; border-radius:999px; font-weight:700; color:var(--danger); background:#fee2e2; border:1px solid #fecaca; }
+  .overdue-tag{ padding:6px 10px; border-radius:10px; font-weight:700; font-size:13px; }
+  .overdue-low{ background:#fff7ed; color:#d97706; border:1px solid #fed7aa; }
+  .overdue-high{ background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
+
+  .action-btns{ display:flex; gap:8px; align-items:center; }
+  .icon-btn{ width:42px; height:42px; border-radius:12px; background:#f3f4f6; display:grid; place-items:center; border:1px solid var(--border); cursor:pointer; transition:all .13s ease; }
+  .icon-btn:hover{ background:#ecfdf5; transform:translateY(-2px); }
+
+  /* Mobile */
+  .mobile-cards{ display:none; }
+  @media (max-width:880px){
+    .table{ display:none; }
+    .mobile-cards{ display:block; }
+    .header-actions{ width:100%; justify-content:flex-end; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-wide">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <h3 class="page-heading">Collection Center</h3>
+      <div class="page-sub">Unpaid & partially paid invoices — smart follow-ups for collections teams.</div>
+
+      <div class="meta-chips">
+        <div class="chip">
+          {% if invoice_count %}
+            <strong>{{ invoice_count }}</strong>
+          {% else %}
+            <strong>{{ invoices|length }}</strong>
+          {% endif %}
+          invoices in collection
+        </div>
+        <div class="chip">
+          Total value <strong>₹{{ total_value|floatformat:2 }}</strong>
+        </div>
+        <div class="chip danger">
+          Outstanding <strong>₹{{ total_outstanding|floatformat:2 }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <a href="{% url 'sales:invoice_list' %}" class="btn btn-outline btn-sm">
+        <i class="bi bi-card-list"></i> All Invoices
+      </a>
+
+      <!-- EXPORT: separate buttons -->
+      <div class="export-buttons" aria-label="Export">
+        <button class="btn-export" data-format="csv" type="button"><i class="bi bi-filetype-csv"></i> CSV</button>
+        <button class="btn-export" data-format="xlsx" type="button"><i class="bi bi-file-earmark-spreadsheet"></i> Excel</button>
+        <button class="btn-export" data-format="pdf" type="button"><i class="bi bi-file-earmark-pdf"></i> PDF</button>
+      </div>
+
+      <a href="{% url 'sales:payment_add' %}" class="btn btn-outline btn-sm">
+        <i class="bi bi-cash-stack"></i> Record Payment
+      </a>
+
+      <a href="{% url 'sales:invoice_add' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg"></i> New Invoice
+      </a>
+
+      <select id="bulkActionSelect" class="form-select" style="width:200px;">
+        <option value="">Bulk actions</option>
+        <option value="mark_paid">Mark selected as Paid</option>
+        <option value="export_csv">Export selected (CSV)</option>
+        <option value="send_whatsapp">Send WhatsApp reminder</option>
+      </select>
+
+      <button id="runBulkBtn" class="btn btn-primary btn-sm" type="button">Run</button>
+    </div>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-icon blue"><i class="bi bi-receipt"></i></div>
+      <div>
+        <h6>In Collection</h6>
+        <div class="value">{% if invoice_count %}{{ invoice_count }}{% else %}{{ invoices|length }}{% endif %}</div>
+      </div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-icon red"><i class="bi bi-exclamation-triangle"></i></div>
+      <div>
+        <h6>Outstanding Amount</h6>
+        <div class="value danger">₹{{ total_outstanding|floatformat:2 }}</div>
+      </div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-icon green"><i class="bi bi-wallet2"></i></div>
+      <div>
+        <h6>Total Invoice Value</h6>
+        <div class="value">₹{{ total_value|floatformat:2 }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filter-card">
+    <div class="filter-row">
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="text" id="q" value="{{ q|default:'' }}" placeholder="Search invoice #, customer, phone">
+      </div>
+
+      <select id="customer" class="styled">
+        <option value="">All customers</option>
+        {% for c in customers %}
+          <option value="{{ c.id }}" {% if customer_id|stringformat:"s" == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+
+      <select id="status" class="styled">
+        <option value="">Any status</option>
+        <option value="unpaid" {% if status == 'unpaid' %}selected{% endif %}>Unpaid</option>
+        <option value="partial" {% if status == 'partial' %}selected{% endif %}>Partial</option>
+      </select>
+
+      <input type="number" id="min_days" class="small" value="{{ min_days|default:'' }}" placeholder="Min days overdue" style="width:160px;">
+
+      <div style="margin-left:auto; display:flex; gap:10px;">
+        <button id="applyBtn" type="button" class="btn btn-primary btn-sm">Apply</button>
+        <button id="clearBtn" type="button" class="btn btn-outline btn-sm">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <form id="bulkForm" method="post" action="{% url 'sales:bulk_invoice_action' %}">{% csrf_token %}
+      <input type="hidden" name="action" id="bulk_action_input" value="">
+      <table class="table">
+        <thead>
+          <tr>
+            <th style="width:50px"><input type="checkbox" id="checkAll"></th>
+            <th>Invoice</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th style="text-align:right">Amount</th>
+            <th style="text-align:right">Balance</th>
+            <th style="text-align:right">Age</th>
+            <th style="text-align:center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inv in invoices %}
+          <tr>
+            <td><input type="checkbox" class="rowCheck" name="invoice_ids[]" value="{{ inv.id }}" data-balance="{{ inv.balance_due|floatformat:2 }}"></td>
+            <td>
+              <div style="font-weight:700;"><a href="{% url 'sales:invoice_detail' inv.id %}">{{ inv.number }}</a></div>
+              {% if inv.status == 'paid' %}
+                <span class="badge-paid badge">Paid</span>
+              {% elif inv.status == 'partial' %}
+                <span class="badge-partial badge">Partial</span>
+              {% else %}
+                <span class="badge-unpaid badge">Unpaid</span>
+              {% endif %}
+            </td>
+            <td>
+              <div style="font-weight:600;">{{ inv.customer.name|default:"—" }}</div>
+              <div style="color:var(--muted); font-size:13px;">{{ inv.customer.company|default:"" }}</div>
+            </td>
+            <td>{{ inv.date|date:"d M, Y" }}</td>
+            <td style="text-align:right; font-weight:600;">₹{{ inv.grand_total|floatformat:2 }}</td>
+            <td style="text-align:right"><span class="balance-pill">₹{{ inv.balance_due|floatformat:2 }}</span></td>
+            <td style="text-align:right">
+              {% if inv.days_overdue <= 7 %}
+                <span style="color:var(--muted)">{{ inv.days_overdue }} days</span>
+              {% elif inv.days_overdue <= 30 %}
+                <span class="overdue-tag overdue-low">{{ inv.days_overdue }} days</span>
+              {% else %}
+                <span class="overdue-tag overdue-high">{{ inv.days_overdue }} days</span>
+              {% endif %}
+            </td>
+            <td style="text-align:center;">
+              <div class="action-btns">
+                <a href="{% url 'sales:invoice_mark_paid' inv.id %}" class="icon-btn" title="Record Payment"><i class="bi bi-cash"></i></a>
+                <button type="button" class="icon-btn wa-btn" data-name="{{ inv.customer.name|escapejs }}" data-inv="{{ inv.number }}" data-bal="{{ inv.balance_due|floatformat:2 }}" title="Send WhatsApp reminder"><i class="bi bi-whatsapp"></i></button>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" style="text-align:center; padding:60px; color:var(--muted);">No unpaid invoices — great job!</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </form>
+
+    <!-- MOBILE CARDS -->
+    <div class="mobile-cards" style="display:none; padding:20px;">
+      {% for inv in invoices %}
+      <div class="card-lite mobile-card" style="margin-bottom:14px;">
+        <div class="mobile-header" style="display:flex; justify-content:space-between;">
+          <div>
+            <div style="font-weight:700; font-size:1.05rem;"><a href="{% url 'sales:invoice_detail' inv.id %}">{{ inv.number }}</a></div>
+            <div class="mobile-meta" style="color:var(--muted); margin-top:6px;">{{ inv.customer.name|default:"—" }} • {{ inv.date|date:"d M Y" }}</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="balance-pill">₹{{ inv.balance_due|floatformat:2 }}</div>
+            <div style="font-size:13px; color:var(--muted); margin-top:6px;">{{ inv.days_overdue }} days</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:12px; margin-top:12px;">
+          <a href="{% url 'sales:invoice_mark_paid' inv.id %}" class="btn btn-outline" style="flex:1;">Record</a>
+          <button class="btn btn-primary wa-btn" style="flex:1;" data-name="{{ inv.customer.name|escapejs }}" data-inv="{{ inv.number }}" data-bal="{{ inv.balance_due|floatformat:2 }}">WhatsApp</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Toast & Modal placeholders -->
+<div class="toasts" id="toasts"></div>
+<div id="confirmModal" style="display:none;">...</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+  // logic unchanged — only UI tweaks above
+  const applyBtn = document.getElementById('applyBtn');
+  const clearBtn = document.getElementById('clearBtn');
+
+  function buildQuery(params) {
+    return Object.keys(params).filter(k => params[k] !== '' && params[k] !== null && params[k] !== undefined)
+      .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
+      .join('&');
+  }
+
+  applyBtn?.addEventListener('click', function(){
+    const q = document.getElementById('q')?.value || '';
+    const customer = document.getElementById('customer')?.value || '';
+    const status = document.getElementById('status')?.value || '';
+    const min_days = document.getElementById('min_days')?.value || '';
+
+    const params = { q: q, customer: customer, status: status, min_days: min_days };
+    const query = buildQuery(params);
+    window.location.href = (query ? '?' + query : location.pathname);
+  });
+
+  clearBtn?.addEventListener('click', function(){ window.location.href = location.pathname; });
+
+  // Check all
+  const checkAll = document.getElementById('checkAll');
+  checkAll?.addEventListener('change', function(){ const checked = this.checked; document.querySelectorAll('.rowCheck').forEach(cb => cb.checked = checked); });
+
+  // Export buttons (separate now) - append current filters
+  document.querySelectorAll('.btn-export').forEach(btn => {
+    btn.addEventListener('click', function(e){
+      const format = this.dataset.format;
+      const params = new URLSearchParams(window.location.search);
+      params.set('export', format);
+      window.location.href = window.location.pathname + '?' + params.toString();
+    });
+  });
+
+  // WhatsApp quick reminder
+  document.querySelectorAll('.wa-btn').forEach(el => {
+    el.addEventListener('click', function(){
+      const name = this.dataset.name || '';
+      const inv = this.dataset.inv || '';
+      const bal = this.dataset.bal || '';
+      const phonePlaceholder = '{{ default_whatsapp_phone|default:"" }}';
+      const msg = encodeURIComponent(`Hello ${name},\nThis is a reminder for invoice ${inv}. Outstanding amount: ₹${bal}.\nPlease pay at the earliest.\n\n- {{ company_name|default:"Your Company" }}`);
+      const waUrl = phonePlaceholder ? `https://wa.me/${phonePlaceholder}?text=${msg}` : `https://web.whatsapp.com/send?text=${msg}`;
+      window.open(waUrl, '_blank');
+    });
+  });
+
+  // Bulk Run: validation + submit
+  document.getElementById('runBulkBtn').addEventListener('click', function(){
+    const sel = document.getElementById('bulkActionSelect');
+    if(!sel || !sel.value){ alert('Please choose a bulk action first.'); return; }
+    const form = document.getElementById('bulkForm');
+    if(!form){ alert('Form not found. Please reload the page.'); return; }
+
+    const checkedBoxes = Array.from(form.querySelectorAll('input.rowCheck:checked'));
+    if(checkedBoxes.length === 0){ alert('Please select at least one invoice to run the bulk action.'); return; }
+
+    const action = sel.value;
+    let sum = 0;
+    checkedBoxes.forEach(cb => {
+      const db = cb.getAttribute('data-balance');
+      if(db){ sum += parseFloat(db.toString().replace(/,/g,'')) || 0; }
+      else {
+        const tr = cb.closest('tr');
+        const balEl = tr && tr.querySelector('.balance-pill');
+        if(balEl){ const text = balEl.textContent.replace(/[^0-9.\-]/g,'').trim(); sum += parseFloat(text) || 0; }
+      }
+    });
+
+    if(action === 'mark_paid'){
+      const confirmMsg = (sum > 0)
+        ? `Mark ${checkedBoxes.length} invoice(s) as paid? This will record payments totalling ₹${sum.toFixed(2)}. Proceed?`
+        : `Mark ${checkedBoxes.length} invoice(s) as paid? Proceed?`;
+      if(!confirm(confirmMsg)) return;
+    }
+
+    let actionInput = document.getElementById('bulk_action_input');
+    if(!actionInput){
+      actionInput = document.createElement('input');
+      actionInput.type = 'hidden';
+      actionInput.name = 'action';
+      actionInput.id = 'bulk_action_input';
+      form.appendChild(actionInput);
+    }
+    actionInput.value = action;
+    form.submit();
+  });
+
+  // Mobile view toggle
+  function updateMobileVisibility(){
+    if (window.innerWidth <= 880) {
+      document.querySelectorAll('.table').forEach(t => t.style.display = 'none');
+      document.querySelectorAll('.mobile-cards').forEach(m => m.style.display = 'block');
+    } else {
+      document.querySelectorAll('.table').forEach(t => t.style.display = '');
+      document.querySelectorAll('.mobile-cards').forEach(m => m.style.display = 'none');
+    }
+  }
+  window.addEventListener('resize', updateMobileVisibility);
+  updateMobileVisibility();
+
+})();
+</script>
+{% endblock %}

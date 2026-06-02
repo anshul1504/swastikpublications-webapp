@@ -1,0 +1,602 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Product Stock · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --primary:#157347;
+    --primary-dark:#0f5c38;
+    --accent:#2563eb;
+    --muted:#6b7280;
+    --text-dark:#111827;
+    --border:#e5e7eb;
+    --card-bg:#ffffff;
+    --soft-bg:#f9fafb;
+    --danger:#dc2626;
+    --success:#16a34a;
+  }
+
+  body{
+    background:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    color:var(--text-dark);
+  }
+
+  .ps-page{
+    width:100%;
+  }
+  .ps-container{
+    max-width:1150px;
+    margin:0 auto;
+    padding:14px 6px 20px;
+  }
+
+  /* HEADER */
+  .ps-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:18px;
+    margin-bottom:14px;
+  }
+  .ps-heading{
+    font-weight:600;
+    color:var(--text-dark);
+    font-size:1.45rem;
+  }
+  .ps-sub{
+    color:var(--muted);
+    font-size:13.5px;
+    margin-top:4px;
+  }
+  .ps-meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:8px;
+  }
+  .ps-meta-chip{
+    font-size:12px;
+    padding:6px 12px;
+    border-radius:999px;
+    background:#eef2ff;
+    color:#1e293b;
+    border:1px solid #e0e7ff;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .ps-meta-dot{
+    width:6px;
+    height:6px;
+    border-radius:999px;
+    background:#16a34a;
+  }
+
+  .ps-header-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:flex-end;
+  }
+  .ps-page .btn-sm{
+    font-size:0.9rem;
+    padding:0.45rem 1.05rem;
+    border-radius:9px;
+  }
+  .ps-page .btn{
+    border-radius:9px;
+  }
+  .btn-primary{
+    background-color:var(--primary);
+    border-color:var(--primary);
+  }
+  .btn-primary:hover{
+    background-color:var(--primary-dark);
+    border-color:var(--primary-dark);
+  }
+  .btn-outline-secondary{
+    border-color:#cbd5f5;
+    color:#374151;
+  }
+  .btn-outline-secondary:hover{
+    border-color:var(--accent);
+    color:var(--accent);
+    background:#eff6ff;
+  }
+
+  /* KPI ROW */
+  .kpi-row{
+    margin-bottom:14px;
+  }
+  .kpi{
+    background:var(--card-bg);
+    border-radius:14px;
+    padding:12px 14px;
+    box-shadow:0 6px 20px rgba(15,23,42,0.04);
+    border:1px solid var(--border);
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+  }
+  .kpi-icon{
+    width:32px;
+    height:32px;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:17px;
+    flex-shrink:0;
+  }
+  .kpi-icon.green{ background:#dcfce7; color:#15803d; }
+  .kpi-icon.blue{ background:#dbeafe; color:#1d4ed8; }
+  .kpi-icon.amber{ background:#fef3c7; color:#92400e; }
+  .kpi-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--muted);
+  }
+  .kpi-value{
+    font-size:1.15rem;
+    font-weight:600;
+    color:var(--text-dark);
+    margin-top:2px;
+  }
+  .kpi-hint{
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  /* MAIN CARD */
+  .card-lite{
+    background:var(--card-bg);
+    border-radius:16px;
+    box-shadow:0 4px 18px rgba(0,0,0,0.03);
+    border:1px solid var(--border);
+    padding:16px 18px;
+  }
+  .section-title{
+    font-weight:600;
+    font-size:15px;
+    margin-bottom:3px;
+    color:var(--text-dark);
+  }
+  .small-muted{
+    color:var(--muted);
+    font-size:12.5px;
+  }
+
+  /* FILTER ROW */
+  .filters-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:12px;
+  }
+  .search-bar{
+    position:relative;
+    flex:1;
+    min-width:240px;
+    max-width:360px;
+  }
+  .search-bar input{
+    border-radius:10px;
+    font-size:0.85rem;
+    padding-left:34px;
+    border:1px solid var(--border);
+  }
+  .search-bar input:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(21,115,71,0.16);
+  }
+  .search-bar i{
+    position:absolute;
+    top:8px;
+    left:10px;
+    color:#9ca3af;
+    font-size:0.9rem;
+  }
+
+  .filters-right{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:flex-end;
+  }
+  .filter-select{
+    font-size:12.5px;
+    border-radius:999px;
+    padding:5px 10px;
+    border:1px solid #e5e7eb;
+  }
+  .btn-filter{
+    border-radius:999px;
+    font-size:12.5px;
+    padding:6px 14px;
+  }
+  .btn-reset{
+    font-size:12px;
+    color:var(--muted);
+    text-decoration:none;
+  }
+  .btn-reset:hover{
+    color:var(--accent);
+    text-decoration:underline;
+  }
+
+  /* TABLE */
+  .table thead th{
+    border-bottom:0;
+    font-weight:600;
+    font-size:11.5px;
+    color:#374151;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    background:var(--soft-bg);
+  }
+  .table tbody td{
+    font-size:13.5px;
+    vertical-align:middle;
+    color:#1f2937;
+  }
+  .table tbody tr:hover{
+    background:#f9fafb;
+  }
+
+  .ps-name{
+    font-weight:600;
+    color:var(--text-dark);
+    margin-bottom:2px;
+  }
+  .ps-desc{
+    font-size:12px;
+    color:var(--muted);
+  }
+  .ps-sku{
+    font-size:12px;
+    color:#6b7280;
+  }
+
+  .stock-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 9px;
+    border-radius:999px;
+    font-size:11.5px;
+  }
+  .stock-pill.ok{
+    background:#dcfce7;
+    color:#166534;
+  }
+  .stock-pill.low{
+    background:#fef3c7;
+    color:#92400e;
+  }
+  .stock-pill.zero{
+    background:#fee2e2;
+    color:#b91c1c;
+  }
+  .stock-pill.na{
+    background:#e5e7eb;
+    color:#374151;
+  }
+
+  .action-btns .btn{
+    border-radius:8px;
+    font-size:0.78rem;
+    padding:5px 9px;
+  }
+
+  .empty-state{
+    text-align:center;
+    padding:32px 0;
+    color:var(--muted);
+    font-size:0.9rem;
+  }
+
+  .pagination-row{
+    margin-top:10px;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    font-size:12.5px;
+    color:var(--muted);
+  }
+  .page-buttons{
+    display:flex;
+    gap:6px;
+    align-items:center;
+  }
+  .page-btn{
+    padding:7px 10px;
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#ffffff;
+    font-size:12px;
+    text-decoration:none;
+    color:#111827;
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+  }
+  .page-btn:hover{
+    background:#f3f4f6;
+  }
+
+  @media (max-width:991.98px){
+    .ps-header{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+    .ps-container{
+      padding-inline:8px;
+    }
+  }
+
+  @media (max-width:575.98px){
+    .card-lite{
+      padding:14px 12px;
+    }
+    .filters-row{
+      flex-direction:column;
+      align-items:stretch;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ps-page">
+  <div class="ps-container">
+
+    <!-- HEADER -->
+    <div class="ps-header">
+      <div>
+        <h3 class="ps-heading mb-0">Product Stock</h3>
+        <div class="ps-sub">
+          Live on-hand quantity for each product, warehouse filters ke saath – SaaS-level inventory overview.
+        </div>
+        <div class="ps-meta-row">
+          <div class="ps-meta-chip">
+            <span class="ps-meta-dot"></span>
+            Total products (filtered): <strong>{{ total_products }}</strong>
+          </div>
+          <div class="ps-meta-chip">
+            <span class="ps-meta-dot" style="background:#3b82f6;"></span>
+            Total on-hand units: <strong>{{ total_onhand|intcomma }}</strong>
+          </div>
+          <div class="ps-meta-chip">
+            <span class="ps-meta-dot" style="background:#f97316;"></span>
+            Low stock items: <strong>{{ low_count }}</strong>
+          </div>
+        </div>
+      </div>
+      <div class="ps-header-actions">
+        <a href="{% url 'catalog:product_export_xlsx' %}?q={{ q|urlencode }}&status=&track=" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-download me-1"></i> Export Products
+        </a>
+        <a href="{% url 'catalog:pr_create' %}" class="btn btn-primary btn-sm">
+          <i class="bi bi-plus-lg me-1"></i> Create Batch
+        </a>
+      </div>
+    </div>
+
+    <!-- KPI row -->
+    <div class="row g-3 kpi-row">
+      <div class="col-md-4">
+        <div class="kpi">
+          <div class="kpi-icon green">
+            <i class="bi bi-box-seam"></i>
+          </div>
+          <div>
+            <div class="kpi-label">Total Products</div>
+            <div class="kpi-value">{{ total_products }}</div>
+            <div class="kpi-hint">Products matching current filters</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="kpi">
+          <div class="kpi-icon blue">
+            <i class="bi bi-stack"></i>
+          </div>
+          <div>
+            <div class="kpi-label">Total On-hand</div>
+            <div class="kpi-value">{{ total_onhand|intcomma }}</div>
+            <div class="kpi-hint">Units available across all warehouses</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="kpi">
+          <div class="kpi-icon amber">
+            <i class="bi bi-exclamation-triangle"></i>
+          </div>
+          <div>
+            <div class="kpi-label">Low Stock Alerts</div>
+            <div class="kpi-value">{{ low_count }}</div>
+            <div class="kpi-hint">Near reorder or &lt;= 5 (no reorder level)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN CARD -->
+    <div class="card-lite">
+
+      <!-- Filters row -->
+      <div class="filters-row">
+        <!-- Search -->
+        <form class="search-bar" method="get" action="">
+          <i class="bi bi-search"></i>
+          <input
+            type="text"
+            name="q"
+            class="form-control"
+            placeholder="Search product name or SKU…"
+            value="{{ q }}"
+          >
+          {% if warehouse_id %}
+            <input type="hidden" name="warehouse" value="{{ warehouse_id }}">
+          {% endif %}
+        </form>
+
+        <!-- Warehouse filter -->
+        <div class="filters-right">
+          <form method="get" class="d-flex flex-wrap gap-2">
+            {% if q %}
+              <input type="hidden" name="q" value="{{ q }}">
+            {% endif %}
+
+            <div>
+              <label class="small-muted d-block mb-1">Warehouse</label>
+              <select name="warehouse" class="filter-select">
+                <option value="">All warehouses</option>
+                {% for w in warehouses %}
+                  <option value="{{ w.id }}"
+                    {% if warehouse_id|stringformat:'s' == w.id|stringformat:'s' %}selected{% endif %}>
+                    {{ w.name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="d-flex align-items-end gap-2">
+              <button class="btn btn-primary btn-sm btn-filter" type="submit">
+                <i class="bi bi-funnel me-1"></i> Apply
+              </button>
+              <a href="{% url 'catalog:product_stock_search' %}" class="btn-reset">Reset</a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>SKU</th>
+              <th>On-hand</th>
+              <th>Price</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in results %}
+              <tr>
+                <td>
+                  <div class="ps-name">
+                    <a href="{% url 'catalog:product_detail' row.product.id %}">
+                      {{ row.product.name }}
+                    </a>
+                  </div>
+                  <div class="ps-desc">
+                    {{ row.product.description|default:""|truncatechars:80 }}
+                  </div>
+                </td>
+                <td class="ps-sku">
+                  {{ row.sku|default:"—" }}
+                </td>
+                <td>
+                  {% if row.onhand is not None %}
+                    {% if row.onhand <= 0 %}
+                      <span class="stock-pill zero">
+                        <i class="bi bi-exclamation-octagon-fill"></i>
+                        Out of stock
+                      </span>
+                    {% elif row.onhand <= 5 %}
+                      <span class="stock-pill low">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Low: {{ row.onhand }}
+                      </span>
+                    {% else %}
+                      <span class="stock-pill ok">
+                        <i class="bi bi-check-circle-fill"></i>
+                        {{ row.onhand }}
+                      </span>
+                    {% endif %}
+                  {% else %}
+                    <span class="stock-pill na">
+                      <i class="bi bi-dash-circle"></i>
+                      N/A
+                    </span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if row.price is not None %}
+                    ₹{{ row.price|floatformat:2|intcomma }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td class="text-end action-btns">
+                  <a class="btn btn-outline-secondary btn-sm"
+                     href="{% url 'catalog:product_detail' row.product.id %}">
+                    View
+                  </a>
+                  <a class="btn btn-outline-secondary btn-sm"
+                     href="{% url 'catalog:product_edit' row.product.id %}">
+                    Edit
+                  </a>
+                  
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="empty-state">
+                  <i class="bi bi-box-seam d-block mb-2" style="font-size:2rem;"></i>
+                  No products found for the current filters.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGINATION -->
+      {% if is_paginated %}
+        <div class="pagination-row">
+          <div>
+            Showing
+            {{ page_obj.start_index }}–{{ page_obj.end_index }}
+            of {{ page_obj.paginator.count }} products
+          </div>
+          <div class="page-buttons">
+            {% if page_obj.has_previous %}
+              <a class="page-btn"
+                 href="?page={{ page_obj.previous_page_number }}&q={{ q|urlencode }}&warehouse={{ warehouse_id|urlencode }}">
+                <i class="bi bi-chevron-left"></i> Prev
+              </a>
+            {% endif %}
+            {% if page_obj.has_next %}
+              <a class="page-btn"
+                 href="?page={{ page_obj.next_page_number }}&q={{ q|urlencode }}&warehouse={{ warehouse_id|urlencode }}">
+                Next <i class="bi bi-chevron-right"></i>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Future: copy SKU, quick adjustment, etc.
+</script>
+{% endblock %}

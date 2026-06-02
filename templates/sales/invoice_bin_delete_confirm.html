@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %}Permanent Delete · Bin · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+.delete-box {
+  background:#fff;
+  padding:30px 28px;
+  border-radius:14px;
+  box-shadow:0 10px 32px rgba(15,23,42,0.10);
+  max-width:640px;
+  margin:80px auto;
+}
+.delete-header {
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
+}
+.delete-icon {
+  width:56px;
+  height:56px;
+  border-radius:999px;
+  background:#fef2f2;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#b91c1c;
+  font-size:24px;
+  flex-shrink:0;
+}
+.delete-title {
+  font-size:1.1rem;
+  font-weight:600;
+  color:#111827;
+  margin-bottom:4px;
+}
+.delete-sub {
+  font-size:0.9rem;
+  color:#6b7280;
+}
+.delete-highlight {
+  font-size:0.85rem;
+  color:#b91c1c;
+  margin-top:6px;
+}
+.delete-meta {
+  margin-top:14px;
+  font-size:0.85rem;
+  color:#374151;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.delete-meta span {
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:4px 10px;
+  border-radius:999px;
+  background:#f9fafb;
+  border:1px solid #e5e7eb;
+  font-size:0.8rem;
+  color:#4b5563;
+}
+
+.delete-actions {
+  margin-top:22px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+/* Buttons */
+.delete-actions .btn {
+  min-height:42px;
+  border-radius:10px;
+  font-weight:500;
+}
+
+/* Permanent Delete = red */
+.btn-delete {
+  background:#dc2626;
+  border-color:#dc2626;
+  color:#ffffff;
+}
+.btn-delete:hover {
+  background:#b91c1c;
+  border-color:#b91c1c;
+}
+
+/* Cancel */
+.btn-cancel {
+  border-color:#cbd5f5;
+  color:#374151;
+}
+.btn-cancel:hover {
+  border-color:#64748b;
+  color:#111827;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="delete-box">
+  <div class="delete-header">
+    <div class="delete-icon">
+      <i class="bi bi-trash-fill"></i>
+    </div>
+    <div>
+      <div class="delete-title">Permanently delete this invoice?</div>
+      <div class="delete-sub">
+        You are deleting an invoice that is already in Bin.
+      </div>
+      <div class="delete-highlight">
+        This action is permanent and cannot be undone.
+      </div>
+    </div>
+  </div>
+
+  <div class="delete-meta">
+    <span><i class="bi bi-hash"></i> {{ inv.number }}</span>
+    <span><i class="bi bi-person"></i> {{ inv.customer.name }}</span>
+    <span><i class="bi bi-cash-coin"></i> ₹{{ inv.grand_total }}</span>
+    <span><i class="bi bi-calendar"></i> {{ inv.date|date:"d M, Y" }}</span>
+  </div>
+
+  <div class="delete-actions">
+    <!-- Permanent Delete -->
+    <form method="post" class="w-100">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-delete w-100">
+        <i class="bi bi-trash me-1"></i>
+        Yes, permanently delete
+      </button>
+    </form>
+
+    <!-- Cancel -->
+    <a href="{% url 'sales:invoice_bin_list' %}" class="btn btn-outline-secondary btn-cancel w-100">
+      Cancel
+    </a>
+  </div>
+</div>
+{% endblock %}

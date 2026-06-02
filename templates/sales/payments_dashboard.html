@@ -1,0 +1,530 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Payments Dashboard · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root{
+    --primary: #157347;
+    --primary-dark: #0f5c38;
+    --accent: #2563eb;
+    --muted: #4b5563;
+    --text-dark: #111827;
+    --border: #d1d5db;
+    --card-bg: #ffffff;
+    --soft-bg: #f9fafb;
+    --danger: #dc2626;
+    --warning: #f59e0b;
+    --success: #16a34a;
+  }
+
+  body {
+    color: var(--text-dark);
+    background-color: #ffffff !important;
+  }
+
+  .dashboard-page {
+    width: 100%;
+  }
+
+  .dashboard-container {
+    max-width: 1150px;
+    margin: 0 auto;
+    padding: 4px 4px 20px;
+  }
+
+  .page-heading {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 1.5rem;
+  }
+
+  .page-sub {
+    color: var(--muted);
+    font-size: 13.5px;
+    margin-top:4px;
+  }
+
+  .meta-row {
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:8px;
+  }
+
+  .meta-chip {
+    font-size:12px;
+    padding:6px 12px;
+    border-radius:999px;
+    background:#eef2ff;
+    color:#1e293b;
+    border:1px solid #e0e7ff;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .meta-dot {
+    width:6px;
+    height:6px;
+    border-radius:999px;
+    background:#3b82f6;
+  }
+
+  /* KPI cards */
+  .kpi-row {
+    margin-bottom:20px;
+  }
+
+  .kpi {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 16px 18px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+    border: 1px solid var(--border);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+  }
+
+  .kpi:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 28px rgba(0,0,0,0.07);
+  }
+
+  .kpi-icon {
+    width:40px;
+    height:40px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:19px;
+    flex-shrink:0;
+  }
+
+  .kpi-icon.green  { background:#dcfce7; color:#15803d; }
+  .kpi-icon.blue   { background:#dbeafe; color:#1d4ed8; }
+  .kpi-icon.orange { background:#ffedd5; color:#c2410c; }
+  .kpi-icon.red    { background:#fee2e2; color:#b91c1c; }
+
+  .kpi h6 {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin: 0 0 3px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+  }
+
+  .kpi .value {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-dark);
+    line-height:1.3;
+  }
+
+  .kpi .hint {
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  /* Generic card */
+  .card-lite {
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.03);
+    border: 1px solid var(--border);
+    padding: 16px 18px;
+  }
+
+  .section-title {
+    font-weight: 600;
+    font-size: 15.5px;
+    margin-bottom: 3px;
+    color: var(--text-dark);
+  }
+
+  .small-muted {
+    color: var(--muted);
+    font-size: 12.5px;
+  }
+
+  .pill-row {
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .pill {
+    flex:1 1 0;
+    background:#f3f4f6;
+    border-radius:13px;
+    border:1px solid #d1d5db;
+    padding:10px 13px;
+  }
+  .pill-label {
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--muted);
+  }
+  .pill-value {
+    font-size:16px;
+    font-weight:600;
+    color:var(--text-dark);
+    margin-top:2px;
+  }
+
+  /* Tables */
+  .table thead th {
+    border-bottom: 0;
+    font-weight: 600;
+    font-size: 11.5px;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+
+  .table tbody td {
+    font-size: 13.25px;
+    vertical-align: middle;
+    color:#1f2937;
+  }
+
+  .table tbody tr:hover {
+    background: #f9fafb;
+  }
+
+  .list-group-item {
+    border-color:#e5e7eb;
+    font-size:13.25px;
+  }
+
+  .badge.bg-success { background-color:#16a34a !important; }
+  .badge.bg-warning { background-color:#facc15 !important; }
+  .badge.bg-secondary { background-color:#9ca3af !important; }
+
+  @media (max-width: 991.98px){
+    .dashboard-container{
+      padding-inline:8px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+  <div class="dashboard-container">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+      <div>
+        <h3 class="page-heading mb-0">Payments Analytics</h3>
+        <div class="page-sub">
+          Track collections, refunds & outstanding amounts across all invoices.
+        </div>
+        <div class="meta-row">
+          <div class="meta-chip">
+            <span class="meta-dot"></span>
+            {{ unpaid_count }} unpaid · {{ partial_count }} partial invoices
+          </div>
+          <div class="meta-chip">
+            <span class="meta-dot" style="background:#16a34a;"></span>
+            Collected (all time): ₹ {{ total_collected|floatformat:2 }}
+          </div>
+          <div class="meta-chip">
+            <span class="meta-dot" style="background:#f97316;"></span>
+            Refunded: ₹ {{ total_refunded|floatformat:2 }}
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex flex-column align-items-end gap-2">
+        <div class="d-flex flex-wrap gap-2 justify-content-end">
+          <a class="btn btn-outline-secondary btn-sm" href="{% url 'sales:payment_list' %}">
+            <i class="bi bi-list-ul me-1"></i> View All Payments
+          </a>
+          <a class="btn btn-success btn-sm" href="{% url 'sales:payment_add' %}">
+            <i class="bi bi-credit-card-2-front me-1"></i> Record Payment
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI ROW -->
+    <div class="row g-3 kpi-row">
+      <div class="col-6 col-md-3">
+        <div class="kpi">
+          <div class="kpi-icon blue">
+            <i class="bi bi-receipt"></i>
+          </div>
+          <div>
+            <h6>Total Revenue</h6>
+            <div class="value">₹ {{ total_revenue|floatformat:2 }}</div>
+            <div class="hint">All invoices issued</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="kpi">
+          <div class="kpi-icon green">
+            <i class="bi bi-wallet2"></i>
+          </div>
+          <div>
+            <h6>Total Collected</h6>
+            <div class="value text-success">₹ {{ total_collected|floatformat:2 }}</div>
+            <div class="hint">Net receipts (paid invoices)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="kpi">
+          <div class="kpi-icon red">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </div>
+          <div>
+            <h6>Total Refunded</h6>
+            <div class="value text-danger">₹ {{ total_refunded|floatformat:2 }}</div>
+            <div class="hint">All processed refunds</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="kpi">
+          <div class="kpi-icon orange">
+            <i class="bi bi-exclamation-octagon"></i>
+          </div>
+          <div>
+            <h6>Outstanding</h6>
+            <div class="value text-warning">₹ {{ outstanding|floatformat:2 }}</div>
+            <div class="hint">Pending to be collected</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="row g-3 mb-3">
+      <!-- LEFT COLUMN -->
+      <div class="col-12 col-lg-8">
+        <!-- Collections chart -->
+        <div class="card-lite mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+            <div>
+              <div class="section-title">Collections Trend (Last 6 Months)</div>
+              <div class="small-muted">
+                Monthly revenue from invoices to visualize your cashflow pattern.
+              </div>
+            </div>
+          </div>
+          <canvas id="paymentsTrend" style="height:260px;"></canvas>
+        </div>
+
+        <!-- Recent Payments (table) -->
+        <div class="card-lite">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <div class="section-title">Recent Payments</div>
+              <div class="small-muted">Latest money received from your customers.</div>
+            </div>
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'sales:payment_list' %}">
+              View all
+            </a>
+          </div>
+          <div class="table-responsive">
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Customer</th>
+                  <th>Invoice</th>
+                  <th>Method</th>
+                  <th class="text-end">Amount (₹)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for p in recent_payments %}
+                <tr>
+                  <td>{{ p.date|date:"M d, Y" }}</td>
+                  <td>
+                    {% if p.invoice and p.invoice.customer %}
+                      {{ p.invoice.customer.name }}
+                    {% else %}
+                      —
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if p.invoice %}
+                      <a href="{% url 'sales:invoice_detail' p.invoice.id %}">{{ p.invoice.number }}</a>
+                    {% else %}
+                      —
+                    {% endif %}
+                  </td>
+                  <td>{{ p.method }}</td>
+                  <td class="text-end fw-semibold text-success">₹{{ p.amount|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center text-muted">No payments recorded yet.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="col-12 col-lg-4">
+        <!-- Collection Health -->
+        <div class="card-lite mb-3">
+          <div class="section-title mb-1">Collection Health</div>
+          <div class="small-muted mb-2">
+            Snapshot of open invoices & follow-up load.
+          </div>
+          <div class="pill-row mb-2">
+            <div class="pill">
+              <div class="pill-label">Unpaid Invoices</div>
+              <div class="pill-value text-danger">{{ unpaid_count }}</div>
+            </div>
+            <div class="pill">
+              <div class="pill-label">Partial Invoices</div>
+              <div class="pill-value text-warning">{{ partial_count }}</div>
+            </div>
+          </div>
+          <a href="{% url 'sales:unpaid_invoices' %}" class="btn btn-sm btn-outline-secondary w-100 mt-1">
+            <i class="bi bi-collection me-1"></i> Go to Collection Center
+          </a>
+        </div>
+
+        <!-- Top Customers by collection -->
+        <div class="card-lite mb-3">
+          <div class="section-title">Top Customers</div>
+          <div class="small-muted mb-2">Based on amount collected (all time).</div>
+          <ul class="list-group list-group-flush">
+            {% for c in top_customers %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div class="fw-semibold">
+                  {{ c.customer__name|default:"—" }}
+                </div>
+                <div class="fw-semibold">
+                  ₹ {{ c.total|floatformat:2 }}
+                </div>
+              </li>
+            {% empty %}
+              <li class="list-group-item text-center text-muted">No collection data yet.</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Payments Statement Download -->
+        <div class="card-lite">
+          <div class="section-title">Payments Statement</div>
+          <div class="small-muted mb-2">
+            Export a PDF statement for audits, reports, or sharing with finance team.
+          </div>
+          <form method="get" action="{% url 'sales:payments_statement_pdf' %}">
+            <div class="mb-2">
+              <label class="small-muted mb-1">Period Type</label>
+              <select name="period" id="periodSelect" class="form-select form-select-sm">
+                <option value="quarter">Quarterly (last 3 months)</option>
+                <option value="half">Half-yearly (last 6 months)</option>
+                <option value="year">Yearly (last 12 months)</option>
+                <option value="custom">Custom date range</option>
+              </select>
+            </div>
+            <div class="row g-1 mb-2" id="customDatesRow" style="display:none;">
+              <div class="col-6">
+                <label class="small-muted mb-1">From</label>
+                <input type="date" name="from" class="form-control form-control-sm">
+              </div>
+              <div class="col-6">
+                <label class="small-muted mb-1">To</label>
+                <input type="date" name="to" class="form-control form-control-sm">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-success btn-sm w-100">
+              <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF Statement
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Line chart for collections trend
+  const trendLabels = {{ chart_labels|safe }};
+  const trendValues = {{ chart_values|safe }};
+
+  const ctx = document.getElementById('paymentsTrend')?.getContext('2d');
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: trendLabels,
+        datasets: [{
+          label: 'Monthly Revenue',
+          data: trendValues,
+          tension: 0.35,
+          fill: true,
+          borderWidth: 2,
+          borderColor: '#157347',
+          backgroundColor: 'rgba(21, 115, 71, 0.12)',
+          pointRadius: 3,
+          pointHitRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const value = context.parsed.y || 0;
+                return '₹ ' + value.toLocaleString();
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display:false } },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(v) { return '₹' + v; }
+            },
+            grid: { color:'#e5e7eb' }
+          }
+        }
+      }
+    });
+  }
+
+  // Period selector: show/hide custom date range
+  const periodSelect = document.getElementById('periodSelect');
+  const customRow = document.getElementById('customDatesRow');
+
+  if (periodSelect && customRow) {
+    function toggleCustomDates() {
+      if (periodSelect.value === 'custom') {
+        customRow.style.display = 'flex';
+      } else {
+        customRow.style.display = 'none';
+      }
+    }
+    periodSelect.addEventListener('change', toggleCustomDates);
+    toggleCustomDates();
+  }
+</script>
+{% endblock %}

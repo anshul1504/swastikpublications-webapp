@@ -1,0 +1,849 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Create Invoice · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  body{
+    background-color: #ffffff !important;
+  }
+:root{
+  /* Dashboard style colors */
+  --card-bg:#ffffff;
+  --ink:#111827;
+  --muted:#4b5563;
+  --brand:#157347;          /* primary green */
+  --soft:#f9fafb;
+  --border:#d1d5db;
+}
+
+/* page wrapper */
+.invoice-page {
+  max-width: 1140px;
+  margin: 0 auto;
+}
+
+/* top header */
+.page-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+}
+.page-title {
+  font-size:1.3rem;
+  font-weight:600;
+  color:var(--ink);
+}
+.header-actions {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+/* main container */
+.invoice-shell {
+  background:var(--card-bg);
+  border-radius:14px;
+  box-shadow:0 10px 30px rgba(15,23,42,0.06);
+  border:1px solid rgba(148,163,184,0.25);
+  padding:16px 18px 18px;
+}
+
+/* slim meta bar */
+.invoice-meta {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:4px 2px 10px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:10px;
+}
+.meta-left {
+  display:flex;
+  gap:16px;
+  flex-wrap:wrap;
+  font-size:0.8rem;
+  color:var(--muted);
+}
+.meta-pill {
+  padding:3px 9px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:#eef2ff;       /* light bluish chip like dashboard */
+  font-size:0.78rem;
+  color:#1f2937;
+}
+.meta-right {
+  font-size:0.8rem;
+  color:var(--muted);
+}
+
+/* section card */
+.section-card {
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#fff;
+  padding:14px 14px 12px;
+  margin-bottom:10px;
+}
+.block-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+.block-title {
+  font-size:0.95rem;
+  font-weight:600;
+  color:var(--ink);
+}
+.block-sub {
+  font-size:0.8rem;
+  color:#9ca3af;
+}
+
+/* small text */
+.small-muted {
+  color:var(--muted);
+  font-size:0.8rem;
+}
+
+/* totals card */
+.sum-card{
+  background:var(--soft);
+  padding:10px;
+  border-radius:9px;
+  border:1px dashed #cbd5e1;
+  font-size:0.86rem;
+}
+
+/* table tweaks */
+.table thead th {
+  font-size:0.72rem;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:#6b7280;
+  border-bottom:1px solid var(--border);
+}
+.table tbody td {
+  vertical-align:middle;
+  font-size:0.86rem;
+}
+.table .form-control {
+  height:auto;
+  padding:6px 8px;
+  font-size:0.86rem;
+}
+
+/* buttons – comfortable size + green primary */
+.btn-outline-secondary,
+.btn-outline-primary,
+.btn-outline-danger,
+.btn-outline-success,
+.btn-primary,
+.btn-success {
+  font-size:0.92rem;
+  padding:0.42rem 0.95rem;
+  border-radius:8px;
+}
+
+/* primary + success same green tone */
+.btn-primary,
+.btn-success {
+  background-color:#157347;
+  border-color:#157347;
+}
+.btn-primary:hover,
+.btn-success:hover {
+  background-color:#0f5c38;
+  border-color:#0f5c38;
+}
+
+/* outline primary = green border */
+.btn-outline-primary {
+  color:#157347;
+  border-color:#157347;
+}
+.btn-outline-primary:hover {
+  background:#157347;
+  color:#ffffff;
+}
+
+/* small buttons */
+.btn-sm {
+  font-size:0.9rem;
+  padding:0.35rem 0.9rem;
+}
+
+/* status badge */
+#statusBadge {
+  padding:4px 9px;
+  border-radius:999px;
+  font-weight:600;
+  font-size:0.78rem;
+}
+
+/* company preview */
+#company-preview {
+  border-left:3px solid var(--brand);
+  padding:6px 9px;
+  border-radius:8px;
+  background:linear-gradient(90deg, rgba(21,115,71,0.05), transparent);
+}
+
+/* misc */
+.product-select { min-width:220px; }
+.remove-row, .remove-payment { min-width:30px; height:30px; padding:0; }
+.manual-product { width:100%; }
+
+/* responsive */
+@media (max-width: 767.98px){
+  .page-header { flex-direction:column; align-items:flex-start; }
+  .invoice-shell { padding:12px 10px 14px; }
+  .section-card { padding:10px 10px 8px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="invoice-page">
+  <!-- Top header -->
+  <div class="page-header">
+    <div class="page-title">Create Invoice</div>
+    <div class="header-actions">
+      <a class="btn btn-outline-secondary" href="{% url 'sales:invoice_list' %}">Back</a>
+      <button form="invoiceForm" class="btn btn-success">
+        <i class="bi bi-save me-1"></i>Save
+      </button>
+    </div>
+  </div>
+
+  <div class="invoice-shell">
+
+    <!-- Meta strip -->
+    <div class="invoice-meta">
+      <div class="meta-left">
+        <span>Invoice draft</span>
+        <span class="meta-pill"># {{ next_number }}</span>
+      </div>
+      <div class="meta-right">
+        {{ today|date:"d M, Y" }}
+      </div>
+    </div>
+
+    <form id="invoiceForm" method="post" action="{% url 'sales:invoice_add' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- Invoice details + status -->
+      <div class="section-card">
+        <div class="block-header">
+          <div>
+            <div class="block-title">Invoice Details</div>
+          </div>
+        </div>
+
+        <div class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label">Invoice #</label>
+            <input class="form-control" name="number" value="{{ next_number }}" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Date</label>
+            <input type="date" class="form-control" name="date" value="{{ today|date:'Y-m-d' }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Status</label>
+            <div id="statusBadge" class="badge bg-secondary">Unpaid</div>
+          </div>
+          <div class="col-md-3">
+            <div class="form-check mb-1">
+              <input class="form-check-input" type="checkbox" id="manualStatusToggle" name="manual_status" value="0">
+              <label class="form-check-label small" for="manualStatusToggle">
+                Set manually
+              </label>
+            </div>
+            <select name="status" id="statusSelect" class="form-select form-select-sm" style="display:none;">
+              <option value="unpaid">Unpaid</option>
+              <option value="partial">Partial</option>
+              <option value="paid">Paid</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer + Company -->
+      <div class="section-card">
+        <div class="block-header">
+          <div class="block-title">Customer & Company</div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Customer</label>
+            <div class="d-flex gap-2">
+              <select class="form-select" name="customer" id="customerSelect" required>
+                <option value="">-- Select customer --</option>
+                {% for c in customers %}
+                  <option value="{{ c.id }}">{{ c.name }}{% if c.phone %} — {{ c.phone }}{% endif %}</option>
+                {% endfor %}
+              </select>
+              <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+                + Add
+              </button>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Company (optional)</label>
+            <select id="id_company" name="company" class="form-select">
+              <option value="">-- Select Company --</option>
+              {% for c in companies %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+              {% endfor %}
+            </select>
+            <div id="company-preview" class="mt-2" style="display:none;">
+              <strong id="cp_name" class="d-block"></strong>
+              <div id="cp_address" class="small-muted"></div>
+              <div id="cp_gstin" class="small-muted"></div>
+              <div id="cp_phone" class="small-muted"></div>
+              <div id="cp_logo_wrap" style="margin-top:4px;">
+                <img id="cp_logo" src="" style="max-height:50px; display:none;">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Addresses -->
+      <div class="section-card">
+        <div class="block-header">
+          <div class="block-title">Addresses</div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Billing Address <span class="text-danger">*</span></label>
+            <textarea id="billingAddress" name="billing_address" class="form-control" rows="3" required></textarea>
+          </div>
+          <div class="col-md-6">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="form-label mb-0">Shipping Address</label>
+              <div class="form-check small">
+                <input class="form-check-input" type="checkbox" id="sameAsBilling">
+                <label class="form-check-label" for="sameAsBilling">
+                  Same as billing
+                </label>
+              </div>
+            </div>
+            <textarea id="shippingAddress" name="shipping_address" class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div class="section-card">
+        <div class="block-header">
+          <div class="block-title">Items / Services</div>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="addItemBtn">+ Add Row</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table align-middle mb-0" id="itemsTable">
+            <thead>
+              <tr>
+                <th style="min-width:200px;">Item / Service</th>
+                <th style="width:80px;">Qty</th>
+                <th style="width:110px;">Rate</th>
+                <th style="width:90px;">Tax %</th>
+                <th style="width:110px;">Discount %</th>
+                <th class="text-end" style="width:130px;">Line Total</th>
+                <th style="width:40px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="item-row">
+                <td>
+                  <select class="form-select product-select" name="product[]">
+                    <option value="">-- Select --</option>
+                    {% for p in products %}
+                      <option value="{{ p.id }}" data-price="{{ p.price }}" data-tax="{{ p.tax_rate }}" data-hsn="{{ p.hsn_code|default:'-' }}">
+                        {{ p.name }} — ₹{{ p.price }}{% if p.author %} · {{ p.author }}{% endif %}{% if p.edition %} · {{ p.edition }}{% endif %}{% if p.academic_session %} · {{ p.academic_session }}{% endif %}
+                      </option>
+                    {% endfor %}
+                    <option value="manual">+ Manual Entry</option>
+                  </select>
+                  <input type="text" name="manual_product[]" class="form-control mt-1 manual-product d-none" placeholder="Enter item name">
+                </td>
+                <td><input type="number" step="0.01" name="qty[]" class="form-control qty" value="1"></td>
+                <td><input type="number" step="0.01" name="rate[]" class="form-control rate" value="0"></td>
+                <td><input type="number" step="0.01" name="tax[]" class="form-control tax" value="0"></td>
+                <td><input type="number" step="0.01" name="discount[]" class="form-control discount" value="0"></td>
+                <td><input type="text" readonly name="amount[]" class="form-control text-end amount" value="0.00"></td>
+                <td><button type="button" class="btn btn-sm btn-outline-danger remove-row">✕</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Payments + Summary -->
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="section-card h-100">
+            <div class="block-header">
+              <div class="block-title">Payments</div>
+            </div>
+
+            <div id="paymentsWrap">
+              <div class="payment-row d-flex gap-2 mb-2">
+                <input class="form-control" type="number" step="0.01" name="payment_amount[]" placeholder="Amount">
+                <input class="form-control" type="date" name="payment_date[]" value="{{ today|date:'Y-m-d' }}">
+                <select class="form-select" name="payment_method[]">
+                  <option>Cash</option><option>UPI</option><option>Card</option><option>Bank Transfer</option>
+                </select>
+                <button type="button" class="btn btn-outline-danger remove-payment">✕</button>
+              </div>
+            </div>
+            <button type="button" id="addPaymentBtn" class="btn btn-outline-secondary btn-sm mt-1">+ Add Payment</button>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="section-card h-100">
+            <div class="block-header">
+              <div class="block-title">Summary</div>
+            </div>
+
+            <div class="sum-card">
+              <div class="d-flex justify-content-between mb-1">
+                <div>Subtotal</div><div id="subtotal">₹0.00</div>
+              </div>
+              <div class="d-flex justify-content-between mb-1">
+                <div>Total Discount</div><div id="discountTotal">₹0.00</div>
+              </div>
+              <div class="d-flex justify-content-between mb-1">
+                <div>Total Tax</div><div id="taxTotal">₹0.00</div>
+              </div>
+              <hr class="my-2">
+              <div class="d-flex justify-content-between align-items-center">
+                <strong>Grand Total</strong><strong id="grandTotal">₹0.00</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bank -->
+      <div class="section-card">
+        <div class="block-header">
+          <div class="block-title">Bank Details</div>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-4"><label class="form-label">Account Holder</label><input name="bank_name" class="form-control"></div>
+          <div class="col-md-4"><label class="form-label">Bank Name</label><input name="bank_branch" class="form-control"></div>
+          <div class="col-md-4"><label class="form-label">Account No.</label><input name="account_number" class="form-control"></div>
+          <div class="col-md-4"><label class="form-label">IFSC</label><input name="ifsc" class="form-control"></div>
+          <div class="col-md-4"><label class="form-label">UPI</label><input name="upi" class="form-control"></div>
+        </div>
+      </div>
+
+      <!-- Terms & Notes -->
+      <div class="section-card">
+        <div class="block-header">
+          <div class="block-title">Terms & Notes</div>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-8">
+            <label class="form-label">Terms & Conditions</label>
+            <textarea name="terms" class="form-control" rows="3">{{ default_terms|default:"Payment due within 7 days. Goods once sold will not be taken back." }}</textarea>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Notes</label>
+            <textarea name="notes" class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mt-1">
+        <button type="reset" class="btn btn-outline-secondary">Reset</button>
+        <button type="submit" class="btn btn-primary" id="saveInvoiceBtn">
+          Save & Continue
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Add Customer -->
+<div class="modal fade" id="addCustomerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="mb-0">Add New Customer</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <form id="addCustomerForm">{% csrf_token %}
+          <input name="name" placeholder="Name" class="form-control mb-2" required>
+          <input name="email" placeholder="Email" class="form-control mb-2">
+          <input name="phone" placeholder="Phone" class="form-control mb-2">
+          <input name="gstin" placeholder="GSTIN" class="form-control mb-2">
+          <textarea name="address" placeholder="Address" class="form-control mb-2"></textarea>
+          <button class="btn btn-success w-100" type="submit">Save Customer</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  // ---------- helpers ----------
+  function money(v){ return "₹" + Number(v || 0).toFixed(2); }
+  function qs(sel){ return document.querySelector(sel); }
+  function qsa(sel){ return Array.from(document.querySelectorAll(sel)); }
+  function parseNum(v){ return parseFloat((v||'0').toString().replace(/,/g,'')) || 0; }
+
+  const tbody = qs('#itemsTable tbody');
+  const paymentsWrap = qs('#paymentsWrap');
+
+  // ---------- company auto-fill (AJAX) ----------
+  const companySelect = qs('#id_company');
+  const cpPreview = qs('#company-preview');
+  const cpName = qs('#cp_name'), cpAddress = qs('#cp_address'), cpGstin = qs('#cp_gstin'), cpPhone = qs('#cp_phone'), cpLogo = qs('#cp_logo');
+
+  if (companySelect) {
+    companySelect.addEventListener('change', function(){
+      const id = this.value;
+      if (!id) {
+        cpPreview.style.display = 'none';
+        cpName.textContent = ''; cpAddress.innerHTML=''; cpGstin.textContent=''; cpPhone.textContent=''; cpLogo.style.display='none';
+        return;
+      }
+      const urlTpl = '{% url "sales:api_company_info" 0 %}';
+      const url = urlTpl.replace('/0/', '/' + id + '/');
+      fetch(url)
+        .then(r => { if(!r.ok) throw new Error('no'); return r.json(); })
+        .then(data => {
+          cpPreview.style.display = 'block';
+          cpName.textContent = data.name || '';
+          cpAddress.innerHTML = data.address ? data.address.replace(/\n/g,'<br>') : '';
+          cpGstin.textContent = data.gstin ? ('GSTIN: ' + data.gstin) : '';
+          cpPhone.textContent = data.phone ? ('Phone: ' + data.phone) : '';
+          if (data.logo_url) { cpLogo.src = data.logo_url; cpLogo.style.display='block'; } else cpLogo.style.display='none';
+        })
+        .catch(err => { console.error(err); cpPreview.style.display='none'; });
+    });
+  }
+
+  // ---------- customer auto-fill ----------
+  const customerSelect = qs('#customerSelect');
+  const billingAddress = qs('#billingAddress');
+  const shippingAddress = qs('#shippingAddress');
+  const sameAsBilling = qs('#sameAsBilling');
+
+  if (customerSelect){
+    customerSelect.addEventListener('change', function(){
+      const id = this.value;
+      if (!id) return;
+      fetch('/customers/' + id + '/details/')
+        .then(r => r.json())
+        .then(d => {
+          if (d.ok) {
+            billingAddress.value = d.address || '';
+            if (sameAsBilling && sameAsBilling.checked && shippingAddress) {
+              shippingAddress.value = billingAddress.value;
+            }
+          }
+        })
+        .catch(e => console.error(e));
+    });
+  }
+
+  if (sameAsBilling && billingAddress && shippingAddress) {
+    function syncShippingFromBilling() {
+      if (sameAsBilling.checked) {
+        shippingAddress.value = billingAddress.value;
+        shippingAddress.readOnly = true;
+        shippingAddress.classList.add('bg-light');
+      } else {
+        shippingAddress.readOnly = false;
+        shippingAddress.classList.remove('bg-light');
+      }
+    }
+
+    sameAsBilling.addEventListener('change', syncShippingFromBilling);
+    billingAddress.addEventListener('input', function () {
+      if (sameAsBilling.checked) {
+        shippingAddress.value = billingAddress.value;
+      }
+    });
+
+    syncShippingFromBilling();
+  }
+
+  // ---------- status badge logic ----------
+  const statusBadge = qs('#statusBadge');
+  const manualToggle = qs('#manualStatusToggle');
+  const statusSelect = qs('#statusSelect');
+
+  function updateStatusBadge(status){
+    statusBadge.className = 'badge';
+    if (status === 'paid'){ statusBadge.classList.add('bg-success'); statusBadge.textContent = 'Paid'; }
+    else if (status === 'partial'){ statusBadge.classList.add('bg-warning','text-dark'); statusBadge.textContent = 'Partial'; }
+    else { statusBadge.classList.add('bg-secondary'); statusBadge.textContent = 'Unpaid'; }
+  }
+
+  function computeAutoStatus(){
+    const grand = parseNum(qs('#grandTotal').textContent);
+    let paid = 0;
+    qsa('input[name="payment_amount[]"]').forEach(i => paid += parseNum(i.value));
+    if (grand > 0 && paid >= grand) return 'paid';
+    if (paid > 0 && paid < grand) return 'partial';
+    return 'unpaid';
+  }
+
+  manualToggle.addEventListener('change', function(){
+    if (this.checked){
+      statusSelect.style.display = 'block';
+      this.value = '1';
+      updateStatusBadge(statusSelect.value);
+    } else {
+      statusSelect.style.display = 'none';
+      this.value = '0';
+      updateStatusBadge(computeAutoStatus());
+    }
+  });
+  statusSelect.addEventListener('change', ()=> {
+    if (manualToggle.checked) updateStatusBadge(statusSelect.value);
+  });
+
+  // ---------- items calculation ----------
+  function recalc(){
+    let subtotal = 0, taxTotal = 0, discTotal = 0;
+    qsa('tr.item-row').forEach(tr => {
+      const qty = parseNum(tr.querySelector('.qty').value);
+      const rate = parseNum(tr.querySelector('.rate').value);
+      const tax = parseNum(tr.querySelector('.tax').value);
+      const disc = parseNum(tr.querySelector('.discount').value);
+      const line = qty * rate;
+      const discAmt = line * (disc/100);
+      const taxed = (line - discAmt) * (tax/100);
+      const total = (line - discAmt) + taxed;
+      tr.querySelector('.amount').value = total.toFixed(2);
+      subtotal += line; discTotal += discAmt; taxTotal += taxed;
+    });
+    qs('#subtotal').textContent = money(subtotal);
+    qs('#discountTotal').textContent = money(discTotal);
+    qs('#taxTotal').textContent = money(taxTotal);
+    qs('#grandTotal').textContent = money(subtotal - discTotal + taxTotal);
+
+    if (!manualToggle.checked) updateStatusBadge(computeAutoStatus());
+  }
+
+  function attachRowEvents(row){
+    qsa('.qty,.rate,.tax,.discount', row).forEach(i => i.addEventListener('input', recalc));
+    row.querySelector('.remove-row').addEventListener('click', ()=>{ row.remove(); if (qsa('tr.item-row').length===0) addItemRow(); recalc(); });
+    const sel = row.querySelector('.product-select');
+    sel.addEventListener('change', ()=> {
+      if (sel.value === 'manual'){
+        sel.classList.add('d-none');
+        row.querySelector('.manual-product').classList.remove('d-none');
+      } else {
+        const price = sel.selectedOptions[0].dataset.price || 0;
+        const tax = sel.selectedOptions[0].dataset.tax || 0;
+        row.querySelector('.rate').value = price;
+        row.querySelector('.tax').value = tax;
+      }
+      recalc();
+    });
+  }
+
+  function addItemRow(){
+    const base = tbody.querySelector('tr.item-row');
+    const clone = base.cloneNode(true);
+    clone.querySelectorAll('input').forEach(inp => {
+      if (inp.name === 'qty[]') inp.value = 1;
+      else if (inp.classList.contains('amount')) inp.value = '0.00';
+      else inp.value = 0;
+    });
+    clone.querySelector('.manual-product').classList.add('d-none');
+    clone.querySelector('.product-select').classList.remove('d-none');
+    tbody.appendChild(clone);
+    attachRowEvents(clone);
+  }
+
+  qsa('tr.item-row').forEach(r => attachRowEvents(r));
+  qs('#addItemBtn').addEventListener('click', addItemRow);
+
+  // ---------- payments ----------
+  function attachPaymentEvents(row){
+    row.querySelector('.remove-payment').addEventListener('click', ()=>{ row.remove(); recalc(); });
+    qsa('input[name="payment_amount[]"]', row).forEach(i => i.addEventListener('input', recalc));
+  }
+  function addPaymentRow(){
+    const base = paymentsWrap.querySelector('.payment-row');
+    const clone = base.cloneNode(true);
+    clone.querySelectorAll('input').forEach(i => i.value = '');
+    paymentsWrap.appendChild(clone);
+    attachPaymentEvents(clone);
+  }
+  qsa('.payment-row').forEach(p => attachPaymentEvents(p));
+  qs('#addPaymentBtn').addEventListener('click', addPaymentRow);
+
+  // ---------- Add Customer modal AJAX ----------
+  const addCustomerForm = qs('#addCustomerForm');
+  if (addCustomerForm){
+    addCustomerForm.addEventListener('submit', async function(e){
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const res = await fetch("{% url 'sales:customer_add_ajax' %}", {
+        method:'POST',
+        headers:{
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+          'X-Requested-With':'XMLHttpRequest'
+        },
+        body: fd
+      });
+      const json = await res.json();
+      if (json.ok){
+        const sel = qs('#customerSelect');
+        const newOpt = document.createElement('option');
+        newOpt.value = json.id; newOpt.textContent = json.name;
+        sel.appendChild(newOpt); sel.value = json.id;
+        bootstrap.Modal.getInstance(qs('#addCustomerModal')).hide();
+        e.target.reset();
+        fetch('/customers/' + json.id + '/details/').then(r=>r.json()).then(d=>{
+          if (d.ok) {
+            billingAddress.value = d.address || '';
+            if (sameAsBilling && sameAsBilling.checked && shippingAddress) {
+              shippingAddress.value = billingAddress.value;
+            }
+          }
+        });
+      } else alert(json.error || 'Error adding customer');
+    });
+  }
+
+  recalc();
+  qs('#invoiceForm').addEventListener('submit', function(){ recalc(); });
+
+});
+</script>
+
+<script>
+async function fetchAllocationPreview(productId, qty) {
+  if (!productId) return null;
+  try {
+    const resp = await fetch(`/catalog/api/allocate-preview/${productId}/?qty=${qty}`);
+    const data = await resp.json();
+    return data;
+  } catch (err) {
+    console.error('Preview fetch error', err);
+    return { ok:false, error: err.toString() };
+  }
+}
+</script>
+
+<script>
+function formatINR(val) {
+  if (val === null || val === undefined || val === '') return '₹0.00';
+  const num = parseFloat(val.toString().replace(/,/g, '')) || 0;
+  return '₹' + num.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+async function fetchAllocationPreview(productId, qty) {
+  if (!productId) return {ok:false, error: "no product"};
+  try {
+    const resp = await fetch(`/catalog/api/allocate-preview/${productId}/?qty=${qty}`, {
+      headers: { 'Accept': 'application/json' }
+    });
+    return await resp.json();
+  } catch (err) {
+    return { ok:false, error: err.toString() };
+  }
+}
+
+function renderPreviewMessage(container, data, qtyRequested) {
+  if (!container) return;
+
+  // 🧠 FIX: don't show ANY error if qty blank OR <=0
+  if (!qtyRequested || qtyRequested <= 0) {
+    container.innerHTML = "";
+    container.className = "allocation-preview";
+    return;
+  }
+
+  container.innerHTML = "";
+  container.className = "allocation-preview";
+
+  if (!data || !data.ok) {
+    container.classList.add("alloc-error");
+    container.innerHTML = `<small style="color:#b91c1c;">Preview error: ${data?.error || "unknown"}</small>`;
+    return;
+  }
+
+  if (data.insufficient) {
+    container.classList.add("alloc-warn");
+    container.innerHTML = `<small style="color:#b91c1c;">Insufficient stock — only partial available.</small>`;
+    return;
+  }
+
+  const parts = data.allocated.map(a =>
+    `${a.qty_allocated} from ${a.batch_no || ("PR-"+a.print_run_id)}`
+  );
+
+  container.classList.add("alloc-ok");
+  container.innerHTML = `<small style="color:#116530;">Will allocate ${qtyRequested}: ${parts.join(", ")}</small>`;
+}
+
+function initAllocationPreviewOnInvoice() {
+  const rows = document.querySelectorAll("tr.item-row");
+  rows.forEach(row => {
+    const sel = row.querySelector('select[name="product[]"]');
+    const qty = row.querySelector('input[name="qty[]"]');
+
+    if (!sel || !qty) return;
+
+    let preview = row.querySelector(".allocation-preview");
+    if (!preview) {
+      preview = document.createElement("div");
+      preview.className = "allocation-preview";
+      preview.style.marginTop = "6px";
+      row.appendChild(preview);
+    }
+
+    async function handle() {
+      const pid = sel.value;
+      const qv = parseInt(qty.value || 0);
+
+      // 🧠 FIX: skip preview for invalid qty
+      if (!pid || !qv || qv <= 0) {
+        preview.innerHTML = "";
+        preview.className = "allocation-preview";
+        return;
+      }
+
+      preview.innerHTML = `<small style="color:#6b7280;">Checking stock…</small>`;
+      const data = await fetchAllocationPreview(pid, qv);
+      renderPreviewMessage(preview, data, qv);
+    }
+
+    sel.addEventListener("change", handle);
+    qty.addEventListener("input", handle);
+
+    handle();
+  });
+}
+
+document.addEventListener("DOMContentLoaded", initAllocationPreviewOnInvoice);
+</script>
+
+<style>
+.allocation-preview.alloc-ok small { color: #116530; }
+.allocation-preview.alloc-warn small { color: #b91c1c; }
+.allocation-preview.alloc-error small { color: #b91c1c; font-weight:600; }
+</style>
+
+{% endblock %}
+

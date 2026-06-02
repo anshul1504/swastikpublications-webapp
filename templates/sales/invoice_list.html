@@ -1,0 +1,396 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Invoices · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root{
+    --primary:#198754;
+    --accent:#2563eb;
+    --muted:#6b7280;
+    --border:#e5e7eb;
+    --card-bg:#ffffff;
+  }
+
+  body{
+    background:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color:#0f172a;
+  }
+
+  /* Page header */
+  .page-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    margin-bottom:16px;
+  }
+  .page-title{
+    font-size:1.2rem;
+    font-weight:600;
+    margin-bottom:2px;
+  }
+  .page-sub{
+    font-size:13px;
+    color:var(--muted);
+  }
+
+  .page-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+    justify-content:flex-end;
+  }
+
+  /* Card */
+  .table-card{
+    background:var(--card-bg);
+    border-radius:16px;
+    box-shadow:0 8px 28px rgba(15,23,42,0.08);
+    padding:18px 20px 20px;
+    border:1px solid var(--border);
+  }
+
+  /* Primary big button */
+  .btn-main{
+    font-size:0.9rem;
+    padding:0.45rem 1.2rem;
+    border-radius:999px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .btn-main i{
+    font-size:16px;
+  }
+  .btn-success.btn-main{
+    background:var(--primary);
+    border-color:var(--primary);
+  }
+  .btn-success.btn-main:hover{
+    background:#166a43;
+    border-color:#166a43;
+  }
+
+ /* EXPORT BUTTONS - Professional UI */
+.export-group{
+  display:flex;
+  gap:8px;
+}
+
+.btn-export{
+  font-size:0.85rem;
+  font-weight:500;
+  padding:0.45rem 0.95rem;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:#ffffff;
+  color:#374151;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  text-decoration:none !important; /* remove underline */
+  transition:all .25s ease;
+  box-shadow:0 2px 6px rgba(0,0,0,0.04);
+}
+
+.btn-export i{
+  font-size:16px;
+}
+
+/* Hover (Premium feel) */
+.btn-export:hover{
+  background:#f3f4f6;
+  border-color:var(--accent);
+  color:var(--accent);
+  box-shadow:0 4px 12px rgba(37,99,235,0.15);
+}
+
+/* CSV specific subtle tint */
+.btn-csv:hover{
+  background:#ecfdf5;
+  border-color:#16a34a;
+  color:#166534;
+  box-shadow:0 4px 12px rgba(22,163,74,0.18);
+}
+
+/* EXCEL subtle tint */
+.btn-excel:hover{
+  background:#eef6ff;
+  border-color:#2563eb;
+  color:#1d4ed8;
+  box-shadow:0 4px 12px rgba(37,99,235,0.18);
+}
+
+  /* Top controls row */
+  .controls-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:10px;
+  }
+
+  /* Search */
+  .search-bar{
+    position:relative;
+    min-width:380px;
+    max-width:560px;
+  }
+  .search-bar input{
+    border-radius:999px;
+    font-size:14px;
+    padding:8px 12px 8px 34px;
+  }
+  .search-bar i{
+    position:absolute;
+    top:9px;
+    left:11px;
+    color:#9ca3af;
+    font-size:15px;
+  }
+
+  /* Status filter (chip style) */
+  .status-filter{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .status-filter-label{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:#9ca3af;
+  }
+  .status-filter select{
+    font-size:13px;
+    border-radius:999px;
+    padding:6px 12px;
+    min-width:130px;
+  }
+
+  /* Table */
+  .table thead{
+    background:#f9fafb;
+    color:#374151;
+    font-weight:600;
+  }
+  .table thead th{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    border-bottom:0;
+  }
+  .table tbody td{
+    font-size:13px;
+    vertical-align:middle;
+  }
+  .table tbody tr:hover{
+    background:#f3f4f6;
+    transition:all .25s;
+  }
+
+  /* Status badges */
+  .status-badge{
+    font-size:11px;
+    font-weight:500;
+    border-radius:999px;
+    padding:4px 10px;
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+  }
+  .status-paid{ background:#dcfce7; color:#166534; }
+  .status-partial{ background:#fef9c3; color:#854d0e; }
+  .status-unpaid{ background:#fee2e2; color:#991b1b; }
+
+  /* Action buttons */
+  .action-btns .btn{
+    border-radius:8px;
+    padding:5px 9px;
+    font-size:12px;
+  }
+
+  /* Footer */
+  .table-footer{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:10px;
+  }
+
+  @media (max-width:576px){
+    .page-header{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+    .page-actions{
+      width:100%;
+      justify-content:flex-start;
+    }
+    .controls-row{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+    .search-bar{
+      width:100%;
+      max-width:100%;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2 px-md-3 py-2">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <div class="page-title">Invoices</div>
+      <div class="page-sub">
+        Search, filter, export and manage all your invoices in one place.
+      </div>
+    </div>
+    <div class="page-actions">
+      <div class="export-group">
+  {% with request.GET.urlencode as querystring %}
+    <a class="btn-export btn-csv"
+       href="?{% if querystring %}{{ querystring }}&{% endif %}export=csv">
+      <i class="bi bi-filetype-csv"></i>
+      CSV
+    </a>
+
+    <a class="btn-export btn-excel"
+       href="?{% if querystring %}{{ querystring }}&{% endif %}export=xlsx">
+      <i class="bi bi-file-earmark-spreadsheet"></i>
+      Excel
+    </a>
+  {% endwith %}
+</div>
+
+      <a class="btn btn-success shadow-sm btn-main" href="{% url 'sales:invoice_add' %}">
+        <i class="bi bi-plus-lg"></i>
+        <span>New Invoice</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="table-card">
+
+    <!-- Filters + Search -->
+    <div class="controls-row">
+
+      <!-- SEARCH FORM -->
+      <form class="search-bar" method="get">
+        <i class="bi bi-search"></i>
+        <input type="text"
+               class="form-control"
+               name="q"
+               placeholder="Search invoices by number, customer or email"
+               value="{{ request.GET.q }}">
+        {% if request.GET.status %}
+          <input type="hidden" name="status" value="{{ request.GET.status }}">
+        {% endif %}
+      </form>
+
+      <!-- STATUS FILTER -->
+      <form method="get" class="status-filter" id="statusForm">
+        <span class="status-filter-label">Status</span>
+        <input type="hidden" name="q" value="{{ request.GET.q }}">
+        <select class="form-select form-select-sm"
+                name="status"
+                onchange="document.getElementById('statusForm').submit();">
+          <option value="">All invoices</option>
+          <option value="paid" {% if request.GET.status == 'paid' %}selected{% endif %}>Paid</option>
+          <option value="partial" {% if request.GET.status == 'partial' %}selected{% endif %}>Partial</option>
+          <option value="unpaid" {% if request.GET.status == 'unpaid' %}selected{% endif %}>Unpaid</option>
+        </select>
+      </form>
+
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th class="text-end">Total</th>
+            <th class="text-end">Paid</th>
+            <th class="text-end">Balance</th>
+            <th class="text-center">Status</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in invoices %}
+          <tr>
+            <td class="fw-semibold">
+              {{ i.number }}
+              <div><small class="text-muted">Updated: {{ i.updated_at|naturaltime }}</small></div>
+            </td>
+            <td>
+              <div class="fw-semibold">{{ i.customer.name }}</div>
+              {% if i.customer.email %}
+                <small class="text-muted">{{ i.customer.email }}</small>
+              {% endif %}
+            </td>
+            <td>{{ i.date|date:"M d, Y" }}</td>
+            <td class="text-end fw-semibold">₹{{ i.grand_total|floatformat:2|intcomma }}</td>
+            <td class="text-end text-success">₹{{ i.paid_amount|floatformat:2|intcomma }}</td>
+            <td class="text-end text-danger">₹{{ i.balance_due|floatformat:2|intcomma }}</td>
+            <td class="text-center">
+              {% if i.status == 'paid' %}
+                <span class="status-badge status-paid">
+                  <i class="bi bi-check-circle"></i><span>Paid</span>
+                </span>
+              {% elif i.status == 'partial' %}
+                <span class="status-badge status-partial">
+                  <i class="bi bi-exclamation-circle"></i><span>Partial</span>
+                </span>
+              {% else %}
+                <span class="status-badge status-unpaid">
+                  <i class="bi bi-clock-history"></i><span>Unpaid</span>
+                </span>
+              {% endif %}
+            </td>
+            <td class="text-center action-btns">
+              <a href="{% url 'sales:invoice_detail' i.id %}" class="btn btn-sm btn-outline-secondary" title="View">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a href="{% url 'sales:invoice_edit' i.id %}" class="btn btn-sm btn-outline-primary" title="Edit">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <a href="{% url 'sales:invoice_delete' i.id %}" class="btn btn-sm btn-outline-danger" title="Delete">
+                <i class="bi bi-trash"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-4">
+              <i class="bi bi-inbox display-6 d-block mb-2"></i>
+              No invoices found.<br>
+              <a href="{% url 'sales:invoice_add' %}" class="btn btn-success btn-sm mt-2">
+                + Create Your First Invoice
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer d-flex justify-content-between flex-wrap mt-2">
+      <div>Showing <strong>{{ invoices|length }}</strong> invoice(s)</div>
+      <div>Last refreshed: <strong>{% now "M d, Y H:i" %}</strong></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

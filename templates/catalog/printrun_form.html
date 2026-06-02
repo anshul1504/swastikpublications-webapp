@@ -1,0 +1,951 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create Batch · Inventory · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root{
+    --primary:#157347;
+    --primary-dark:#0f5c38;
+    --accent:#2563eb;
+    --muted:#6b7280;
+    --text:#111827;
+    --border:#e5e7eb;
+    --card-bg:#ffffff;
+    --soft-bg:#f9fafb;
+  }
+
+  body{
+    background-color:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    color:var(--text);
+    font-size:14px;
+  }
+
+  a{text-decoration:none;color:inherit;}
+
+  .wrap{
+    max-width:1180px;
+    margin:26px auto 36px;
+    padding:0 16px 18px;
+  }
+
+  /* PAGE HEADER */
+  .page-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+  }
+
+  .title-wrap{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+
+  .page-breadcrumb{
+    display:flex;
+    gap:6px;
+    align-items:center;
+    font-size:11px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.08em;
+  }
+  .page-breadcrumb-dot{
+    width:4px;
+    height:4px;
+    border-radius:999px;
+    background:#9ca3af;
+  }
+
+  .page-title{
+    font-size:1.5rem;
+    font-weight:700;
+    margin:0;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:var(--text);
+  }
+
+  .page-title-badge{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    padding:3px 9px;
+    border-radius:999px;
+    background:#ecfdf5;
+    border:1px solid #bbf7d0;
+    color:#15803d;
+    font-weight:600;
+  }
+
+  .page-sub{
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  .actions{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+
+  /* BUTTONS */
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    padding:8px 13px;
+    border-radius:999px;
+    font-weight:500;
+    cursor:pointer;
+    border:1px solid transparent;
+    font-size:13px;
+    transition:all .15s ease;
+    white-space:nowrap;
+  }
+  .btn-sm{padding:6px 11px;font-size:12.5px;}
+
+  .btn-primary{
+    background:var(--primary);
+    color:#fff;
+    border-color:var(--primary);
+  }
+  .btn-primary:hover{
+    background:var(--primary-dark);
+    border-color:var(--primary-dark);
+  }
+
+  .btn-ghost{
+    background:#ffffff;
+    color:var(--muted);
+    border:1px solid rgba(15,23,42,0.08);
+  }
+  .btn-ghost:hover{
+    background:#f9fafb;
+    border-color:rgba(15,23,42,0.18);
+  }
+
+  .btn-ghost-plain{
+    background:transparent;
+    color:var(--muted);
+    border:none;
+    padding:4px 7px;
+    border-radius:999px;
+    font-size:12px;
+  }
+  .btn-ghost-plain:hover{
+    background:#f3f4f6;
+  }
+
+  /* LAYOUT */
+  .grid{
+    display:grid;
+    grid-template-columns:minmax(0,1.5fr) minmax(280px,0.9fr);
+    gap:18px;
+    align-items:flex-start;
+  }
+  @media(max-width:980px){
+    .grid{grid-template-columns:minmax(0,1fr);}
+  }
+
+  .card{
+    background:var(--card-bg);
+    border-radius:14px;
+    border:1px solid var(--border);
+    box-shadow:0 8px 20px rgba(15,23,42,0.03);
+    overflow:hidden;
+  }
+
+  .card-head{
+    padding:12px 16px;
+    border-bottom:1px solid #e5e7eb;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+
+  .card-head-title{
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+  }
+  .card-head-title-main{
+    font-weight:600;
+    font-size:14px;
+    color:#111827;
+  }
+  .card-head-title-sub{
+    font-size:12.5px;
+    color:#6b7280;
+  }
+
+  .chip-soft{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 9px;
+    border-radius:999px;
+    border:1px dashed #bfdbfe;
+    background:#eff6ff;
+    font-size:11.5px;
+    color:#1d4ed8;
+  }
+  .chip-dot{
+    width:7px;
+    height:7px;
+    border-radius:999px;
+    background:#22c55e;
+  }
+
+  .card-body{
+    padding:18px 16px 14px;
+  }
+
+  .card-foot{
+    padding:10px 16px 12px;
+    border-top:1px solid #e5e7eb;
+    background:#f9fafb;
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+
+  /* FORM */
+  label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    margin-bottom:5px;
+    color:var(--text);
+  }
+  label .required-pill{
+    color:#b91c1c;
+    margin-left:3px;
+  }
+
+  .form-control{
+    width:100%;
+    padding:9px 11px;
+    border-radius:9px;
+    border:1px solid #e5e7eb;
+    background:#fff;
+    font-size:13px;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .form-control:focus{
+    outline:none;
+    border-color:#2563eb;
+    box-shadow:0 0 0 1px rgba(37,99,235,0.2);
+  }
+
+  textarea.form-control{
+    min-height:100px;
+    resize:vertical;
+  }
+
+  .form-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  @media(max-width:640px){
+    .form-row{grid-template-columns:1fr;}
+  }
+
+  .section-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:#6b7280;
+    margin-bottom:8px;
+  }
+
+  .section-divider{
+    border-top:1px solid #e5e7eb;
+    margin:12px 0 16px;
+  }
+
+  .help{
+    font-size:11.5px;
+    color:var(--muted);
+    margin-top:4px;
+  }
+
+  .inline-hint{
+    font-size:11.5px;
+    color:var(--muted);
+    margin-top:5px;
+  }
+
+  .inline-muted{
+    font-size:11.5px;
+    color:var(--muted);
+  }
+
+  .field-errors{
+    margin-top:4px;
+  }
+  .error{
+    color:#b91c1c;
+    font-size:11.5px;
+  }
+
+  .muted{color:var(--muted);}
+
+  /* RIGHT SIDE – STATS */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:10px;
+  }
+  .stat{
+    padding:10px 10px;
+    border-radius:10px;
+    background:#ffffff;
+    border:1px solid rgba(148,163,184,0.3);
+  }
+  .stat .num{
+    font-weight:700;
+    font-size:15px;
+  }
+  .stat .lbl{
+    font-size:11.5px;
+    color:var(--muted);
+    margin-top:3px;
+  }
+
+  .low-badge{
+    display:inline-block;
+    padding:3px 7px;
+    border-radius:999px;
+    background:rgba(220,38,38,0.06);
+    color:#dc2626;
+    font-weight:600;
+    font-size:10.5px;
+    margin-left:4px;
+  }
+
+  .meta{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .meta-item{
+    padding:9px 10px;
+    border-radius:10px;
+    border:1px solid rgba(148,163,184,0.3);
+    background:#ffffff;
+  }
+  .meta-item .lbl{
+    font-size:11.5px;
+    color:var(--muted);
+    margin-bottom:4px;
+  }
+  .meta-item .val{
+    font-weight:600;
+    font-size:13px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-wrap:wrap;
+  }
+
+  .meta-pill{
+    padding:3px 8px;
+    border-radius:999px;
+    background:#eff6ff;
+    border:1px solid #dbeafe;
+    font-size:10.5px;
+    color:#1d4ed8;
+  }
+
+  .mono-pill{
+    padding:3px 7px;
+    border-radius:6px;
+    background:#111827;
+    color:#e5e7eb;
+    font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size:11px;
+  }
+
+  .empty{
+    padding:20px;
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  /* TOAST */
+  #toast{
+    position:fixed;
+    right:20px;
+    top:22px;
+    z-index:9999;
+    padding:9px 13px;
+    border-radius:11px;
+    box-shadow:0 12px 30px rgba(15,23,42,0.18);
+    transform:translateY(-6px);
+    opacity:0;
+    pointer-events:none;
+    transition:all .22s cubic-bezier(.2,.9,.2,1);
+    font-size:12.5px;
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+  #toast.show{
+    opacity:1;
+    pointer-events:auto;
+    transform:translateY(0);
+  }
+  #toast.success{
+    background:#f0fdf4;
+    border:1px solid #bbf7d0;
+    color:#166534;
+  }
+  #toast.error{
+    background:#fef2f2;
+    border:1px solid #fecaca;
+    color:#7f1d1d;
+  }
+  #toast-icon{font-size:15px;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="title-wrap">
+      <div class="page-breadcrumb">
+        <span>Inventory</span>
+        <span class="page-breadcrumb-dot"></span>
+        <span>Batches</span>
+        <span class="page-breadcrumb-dot"></span>
+        <span>New</span>
+      </div>
+      <h1 class="page-title">
+        Create new batch
+        <span class="page-title-badge">Inbound stock</span>
+      </h1>
+      <div class="page-sub">
+        Add a print batch and automatically keep your stock ledger in sync.
+      </div>
+    </div>
+    <div class="actions">
+      <a href="{% url 'catalog:pr_list' %}" class="btn btn-ghost btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to batches
+      </a>
+      <a href="{% url 'catalog:product_list' %}" class="btn btn-ghost btn-sm">
+        <i class="bi bi-box-seam"></i> View products
+      </a>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" role="alert" aria-live="polite" aria-atomic="true">
+    <span id="toast-icon"></span>
+    <span id="toast-text"></span>
+  </div>
+
+  <div class="grid">
+    <!-- LEFT: FORM -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-title">
+          <div class="card-head-title-main">Batch information</div>
+          <div class="card-head-title-sub">
+            Create a print run — received quantity will update the ledger automatically.
+          </div>
+        </div>
+        <div class="chip-soft">
+          <span class="chip-dot"></span>
+          <span>Auto stock tracking</span>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <form method="post" id="prCreateForm" action="{% url 'catalog:pr_create' %}" novalidate>
+          {% csrf_token %}
+          {% if form %}
+
+            <div class="section-label">Primary details</div>
+
+            <div class="form-group" style="margin-bottom:14px;">
+              <label for="id_product">
+                Product<span class="required-pill">*</span>
+              </label>
+              {{ form.product }}
+              {% if form.product.help_text %}
+                <div class="help">{{ form.product.help_text }}</div>
+              {% endif %}
+              <div class="field-errors" data-field="product">
+                {% for e in form.product.errors %}
+                  <div class="error">{{ e }}</div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-bottom:12px;">
+              <div>
+                <label for="id_batch_no">Batch number</label>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  {{ form.batch_no }}
+                  <button type="button" id="copyBatchBtn" class="btn-ghost-plain" title="Generate & copy">
+                    Generate
+                  </button>
+                </div>
+                <div class="help">
+                  Leave empty to auto-generate. Example:
+                  <code>PR-123-1609459200</code>
+                </div>
+                <div class="field-errors" data-field="batch_no">
+                  {% for e in form.batch_no.errors %}
+                    <div class="error">{{ e }}</div>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <div>
+                <label for="id_warehouse">
+                  Warehouse<span class="required-pill">*</span>
+                </label>
+                {{ form.warehouse }}
+                <div class="field-errors" data-field="warehouse">
+                  {% for e in form.warehouse.errors %}
+                    <div class="error">{{ e }}</div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+
+            <div class="section-divider"></div>
+            <div class="section-label">Quantities &amp; cost</div>
+
+            <div class="form-row" style="margin-bottom:12px;">
+              <div>
+                <label for="id_printed_qty">
+                  Printed quantity<span class="required-pill">*</span>
+                </label>
+                {{ form.printed_qty }}
+                <div class="field-errors" data-field="printed_qty">
+                  {% for e in form.printed_qty.errors %}
+                    <div class="error">{{ e }}</div>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <div>
+                <label for="id_received_qty">Received quantity</label>
+                {{ form.received_qty }}
+                <div class="help">If left empty, defaults to printed quantity.</div>
+                <div class="field-errors" data-field="received_qty">
+                  {% for e in form.received_qty.errors %}
+                    <div class="error">{{ e }}</div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-bottom:12px;">
+              <div>
+                <label for="id_unit_cost">Unit cost (optional)</label>
+                {{ form.unit_cost }}
+                <div class="inline-hint" id="totalCostHint">Total cost: —</div>
+                <div class="field-errors" data-field="unit_cost">
+                  {% for e in form.unit_cost.errors %}
+                    <div class="error">{{ e }}</div>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <div>
+                <label for="id_print_date">Print / received date</label>
+                {{ form.print_date }}
+                <div class="help">Defaults to today if empty.</div>
+                <div class="field-errors" data-field="print_date">
+                  {% for e in form.print_date.errors %}
+                    <div class="error">{{ e }}</div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+
+            <div class="section-divider"></div>
+            <div class="section-label">Notes</div>
+
+            <div style="margin-bottom:6px;">
+              <label for="id_notes">Internal notes</label>
+              {{ form.notes }}
+              <div class="help">
+                Optional: add context like PO reference, printer, or special handling.
+              </div>
+              <div class="field-errors" data-field="notes">
+                {% for e in form.notes.errors %}
+                  <div class="error">{{ e }}</div>
+                {% endfor %}
+              </div>
+            </div>
+
+          {% else %}
+            <div class="empty">
+              Form not available — ensure <code>PrintRunForm</code> is provided.
+            </div>
+          {% endif %}
+        </form>
+      </div>
+
+      <div class="card-foot">
+        <div class="inline-muted">
+          Tip: Received quantity &amp; unit cost are used to calculate landed stock value.
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" id="resetBtn" class="btn btn-ghost btn-sm">
+            Reset
+          </button>
+          <a href="{% url 'catalog:pr_list' %}" class="btn btn-ghost btn-sm">
+            Cancel
+          </a>
+          <button type="submit" form="prCreateForm" id="submitBtn" class="btn btn-primary btn-sm">
+            Create batch
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: OVERVIEW -->
+    <div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-head">
+          <div class="card-head-title">
+            <div class="card-head-title-main">Inventory overview</div>
+            <div class="card-head-title-sub">Quick snapshot of your catalog and batches.</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="stats">
+            <div class="stat">
+              <div class="num" id="statTotalProducts">
+                {{ total_products|default:"0" }}
+              </div>
+              <div class="lbl">Total products</div>
+            </div>
+            <div class="stat">
+              <div class="num" id="statTotalBatches">
+                {{ total_prs|default:"0" }}
+              </div>
+              <div class="lbl">Total batches</div>
+            </div>
+            <div class="stat">
+              <div class="num" id="statLowStock">
+                {{ low_stock_count|default:"0" }}
+              </div>
+              <div class="lbl">
+                Low stock
+                {% if low_stock_count and low_stock_count|add:0 > 0 %}
+                  <span class="low-badge">Action needed</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-title">
+            <div class="card-head-title-main">System info</div>
+            <div class="card-head-title-sub">Batch behaviour &amp; defaults.</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="meta">
+            <div class="meta-item">
+              <div class="lbl">Default warehouse</div>
+              <div class="val">
+                {% if warehouses %}
+                  {{ warehouses.0.name }}
+                {% else %}
+                  <span class="muted">Not configured</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="meta-item">
+              <div class="lbl">Auto generation</div>
+              <div class="val">
+                Enabled
+                <span class="meta-pill">Batch ID</span>
+              </div>
+            </div>
+            <div class="meta-item">
+              <div class="lbl">Batch format</div>
+              <div class="val">
+                <span class="mono-pill">PR-productId-ts</span>
+              </div>
+            </div>
+            <div class="meta-item">
+              <div class="lbl">Stock tracking</div>
+              <div class="val">
+                Automatic
+                <span class="meta-pill">Ledger sync</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+  const form = document.getElementById('prCreateForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const toast = document.getElementById('toast');
+  const toastIcon = document.getElementById('toast-icon');
+  const toastText = document.getElementById('toast-text');
+  const resetBtn = document.getElementById('resetBtn');
+  const statTotalBatches = document.getElementById('statTotalBatches');
+  const statLowStock = document.getElementById('statLowStock');
+  const copyBatchBtn = document.getElementById('copyBatchBtn');
+  const totalCostHint = document.getElementById('totalCostHint');
+
+  function showToast(msg, type='success', t=3200){
+    if(!toast) return;
+    toastText.textContent = msg || '';
+    toast.className = '';
+    toast.classList.add(type === 'success' ? 'success' : 'error', 'show');
+    if(toastIcon){
+      toastIcon.textContent = type === 'success' ? '✅' : '⚠️';
+    }
+    setTimeout(() => toast.classList.remove('show'), t);
+  }
+
+  function addFormControlClasses(){
+    if(!form) return;
+    form.querySelectorAll('input,select,textarea').forEach(el=>{
+      el.classList.add('form-control');
+    });
+  }
+
+  function enhanceInputs(){
+    if(!form) return;
+    ['product','warehouse','printed_qty'].forEach(name=>{
+      const el = form.querySelector('[name="'+name+'"]');
+      if(el){ el.setAttribute('required','required'); }
+    });
+    ['printed_qty','received_qty','unit_cost'].forEach(name=>{
+      const el = form.querySelector('[name="'+name+'"]');
+      if(el && !el.getAttribute('type')){
+        el.setAttribute('type','number');
+        el.setAttribute('min','0');
+        el.setAttribute('step', name === 'unit_cost' ? '0.01' : '1');
+      }
+    });
+  }
+
+  function clearFieldErrors(){
+    document.querySelectorAll('.field-errors').forEach(el => el.innerHTML = '');
+  }
+
+  function setFieldErrors(errors){
+    if(!errors) return;
+    Object.keys(errors).forEach(k=>{
+      const c = document.querySelector('.field-errors[data-field="'+k+'"]');
+      if(c){
+        c.innerHTML = '';
+        (errors[k] || []).forEach(m=>{
+          const d = document.createElement('div');
+          d.className = 'error';
+          d.textContent = m;
+          c.appendChild(d);
+        });
+      }else{
+        showToast(Array.isArray(errors[k]) ? errors[k].join('; ') : errors[k], 'error', 5200);
+      }
+    });
+  }
+
+  function updateTotalCostHint(){
+    if(!totalCostHint || !form) return;
+    const printed = parseFloat(form.querySelector('[name="printed_qty"]')?.value || 0) || 0;
+    const received = parseFloat(form.querySelector('[name="received_qty"]')?.value || 0) || 0;
+    const unit = parseFloat(form.querySelector('[name="unit_cost"]')?.value || 0) || 0;
+    const qty = received > 0 ? received : printed;
+    if(qty <= 0 || unit <= 0){
+      totalCostHint.textContent = 'Total cost: —';
+      return;
+    }
+    const total = qty * unit;
+    if(!isFinite(total)){
+      totalCostHint.textContent = 'Total cost: —';
+      return;
+    }
+    totalCostHint.textContent = 'Total cost: ' + total.toFixed(2);
+  }
+
+  if(form){
+    addFormControlClasses();
+    enhanceInputs();
+
+    // default date = today if empty
+    try{
+      const dateField = form.querySelector('[name="print_date"]');
+      if(dateField && !dateField.value){
+        dateField.value = new Date().toISOString().split('T')[0];
+      }
+    }catch(e){}
+
+    ['received_qty','printed_qty','unit_cost'].forEach(name=>{
+      const el = form.querySelector('[name="'+name+'"]');
+      if(el){ el.addEventListener('input', updateTotalCostHint); }
+    });
+    updateTotalCostHint();
+
+    form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      clearFieldErrors();
+      submitBtn.disabled = true;
+      const old = submitBtn.innerHTML;
+      submitBtn.innerHTML = 'Creating…';
+
+      const prod = form.querySelector('[name="product"]');
+      if(prod && !prod.value){
+        showToast('Please select a product', 'error', 2600);
+        prod.focus();
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = old;
+        return;
+      }
+
+      const fd = new FormData(form);
+      const payload = {};
+      fd.forEach((v,k)=> payload[k] = v);
+
+      if((!payload.received_qty || payload.received_qty === '') && payload.printed_qty){
+        payload.received_qty = payload.printed_qty;
+      }
+
+      try{
+        const res = await fetch('{% url "catalog:api_printrun_create_v2" %}', {
+          method:'POST',
+          headers:{
+            'Content-Type':'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if(res.ok && data.ok){
+          showToast('Batch created ✓', 'success', 900);
+
+          try{
+            const inc = parseInt(payload.received_qty || payload.printed_qty || 0) || 0;
+            if(statTotalBatches){
+              statTotalBatches.textContent = String(
+                (parseInt(statTotalBatches.textContent || '0') || 0) + 1
+              );
+            }
+            if(statLowStock && inc > 0){
+              statLowStock.textContent = String(
+                Math.max(0,(parseInt(statLowStock.textContent || '0') || 0) - 1)
+              );
+            }
+          }catch(e){}
+
+          setTimeout(function(){
+            if(data.redirect_url){
+              window.location.href = data.redirect_url;
+            }else{
+              window.location.href = "{% url 'catalog:pr_list' %}";
+            }
+          }, 650);
+
+        }else{
+          if(data && data.errors){
+            setFieldErrors(data.errors);
+          }else if(data && data.error){
+            showToast(data.error, 'error', 5200);
+          }else{
+            showToast('Failed to create batch', 'error', 5200);
+          }
+        }
+      }catch(err){
+        console.error(err);
+        showToast('Network error. Try again.', 'error', 5200);
+      }finally{
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = old;
+      }
+    });
+  }
+
+  if(resetBtn){
+    resetBtn.addEventListener('click', ()=>{
+      if(form){
+        form.reset();
+        addFormControlClasses();
+        enhanceInputs();
+        clearFieldErrors();
+        updateTotalCostHint();
+      }
+    });
+  }
+
+  if(copyBatchBtn && form){
+    copyBatchBtn.addEventListener('click', function(){
+      const prodSelect = form.querySelector('[name="product"]');
+      const batchInput = form.querySelector('[name="batch_no"]');
+      if(!prodSelect || !batchInput){
+        showToast('Field not ready', 'error', 2200);
+        return;
+      }
+      if(!prodSelect.value){
+        showToast('First select a product', 'error', 2300);
+        return;
+      }
+      const ts = Math.floor(Date.now()/1000);
+      const example = `PR-${prodSelect.value}-${ts}`;
+      batchInput.value = example;
+      batchInput.focus();
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(example).then(
+          () => showToast('Batch number generated & copied!', 'success', 2200),
+          () => showToast('Batch number generated', 'success', 1700)
+        );
+      }else{
+        showToast('Batch number generated', 'success', 1700);
+      }
+    });
+  }
+
+  // auto-fill batch when product changes (if empty)
+  try{
+    const productSelect = document.querySelector('[name="product"]');
+    const batchInput = document.querySelector('[name="batch_no"]');
+    if(productSelect && batchInput){
+      productSelect.addEventListener('change', ()=>{
+        if(!batchInput.value.trim() && productSelect.value){
+          batchInput.value = `PR-${productSelect.value}-${Math.floor(Date.now()/1000)}`;
+        }
+      });
+    }
+  }catch(e){}
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,635 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Add Payment · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root{
+    --primary:#157347;
+    --primary-dark:#0f5c38;
+    --accent:#2563eb;
+    --muted:#4b5563;
+    --text-dark:#111827;
+    --border:#d1d5db;
+    --card-bg:#ffffff;
+    --soft-bg:#f9fafb;
+    --danger:#dc2626;
+    --success:#16a34a;
+  }
+
+  body{
+    background:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    color:var(--text-dark);
+  }
+
+  .payment-page{
+    width:100%;
+    padding:20px 8px 28px;
+  }
+  .payment-container{
+    max-width:1100px;
+    margin:0 auto;
+  }
+
+  /* Header (dashboard style) */
+  .page-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+  .page-heading{
+    font-weight:600;
+    font-size:1.45rem;
+    margin-bottom:2px;
+    color:var(--text-dark);
+  }
+  .page-sub{
+    font-size:13px;
+    color:var(--muted);
+  }
+  .header-actions .btn{
+    border-radius:9px;
+    font-size:0.9rem;
+  }
+  .header-actions .btn-outline-secondary:hover{
+    border-color:var(--accent);
+    color:var(--accent);
+  }
+
+  /* Chips */
+  .chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:10px;
+  }
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:5px 11px;
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+    font-size:11.5px;
+    color:#374151;
+  }
+  .chip strong{
+    font-weight:600;
+  }
+
+  /* Layout: form + sidebar */
+  .payment-layout{
+    display:flex;
+    gap:18px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+  .payment-main{
+    flex:1 1 0;
+    min-width:280px;
+  }
+  .payment-side{
+    flex:0 0 320px;
+    max-width:360px;
+  }
+
+  /* Card */
+  .card-lite{
+    background:var(--card-bg);
+    border-radius:16px;
+    box-shadow:0 10px 30px rgba(15,23,42,0.06);
+    border:1px solid var(--border);
+    padding:18px 18px 16px;
+  }
+
+  .card-header-mini{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    margin-bottom:10px;
+    flex-wrap:wrap;
+  }
+  .card-title{
+    font-size:15px;
+    font-weight:600;
+    color:var(--text-dark);
+  }
+  .card-sub{
+    font-size:12px;
+    color:var(--muted);
+  }
+  .hint-strong{
+    font-size:12px;
+    color:#b91c1c;
+    font-weight:600;
+  }
+
+  /* Form fields */
+  .form-label{
+    font-size:13px;
+    font-weight:500;
+    margin-bottom:4px;
+  }
+  .form-control,
+  .form-select{
+    border-radius:10px;
+    border:1px solid var(--border);
+    font-size:13px;
+  }
+  .form-control:focus,
+  .form-select:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 2px rgba(21,115,71,0.18);
+  }
+  .form-text{
+    font-size:11.5px;
+    color:var(--muted);
+  }
+
+  .invoice-help{
+    font-size:11.5px;
+    color:var(--muted);
+    margin-top:2px;
+  }
+
+  .amount-row{
+    display:flex;
+    gap:8px;
+    align-items:flex-end;
+    flex-wrap:wrap;
+  }
+  .btn-chip{
+    font-size:11.5px;
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .btn-chip:hover{
+    border-color:var(--primary);
+    color:var(--primary-dark);
+    background:#ecfdf3;
+  }
+
+  /* Actions */
+  .actions-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:14px;
+    justify-content:flex-end;
+  }
+  .btn{
+    border-radius:10px;
+    font-size:13px;
+  }
+  .btn-primary{
+    background-color:var(--primary);
+    border-color:var(--primary);
+    color:#ffffff;
+  }
+  .btn-primary:hover{
+    background-color:var(--primary-dark);
+    border-color:var(--primary-dark);
+  }
+  .btn-outline-secondary:hover{
+    border-color:var(--accent);
+    color:var(--accent);
+  }
+
+  /* Sidebar summary */
+  .summary-title{
+    font-size:13px;
+    font-weight:600;
+    margin-bottom:4px;
+  }
+  .summary-sub{
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:10px;
+  }
+
+  .summary-block{
+    border-radius:12px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+    padding:10px 12px;
+    margin-bottom:10px;
+  }
+  .summary-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--muted);
+    margin-bottom:2px;
+  }
+  .summary-value-main{
+    font-size:15px;
+    font-weight:700;
+    color:var(--text-dark);
+  }
+  .summary-value-sub{
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  .summary-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:6px;
+    margin-top:6px;
+  }
+  .summary-pill{
+    border-radius:10px;
+    background:#ffffff;
+    border:1px solid #e5e7eb;
+    padding:6px 8px;
+    text-align:left;
+  }
+  .summary-pill-label{
+    font-size:11px;
+    color:var(--muted);
+  }
+  .summary-pill-value{
+    font-size:13px;
+    font-weight:700;
+  }
+  .pill-total .summary-pill-value{ color:#0f172a; }
+  .pill-paid .summary-pill-value{ color:var(--success); }
+  .pill-due .summary-pill-value{ color:var(--danger); }
+
+  .status-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 9px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:600;
+  }
+  .status-paid{
+    background:rgba(22,163,74,0.08);
+    color:#15803d;
+  }
+  .status-partial{
+    background:rgba(249,115,22,0.08);
+    color:#c2410c;
+  }
+  .status-unpaid{
+    background:rgba(239,68,68,0.08);
+    color:#b91c1c;
+  }
+
+  .summary-note{
+    font-size:11.5px;
+    color:var(--muted);
+    margin-top:4px;
+  }
+
+  @media(max-width:991.98px){
+    .payment-layout{
+      flex-direction:column;
+    }
+    .payment-side{
+      max-width:100%;
+    }
+  }
+
+  @media(max-width:575.98px){
+    .card-lite{
+      padding:16px 12px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="payment-page">
+  <div class="payment-container">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h3 class="page-heading mb-0">Add Payment</h3>
+        <div class="page-sub">
+          Link a payment to one of your invoices. This will update collections, outstanding and reports.
+        </div>
+        <div class="chip-row">
+          <div class="chip">
+            <i class="bi bi-receipt"></i>
+            Invoices available: <strong>{{ invoices|length }}</strong>
+          </div>
+          <div class="chip">
+            <i class="bi bi-shield-check"></i>
+            Keep customer & amount correct for clean books.
+          </div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a href="{% url 'sales:payment_list' %}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-arrow-left"></i> Back to Payments
+        </a>
+      </div>
+    </div>
+
+    <div class="payment-layout">
+
+      <!-- MAIN FORM -->
+      <div class="payment-main">
+        <div class="card-lite">
+          <div class="card-header-mini">
+            <div>
+              <div class="card-title">Payment Details</div>
+              <div class="card-sub">
+                Choose invoice, record amount & method. Status of that invoice will auto-adjust.
+              </div>
+            </div>
+            <div class="hint-strong">
+              Double-check invoice and amount before saving.
+            </div>
+          </div>
+
+          <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="row g-3">
+
+              <!-- Invoice -->
+              <div class="col-12">
+                <label class="form-label" for="id_invoice">Invoice</label>
+                <select name="invoice" id="id_invoice" class="form-select" required>
+                  <option value="">Select Invoice</option>
+                  {% for inv in invoices %}
+                    <option
+                      value="{{ inv.id }}"
+                      data-number="{{ inv.number }}"
+                      data-customer="{% if inv.customer %}{{ inv.customer.name }}{% endif %}"
+                      data-total="{{ inv.grand_total|default:0|floatformat:2 }}"
+                      data-paid="{{ inv.paid_amount|default:0|floatformat:2 }}"
+                      data-due="{{ inv.balance_due|default:0|floatformat:2 }}"
+                      data-date="{{ inv.date|date:'Y-m-d' }}"
+                      data-status="{{ inv.get_status_display }}"
+                    >
+                      {{ inv.number }}
+                      {% if inv.customer %} — {{ inv.customer.name }}{% endif %}
+                      {% if inv.balance_due %}
+                        — Due ₹{{ inv.balance_due|floatformat:2|intcomma }}
+                      {% endif %}
+                    </option>
+                  {% endfor %}
+                </select>
+                <div class="invoice-help">
+                  Tip: Start typing invoice number or customer to quickly jump.
+                </div>
+              </div>
+
+              <!-- Amount -->
+              <div class="col-md-6">
+                <label class="form-label" for="id_amount">Payment Amount</label>
+                <div class="amount-row">
+                  <div class="flex-grow-1">
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      name="amount"
+                      id="id_amount"
+                      class="form-control"
+                      placeholder="Enter amount"
+                      required
+                    >
+                    <div class="form-text" id="amount_hint">
+                      You can record full or partial payment.
+                    </div>
+                  </div>
+                  <button type="button" class="btn-chip" onclick="fillDueAmount()">
+                    Use invoice due
+                  </button>
+                </div>
+              </div>
+
+              <!-- Method -->
+              <div class="col-md-6">
+                <label class="form-label" for="id_method">Payment Method</label>
+                <select name="method" id="id_method" class="form-select">
+                  <option value="Cash">Cash</option>
+                  <option value="UPI">UPI</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="Card">Card</option>
+                  <option value="Cheque">Cheque</option>
+                </select>
+              </div>
+
+              <!-- Date -->
+              <div class="col-md-6">
+                <label class="form-label" for="id_date">Date</label>
+                <input
+                  type="date"
+                  name="date"
+                  id="id_date"
+                  class="form-control"
+                >
+                <div class="form-text">
+                  Leave as today or set actual payment date.
+                </div>
+              </div>
+
+              <!-- Note -->
+              <div class="col-12">
+                <label class="form-label" for="id_note">Note (optional)</label>
+                <textarea
+                  name="note"
+                  id="id_note"
+                  rows="2"
+                  class="form-control"
+                  placeholder="e.g. UPI ref no., cheque number, transaction id or internal note"
+                ></textarea>
+              </div>
+
+            </div>
+
+            <!-- Actions -->
+            <div class="actions-row">
+              <button class="btn btn-primary" type="submit">
+                <i class="bi bi-check-lg me-1"></i> Save Payment
+              </button>
+              <a href="{% url 'sales:payment_list' %}" class="btn btn-outline-secondary">
+                Cancel
+              </a>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+      <!-- SIDEBAR: LIVE INVOICE SUMMARY -->
+      <div class="payment-side">
+        <div class="card-lite">
+          <div class="summary-title">Invoice Snapshot</div>
+          <div class="summary-sub">
+            Select an invoice to see its customer, totals and outstanding before recording payment.
+          </div>
+
+          <!-- Number + date + customer -->
+          <div class="summary-block">
+            <div class="summary-label">Invoice</div>
+            <div class="summary-value-main" id="side_inv_number">No invoice selected</div>
+            <div class="summary-value-sub" id="side_inv_meta">Choose an invoice from the left.</div>
+          </div>
+
+          <!-- Status badge -->
+          <div style="margin-bottom:8px;">
+            <span class="status-badge status-unpaid" id="side_status_badge" style="display:none;">
+              <span class="dot" style="width:7px;height:7px;border-radius:999px;background:#ef4444;"></span>
+              <span id="side_status_text">Unpaid</span>
+            </span>
+          </div>
+
+          <!-- Totals -->
+          <div class="summary-grid">
+            <div class="summary-pill pill-total">
+              <div class="summary-pill-label">Total</div>
+              <div class="summary-pill-value" id="side_total">₹0.00</div>
+            </div>
+            <div class="summary-pill pill-paid">
+              <div class="summary-pill-label">Paid</div>
+              <div class="summary-pill-value" id="side_paid">₹0.00</div>
+            </div>
+            <div class="summary-pill pill-due">
+              <div class="summary-pill-label">Due</div>
+              <div class="summary-pill-value" id="side_due">₹0.00</div>
+            </div>
+          </div>
+
+          <div class="summary-note" id="side_note">
+            Once you save, due and status will update automatically for this invoice.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Set today's date if empty
+  (function() {
+    const dateInput = document.getElementById('id_date');
+    if (dateInput && !dateInput.value) {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      dateInput.value = `${y}-${m}-${d}`;
+    }
+  })();
+
+  function formatINR(val) {
+    if (val === null || val === undefined || val === '') return '₹0.00';
+    const num = parseFloat(val.toString().replace(/,/g, '')) || 0;
+    return '₹' + num.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+
+  function updateSidebar() {
+    const select = document.getElementById('id_invoice');
+    if (!select) return;
+
+    const opt = select.options[select.selectedIndex];
+    const numberEl = document.getElementById('side_inv_number');
+    const metaEl   = document.getElementById('side_inv_meta');
+    const totalEl  = document.getElementById('side_total');
+    const paidEl   = document.getElementById('side_paid');
+    const dueEl    = document.getElementById('side_due');
+    const noteEl   = document.getElementById('side_note');
+    const statusBadge = document.getElementById('side_status_badge');
+    const statusText  = document.getElementById('side_status_text');
+    const amountHint  = document.getElementById('amount_hint');
+
+    if (!opt || !opt.value) {
+      numberEl.textContent = 'No invoice selected';
+      metaEl.textContent   = 'Choose an invoice from the left.';
+      totalEl.textContent  = '₹0.00';
+      paidEl.textContent   = '₹0.00';
+      dueEl.textContent    = '₹0.00';
+      noteEl.textContent   = 'Once you save, due and status will update automatically for this invoice.';
+      statusBadge.style.display = 'none';
+      if (amountHint) {
+        amountHint.textContent = 'You can record full or partial payment.';
+      }
+      return;
+    }
+
+    const num   = opt.dataset.number || opt.text;
+    const cust  = opt.dataset.customer || '';
+    const date  = opt.dataset.date || '';
+    const total = opt.dataset.total || '0';
+    const paid  = opt.dataset.paid || '0';
+    const due   = opt.dataset.due  || '0';
+    const status = opt.dataset.status || '';
+
+    numberEl.textContent = num || 'Invoice';
+    let metaParts = [];
+    if (cust) metaParts.push(cust);
+    if (date) metaParts.push(date);
+    metaEl.textContent = metaParts.join(' • ');
+
+    totalEl.textContent = formatINR(total);
+    paidEl.textContent  = formatINR(paid);
+    dueEl.textContent   = formatINR(due);
+
+    // Status badge styling
+    statusBadge.classList.remove('status-paid','status-partial','status-unpaid');
+    statusBadge.style.display = 'inline-flex';
+    statusText.textContent = status || 'Unpaid';
+
+    const statusLower = (status || '').toLowerCase();
+    if (statusLower.includes('paid') && !statusLower.includes('partial')) {
+      statusBadge.classList.add('status-paid');
+    } else if (statusLower.includes('partial')) {
+      statusBadge.classList.add('status-partial');
+    } else {
+      statusBadge.classList.add('status-unpaid');
+    }
+
+    if (noteEl) {
+      if (parseFloat(due.replace(/,/g,'')) <= 0) {
+        noteEl.textContent = 'This invoice is already fully paid. Adding a payment may result in over-collection.';
+      } else {
+        noteEl.textContent = 'Use "invoice due" if you want to clear this invoice in one go.';
+      }
+    }
+
+    if (amountHint) {
+      amountHint.textContent = 'Invoice due: ' + formatINR(due) + '. You can record partial or full payment.';
+    }
+  }
+
+  function fillDueAmount() {
+    const select = document.getElementById('id_invoice');
+    const amountInput = document.getElementById('id_amount');
+    if (!select || !amountInput) return;
+    const opt = select.options[select.selectedIndex];
+    if (!opt || !opt.value) return;
+    const due = opt.dataset.due || '0';
+    const num = parseFloat(due.toString().replace(/,/g,'')) || 0;
+    amountInput.value = num.toFixed(2);
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const select = document.getElementById('id_invoice');
+    if (select) {
+      select.addEventListener('change', updateSidebar);
+      updateSidebar(); // initial state
+    }
+  });
+</script>
+{% endblock %}

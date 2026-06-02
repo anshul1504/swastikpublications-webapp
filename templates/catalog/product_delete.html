@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+{% block title %}Delete Product · The Webfix{% endblock %}
+
+{% block content %}
+<style>
+  body{
+    background-color:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+  }
+
+  .delete-page-shell{
+    max-width:780px;
+    margin:32px auto 40px;
+    padding:0 8px;
+  }
+
+  .delete-page-card{
+    background:#ffffff;
+    border-radius:18px;
+    border:1px solid #e2e8f0;
+    box-shadow:0 10px 30px rgba(15,23,42,0.06);
+    padding:22px 24px 24px;
+  }
+
+  .delete-header{
+    display:flex;
+    justify-content:space-between;
+    gap:14px;
+    align-items:flex-start;
+    margin-bottom:18px;
+  }
+
+  .delete-title-wrap{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .delete-icon{
+    width:40px;
+    height:40px;
+    border-radius:14px;
+    background:linear-gradient(135deg,#fee2e2,#fecaca);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#b91c1c;
+    font-size:20px;
+  }
+
+  .delete-title{
+    font-size:1.45rem;
+    font-weight:600;
+    color:#b91c1c;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .delete-sub{
+    font-size:13px;
+    color:#6b7280;
+    margin-top:4px;
+  }
+
+  .delete-badge{
+    font-size:11px;
+    padding:5px 10px;
+    border-radius:999px;
+    border:1px solid #fecaca;
+    background:#fef2f2;
+    color:#b91c1c;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .product-summary{
+    margin-top:4px;
+    margin-bottom:16px;
+    padding:12px 14px;
+    border-radius:14px;
+    background:#f9fafb;
+    border:1px solid #e5e7eb;
+  }
+
+  .ps-header{
+    font-size:13px;
+    font-weight:600;
+    color:#111827;
+    margin-bottom:8px;
+  }
+
+  .ps-main-line{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    margin-bottom:6px;
+  }
+
+  .ps-name{
+    font-size:15px;
+    font-weight:600;
+    color:#111827;
+  }
+
+  .ps-chip{
+    font-size:11px;
+    border-radius:999px;
+    padding:3px 9px;
+    border:1px solid #e5e7eb;
+    background:#ffffff;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+  }
+
+  .ps-chip-sku{
+    border-color:#bfdbfe;
+    background:#eff6ff;
+    color:#1d4ed8;
+  }
+
+  .ps-chip-price{
+    border-color:#bbf7d0;
+    background:#dcfce7;
+    color:#166534;
+  }
+
+  .ps-meta{
+    font-size:12px;
+    color:#6b7280;
+  }
+
+  .danger-box{
+    background:#fef2f2;
+    border:1px solid #fecaca;
+    padding:14px 14px 12px;
+    border-radius:14px;
+    color:#991b1b;
+    font-size:13px;
+    margin-bottom:18px;
+  }
+
+  .danger-title{
+    font-weight:600;
+    margin-bottom:6px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .danger-list{
+    padding-left:18px;
+    margin:0;
+  }
+  .danger-list li{
+    margin-bottom:3px;
+  }
+
+  .soft-note{
+    margin-top:12px;
+    font-size:12px;
+    color:#6b7280;
+  }
+
+  .btn-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:22px;
+  }
+
+  .btn{
+    padding:10px 22px;
+    border-radius:10px;
+    font-size:14px;
+    font-weight:500;
+    transition:0.18s;
+    cursor:pointer;
+    border:none;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    text-decoration:none;
+  }
+
+  .btn-cancel{
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    color:#475569;
+  }
+  .btn-cancel:hover{
+    background:#f1f5f9;
+    border-color:#cbd5e1;
+  }
+
+  .btn-danger{
+    background:#dc2626;
+    color:#ffffff;
+  }
+  .btn-danger:hover{
+    background:#b91c1c;
+    box-shadow:0 4px 12px rgba(239,68,68,0.3);
+    transform:translateY(-1px);
+  }
+
+  @media (max-width:575.98px){
+    .delete-page-card{
+      padding:18px 16px 20px;
+    }
+    .delete-header{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+    .btn-actions{
+      flex-direction:column-reverse;
+      align-items:stretch;
+    }
+    .btn{
+      justify-content:center;
+    }
+  }
+</style>
+
+<div class="delete-page-shell">
+  <div class="delete-page-card">
+
+    <!-- HEADER -->
+    <div class="delete-header">
+      <div>
+        <div class="delete-title-wrap">
+          <div class="delete-icon">
+            <i class="bi bi-trash-fill"></i>
+          </div>
+          <h1 class="delete-title mb-0">
+            Delete product
+          </h1>
+        </div>
+        <div class="delete-sub">
+          You’re about to permanently remove this product from your catalog.
+        </div>
+      </div>
+
+      <div>
+        <span class="delete-badge">
+          <i class="bi bi-exclamation-triangle-fill" style="font-size:11px;"></i>
+          This action cannot be undone
+        </span>
+      </div>
+    </div>
+
+    <!-- PRODUCT SUMMARY -->
+    <div class="product-summary">
+      <div class="ps-header">Product to delete</div>
+      <div class="ps-main-line">
+        <span class="ps-name">{{ object.name }}</span>
+        <span class="ps-chip ps-chip-sku">
+          <i class="bi bi-upc-scan"></i>
+          SKU: {{ object.sku }}
+        </span>
+        <span class="ps-chip ps-chip-price">
+          <i class="bi bi-currency-rupee"></i>
+          {{ object.price }}
+        </span>
+        {% if object.active %}
+          <span class="ps-chip">
+            <i class="bi bi-circle-fill" style="font-size:8px;color:#16a34a;"></i>
+            Active
+          </span>
+        {% else %}
+          <span class="ps-chip">
+            <i class="bi bi-circle-fill" style="font-size:8px;color:#b91c1c;"></i>
+            Inactive
+          </span>
+        {% endif %}
+      </div>
+      <div class="ps-meta">
+        {% if object.description %}
+          {{ object.description|truncatechars:120 }}
+        {% else %}
+          No short description added for this product.
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- DANGER BOX -->
+    <div class="danger-box">
+      <div class="danger-title">
+        <i class="bi bi-shield-exclamation"></i>
+        Please confirm you understand:
+      </div>
+      <ul class="danger-list">
+        <li>This product will be removed from the products list.</li>
+        <li>It will no longer be available to add in new invoices or transactions.</li>
+        <li>This operation is permanent and cannot be undone from this screen.</li>
+      </ul>
+
+      <div class="soft-note">
+        If this product is linked to existing invoices, your system configuration may
+        prevent deletion or keep historical records intact.
+      </div>
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <form method="post">
+      {% csrf_token %}
+      <div class="btn-actions">
+        <a href="{% url 'catalog:product_list' %}" class="btn btn-cancel">
+          <i class="bi bi-arrow-left-circle"></i>
+          Keep product
+        </a>
+
+        <button type="submit" class="btn btn-danger">
+          <i class="bi bi-trash"></i>
+          Yes, delete this product
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}

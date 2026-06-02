@@ -1,0 +1,431 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Delete Ledger Entry · The Webfix{% endblock %}
+
+{% block content %}
+<style>
+  body{
+    background-color:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+  }
+
+  .delete-page-shell{
+    max-width:780px;
+    margin:32px auto 40px;
+    padding:0 8px;
+  }
+
+  .delete-page-card{
+    background:#ffffff;
+    border-radius:18px;
+    border:1px solid #e2e8f0;
+    box-shadow:0 10px 30px rgba(15,23,42,0.06);
+    padding:22px 24px 24px;
+  }
+
+  .delete-header{
+    display:flex;
+    justify-content:space-between;
+    gap:14px;
+    align-items:flex-start;
+    margin-bottom:18px;
+  }
+
+  .delete-title-wrap{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .delete-icon{
+    width:40px;
+    height:40px;
+    border-radius:14px;
+    background:linear-gradient(135deg,#fee2e2,#fecaca);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#b91c1c;
+    font-size:20px;
+  }
+
+  .delete-title{
+    font-size:1.45rem;
+    font-weight:600;
+    color:#b91c1c;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .delete-sub{
+    font-size:13px;
+    color:#6b7280;
+    margin-top:4px;
+  }
+
+  .delete-badge{
+    font-size:11px;
+    padding:5px 10px;
+    border-radius:999px;
+    border:1px solid #fecaca;
+    background:#fef2f2;
+    color:#b91c1c;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  /* ENTRY SUMMARY BLOCK */
+  .entry-summary{
+    margin-top:4px;
+    margin-bottom:16px;
+    padding:12px 14px;
+    border-radius:14px;
+    background:#f9fafb;
+    border:1px solid #e5e7eb;
+  }
+
+  .es-header{
+    font-size:13px;
+    font-weight:600;
+    color:#111827;
+    margin-bottom:8px;
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    align-items:center;
+  }
+  .es-id{
+    font-size:12px;
+    color:#6b7280;
+  }
+
+  .es-main-line{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    margin-bottom:6px;
+  }
+
+  .es-product{
+    font-size:15px;
+    font-weight:600;
+    color:#111827;
+  }
+
+  .es-chip{
+    font-size:11px;
+    border-radius:999px;
+    padding:3px 9px;
+    border:1px solid #e5e7eb;
+    background:#ffffff;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+  }
+
+  .es-chip-sku{
+    border-color:#bfdbfe;
+    background:#eff6ff;
+    color:#1d4ed8;
+  }
+
+  .es-chip-warehouse{
+    border-color:#e5e7eb;
+    background:#f3f4f6;
+    color:#374151;
+  }
+
+  .es-chip-balance{
+    border-color:#bbf7d0;
+    background:#dcfce7;
+    color:#166534;
+  }
+
+  .es-chip-txn{
+    border-color:#e5e7eb;
+    background:#fef3c7;
+    color:#92400e;
+  }
+
+  .es-meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    font-size:12px;
+    color:#6b7280;
+  }
+
+  .es-meta-item{
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .qty-badge{
+    display:inline-flex;
+    align-items:center;
+    padding:2px 8px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:600;
+  }
+  .qty-in{
+    background:#dcfce7;
+    color:#166534;
+  }
+  .qty-out{
+    background:#fee2e2;
+    color:#b91c1c;
+  }
+  .qty-zero{
+    background:#e5e7eb;
+    color:#374151;
+  }
+
+  /* DANGER BOX */
+  .danger-box{
+    background:#fef2f2;
+    border:1px solid #fecaca;
+    padding:14px 14px 12px;
+    border-radius:14px;
+    color:#991b1b;
+    font-size:13px;
+    margin-bottom:18px;
+  }
+
+  .danger-title{
+    font-weight:600;
+    margin-bottom:6px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .danger-list{
+    padding-left:18px;
+    margin:0;
+  }
+  .danger-list li{
+    margin-bottom:3px;
+  }
+
+  .soft-note{
+    margin-top:12px;
+    font-size:12px;
+    color:#6b7280;
+  }
+
+  /* ACTION BUTTONS */
+  .btn-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:22px;
+  }
+
+  .btn{
+    padding:10px 22px;
+    border-radius:10px;
+    font-size:14px;
+    font-weight:500;
+    transition:0.18s;
+    cursor:pointer;
+    border:none;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    text-decoration:none;
+  }
+
+  .btn-cancel{
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    color:#475569;
+  }
+  .btn-cancel:hover{
+    background:#f1f5f9;
+    border-color:#cbd5e1;
+  }
+
+  .btn-danger{
+    background:#dc2626;
+    color:#ffffff;
+  }
+  .btn-danger:hover{
+    background:#b91c1c;
+    box-shadow:0 4px 12px rgba(239,68,68,0.3);
+    transform:translateY(-1px);
+  }
+
+  @media (max-width:575.98px){
+    .delete-page-card{
+      padding:18px 16px 20px;
+    }
+    .delete-header{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+    .btn-actions{
+      flex-direction:column-reverse;
+      align-items:stretch;
+    }
+    .btn{
+      justify-content:center;
+    }
+    .es-meta-row{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+  }
+</style>
+
+<div class="delete-page-shell">
+  <div class="delete-page-card">
+
+    <!-- HEADER -->
+    <div class="delete-header">
+      <div>
+        <div class="delete-title-wrap">
+          <div class="delete-icon">
+            <i class="bi bi-trash-fill"></i>
+          </div>
+          <h1 class="delete-title mb-0">
+            Delete ledger entry
+          </h1>
+        </div>
+        <div class="delete-sub">
+          You’re about to permanently remove this stock movement from your ledger.
+        </div>
+      </div>
+
+      <div>
+        <span class="delete-badge">
+          <i class="bi bi-exclamation-triangle-fill" style="font-size:11px;"></i>
+          This will recalculate stock balances
+        </span>
+      </div>
+    </div>
+
+    <!-- ENTRY SUMMARY -->
+    <div class="entry-summary">
+      <div class="es-header">
+        <div>Entry summary</div>
+        <div class="es-id">Ledger #{{ entry.id }}</div>
+      </div>
+
+      <div class="es-main-line">
+        <span class="es-product">
+          {% if product %}{{ product.name }}{% else %}Stock movement{% endif %}
+        </span>
+
+        {% if product and product.sku %}
+          <span class="es-chip es-chip-sku">
+            <i class="bi bi-upc-scan"></i>
+            SKU: {{ product.sku }}
+          </span>
+        {% endif %}
+
+        {% if warehouse %}
+          <span class="es-chip es-chip-warehouse">
+            <i class="bi bi-shop"></i>
+            {{ warehouse.name }}
+          </span>
+        {% endif %}
+
+        <span class="es-chip es-chip-balance">
+          <i class="bi bi-graph-up-arrow"></i>
+          Balance after: {{ entry.balance|default:"0" }}
+        </span>
+
+        <span class="es-chip es-chip-txn">
+          <i class="bi bi-arrow-left-right"></i>
+          {% if entry.get_ref_type_display %}
+            {{ entry.get_ref_type_display }}
+          {% elif entry.ref_type %}
+            {{ entry.ref_type|cut:"_"|capfirst }}
+          {% else %}
+            Unspecified
+          {% endif %}
+        </span>
+      </div>
+
+      <div class="es-meta-row">
+        <div class="es-meta-item">
+          <i class="bi bi-calendar-event"></i>
+          {{ entry.date|date:"d M Y" }} · {{ entry.date|time:"H:i" }}
+        </div>
+
+        <div class="es-meta-item">
+          <i class="bi bi-arrow-down-up"></i>
+          In:
+          {% if entry.in_qty %}
+            <span class="qty-badge qty-in">+{{ entry.in_qty }}</span>
+          {% else %}
+            <span class="qty-badge qty-zero">0</span>
+          {% endif %}
+          &nbsp;Out:
+          {% if entry.out_qty %}
+            <span class="qty-badge qty-out">-{{ entry.out_qty }}</span>
+          {% else %}
+            <span class="qty-badge qty-zero">0</span>
+          {% endif %}
+        </div>
+
+        <div class="es-meta-item">
+          <i class="bi bi-person-circle"></i>
+          {% if entry.user %}
+            {% if entry.user.get_full_name %}
+              {{ entry.user.get_full_name }}
+            {% else %}
+              {{ entry.user.username }}
+            {% endif %}
+          {% else %}
+            System generated
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- DANGER BOX -->
+    <div class="danger-box">
+      <div class="danger-title">
+        <i class="bi bi-shield-exclamation"></i>
+        Please confirm you understand:
+      </div>
+      <ul class="danger-list">
+        <li>This ledger entry will be removed from the stock ledger list.</li>
+        <li>Running balances for this product and warehouse will be recalculated.</li>
+        <li>Stock reports and available quantities may change based on this removal.</li>
+        <li>This operation is permanent and cannot be undone from this screen.</li>
+      </ul>
+
+      <div class="soft-note">
+        If this entry represents a critical transaction (like an invoice or batch update),
+        consider using a stock adjustment instead of deletion to maintain a clear audit trail.
+      </div>
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <form method="post">
+      {% csrf_token %}
+      <div class="btn-actions">
+        <a href="{% url 'catalog:stock_ledger_detail' entry.id %}" class="btn btn-cancel">
+          <i class="bi bi-arrow-left-circle"></i>
+          Keep entry
+        </a>
+
+        <button type="submit" class="btn btn-danger">
+          <i class="bi bi-trash"></i>
+          Yes, delete this ledger entry
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}

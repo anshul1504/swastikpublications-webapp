@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>The Webfix – Signup</title>
+
+    <style>
+
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:"Poppins", sans-serif;
+        }
+
+        body{
+            background:#ffffff;
+            padding:40px 0;
+        }
+
+        .wrapper{
+            width:900px;
+            margin:40px auto;
+            display:flex;
+            border-radius:14px;
+            overflow:hidden;
+            border:1px solid #e5e7eb;
+            box-shadow:0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        /* LEFT SIDE */
+        .left-box{
+            width:50%;
+            background:#fff;
+            padding:45px 50px;
+        }
+
+        .logo{
+            text-align:center;
+            margin-bottom:25px;
+        }
+
+        .logo img{
+            width:85px;
+        }
+
+        h2{
+            text-align:center;
+            margin-bottom:5px;
+            font-size:22px;
+            font-weight:600;
+            color:#111827;
+        }
+
+        p.subtext{
+            text-align:center;
+            font-size:13px;
+            color:#6b7280;
+            margin-bottom:25px;
+        }
+
+        label{
+            display:block;
+            font-size:14px;
+            margin-bottom:5px;
+            color:#374151;
+        }
+
+        input{
+            width:100%;
+            padding:10px;
+            border:1px solid #d1d5db;
+            border-radius:6px;
+            outline:none;
+            font-size:14px;
+            margin-bottom:18px;
+            transition:0.2s;
+        }
+
+        input:focus{
+            border-color:#2563eb;
+        }
+
+        .btn-signup{
+            width:100%;
+            padding:11px;
+            border:none;
+            border-radius:6px;
+            background:#198754;
+            color:#ffffff;
+            font-size:15px;
+            font-weight:500;
+            cursor:pointer;
+        }
+
+        .btn-signup:hover{
+            background:#157347;
+        }
+
+        .signup-footer{
+            text-align:center;
+            margin-top:10px;
+            font-size:13px;
+        }
+
+        a{
+            text-decoration:none;
+            color:#2563eb;
+        }
+
+        /* RIGHT SIDE */
+        .right-box{
+            width:50%;
+            background:#73A79C;
+            padding:45px;
+            color:white;
+        }
+
+        .carousel {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align:center;
+        }
+
+        .slide {
+            display: none;
+            animation: fade 0.8s ease-in-out;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fade {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-img {
+            width: 170px;
+            margin: 0 auto 18px auto;
+            display: block;
+            filter: drop-shadow(0 3px 8px rgba(0,0,0,0.15));
+        }
+
+        .quote {
+            font-size:20px;
+            font-weight:600;
+            margin-bottom:10px;
+        }
+
+        .quote-text {
+            font-size:14px;
+            opacity:0.9;
+            line-height:22px;
+            padding:0 20px;
+        }
+
+        .dots {
+            text-align:center;
+            margin-top:20px;
+        }
+
+        .dot {
+            height: 9px;
+            width: 9px;
+            margin: 0 4px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 50%;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background: #fff;
+        }
+
+        footer{
+            text-align:center;
+            margin-top:40px;
+            color:#6b7280;
+            font-size:12px;
+        }
+
+    </style>
+
+</head>
+<body>
+<div class="logo">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRUX2mQ7xUvQXlEjrfXAdHw5rdKgjYQkMqYA&s" alt="The Webfix">
+        </div>
+<div class="wrapper">
+
+    <!-- LEFT SIDE -->
+    <div class="left-box">
+
+        
+
+        <h2>Create Your Account</h2>
+        <p class="subtext">Start managing invoices like a pro</p>
+
+        {% if messages %}
+            {% for m in messages %}
+                <div style="background:#fee2e2;padding:10px;border-radius:5px;
+                color:#b91c1c;margin-bottom:12px;font-size:13px;">
+                    {{ m }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <label>Username</label>
+            <input name="username" required placeholder="Enter username">
+
+            <label>Email Address</label>
+            <input type="email" name="email" required placeholder="Enter email">
+
+            <label>Password</label>
+            <input type="password" name="password" required placeholder="Create password">
+
+            <label>Confirm Password</label>
+            <input type="password" name="confirm" required placeholder="Re-enter password">
+
+            <button class="btn-signup">Create Account</button>
+
+            <div class="signup-footer">
+                Already have an account?
+                <a href="{% url 'accounts:login' %}">Login now</a>
+            </div>
+        </form>
+
+    </div>
+
+    <!-- RIGHT SIDE CAROUSEL -->
+    <div class="right-box">
+
+        <div class="carousel">
+
+            <!-- Slide 1 -->
+            <div class="slide active">
+                <img src="https://www.wellybox.com/wp-content/uploads/2021/05/Depositphotos_88210670_l-2015-1024x717.jpg" class="slide-img">
+                <h3 class="quote">Smart Invoice Automation</h3>
+                <p class="quote-text">
+                    Generate invoices instantly and send reminders automatically.
+                </p>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="slide">
+                <img src="https://www.wellybox.com/wp-content/uploads/2021/05/Depositphotos_88210670_l-2015-1024x717.jpg" class="slide-img">
+                <h3 class="quote">Track Payments Easily</h3>
+                <p class="quote-text">
+                    Monitor paid, pending and overdue invoices in real-time.
+                </p>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="slide">
+                <img src="https://www.wellybox.com/wp-content/uploads/2021/05/Depositphotos_88210670_l-2015-1024x717.jpg" class="slide-img">
+                <h3 class="quote">Manage Products & Stock</h3>
+                <p class="quote-text">
+                    Maintain inventory, pricing and product details easily.
+                </p>
+            </div>
+
+        </div>
+
+        <div class="dots">
+            <span class="dot active" onclick="goToSlide(0)"></span>
+            <span class="dot" onclick="goToSlide(1)"></span>
+            <span class="dot" onclick="goToSlide(2)"></span>
+        </div>
+
+    </div>
+
+</div>
+
+<footer>
+    © 2025 The Webfix. Crafted with ❤️ by The Webfix Team.
+</footer>
+
+<style>
+    /* -------------------- RESPONSIVE DESIGN -------------------- */
+
+@media (max-width: 992px) {
+    .wrapper {
+        width: 90%;
+        flex-direction: column;
+        margin-top: 20px;
+    }
+
+    .left-box, 
+    .right-box {
+        width: 100%;
+    }
+
+    .left-box {
+        padding: 30px 30px;
+    }
+
+    .right-box {
+        padding: 30px 20px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .wrapper {
+        width: 95%;
+        margin: 15px auto;
+    }
+
+    .logo img {
+        width: 65px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    p.subtext {
+        font-size: 12px;
+    }
+
+    input {
+        font-size: 13px;
+    }
+
+    .btn-login,
+    .btn-signup {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .quote {
+        font-size: 18px;
+    }
+
+    .quote-text {
+        font-size: 13px;
+        padding: 0 10px;
+    }
+
+    .slide-img {
+        width: 140px;
+    }
+}
+
+@media (max-width: 576px) {
+
+    body {
+        padding: 10px;
+    }
+
+    .wrapper {
+        border-radius: 10px;
+        box-shadow: none;
+        border: none;
+    }
+
+    .left-box,
+    .right-box {
+        padding: 20px 18px;
+    }
+
+    input {
+        padding: 8px;
+    }
+
+    .form-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+        font-size: 12px;
+    }
+
+    .btn-login,
+    .btn-signup {
+        padding: 9px;
+    }
+
+    .dots {
+        margin-top: 15px;
+    }
+
+    .dot {
+        height: 8px;
+        width: 8px;
+    }
+
+    footer {
+        font-size: 11px;
+        margin-top: 20px;
+    }
+}
+
+</style>
+
+<script>
+let slideIndex = 0;
+const slides = document.querySelectorAll(".slide");
+const dots = document.querySelectorAll(".dot");
+
+function showSlide(index) {
+    slides.forEach((s, i) => {
+        s.classList.toggle("active", i === index);
+        dots[i].classList.toggle("active", i === index);
+    });
+}
+
+function goToSlide(i){
+    slideIndex = i;
+    showSlide(slideIndex);
+}
+
+function autoSlide(){
+    slideIndex = (slideIndex + 1) % slides.length;
+    showSlide(slideIndex);
+}
+
+setInterval(autoSlide, 4000);
+
+showSlide(slideIndex);
+</script>
+
+
+
+</body>
+</html>

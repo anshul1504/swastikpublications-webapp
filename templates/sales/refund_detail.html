@@ -1,0 +1,573 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Refund Details · The Webfix{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root{
+    --primary:#157347;
+    --primary-soft:#e7f5ec;
+    --accent:#2563eb;
+    --muted:#6b7280;
+    --ink:#111827;
+    --border:#e5e7eb;
+    --card-bg:#ffffff;
+    --soft-bg:#f9fafb;
+    --danger:#dc2626;
+  }
+
+  body{
+    background:#ffffff !important;
+    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    color:var(--ink);
+  }
+
+  .refund-page{
+    width:100%;
+    padding:20px 10px 30px;
+  }
+  .refund-container{
+    max-width:1120px;
+    margin:0 auto;
+  }
+
+  /* HEADER */
+  .refund-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:14px;
+    margin-bottom:12px;
+    flex-wrap:wrap;
+  }
+  .eyebrow{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    color:var(--muted);
+    margin-bottom:2px;
+  }
+  .page-heading{
+    font-size:1.6rem;
+    font-weight:600;
+    color:var(--ink);
+    margin-bottom:2px;
+  }
+  .page-sub{
+    font-size:13px;
+    color:var(--muted);
+  }
+  .header-actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .header-actions .btn{
+    border-radius:999px;
+    font-size:0.9rem;
+    padding:6px 13px;
+  }
+
+  .chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:18px;
+  }
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:5px 11px;
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+    font-size:11.5px;
+    color:#374151;
+  }
+  .chip i{
+    font-size:13px;
+  }
+  .chip strong{
+    font-weight:600;
+  }
+  .chip.red{
+    border-color:#fecaca;
+    background:#fef2f2;
+    color:#b91c1c;
+  }
+
+  /* LAYOUT */
+  .refund-layout{
+    display:flex;
+    align-items:flex-start;
+    gap:18px;
+    flex-wrap:wrap;
+  }
+  .refund-main{
+    flex:1 1 0;
+    min-width:280px;
+  }
+  .refund-side{
+    flex:0 0 320px;
+    max-width:360px;
+  }
+
+  .card-lite{
+    background:var(--card-bg);
+    border-radius:16px;
+    border:1px solid var(--border);
+    box-shadow:0 12px 32px rgba(15,23,42,0.06);
+    padding:18px 20px 16px;
+    margin-bottom:18px;
+  }
+
+  .section-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:8px;
+    margin-bottom:8px;
+    flex-wrap:wrap;
+  }
+  .section-title{
+    font-size:15px;
+    font-weight:600;
+  }
+  .small-muted{
+    font-size:12.5px;
+    color:var(--muted);
+  }
+
+  /* SUMMARY METRICS */
+  .summary-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(170px,1fr));
+    gap:10px;
+    margin-top:6px;
+  }
+  .summary-card{
+    border-radius:12px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+    padding:9px 11px;
+  }
+  .summary-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--muted);
+  }
+  .summary-value{
+    font-size:18px;
+    font-weight:700;
+    margin-top:2px;
+  }
+  .summary-value.red{ color:var(--danger); }
+
+  /* DETAIL GRID */
+  .info-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
+    gap:10px 18px;
+    margin-top:12px;
+  }
+  .info-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--muted);
+  }
+  .info-value{
+    font-size:14px;
+    font-weight:500;
+    margin-top:2px;
+  }
+
+  .note-box{
+    margin-top:12px;
+    border-radius:12px;
+    border:1px dashed var(--border);
+    padding:10px 11px;
+    font-size:12.5px;
+    background:var(--soft-bg);
+    color:var(--muted);
+  }
+
+  /* SIDE PANELS */
+  .side-title{
+    font-size:14px;
+    font-weight:600;
+    margin-bottom:3px;
+  }
+  .side-block{
+    border-radius:12px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+    padding:10px 11px;
+    margin-bottom:10px;
+  }
+  .side-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--muted);
+  }
+  .side-main{
+    font-size:15px;
+    font-weight:600;
+    margin-top:2px;
+  }
+  .side-sub{
+    font-size:12.5px;
+    color:var(--muted);
+  }
+
+  .status-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 9px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:600;
+    margin-top:7px;
+  }
+  .status-paid{
+    background:rgba(22,163,74,0.08);
+    color:#15803d;
+  }
+  .status-partial{
+    background:rgba(249,115,22,0.08);
+    color:#c2410c;
+  }
+  .status-unpaid{
+    background:rgba(239,68,68,0.08);
+    color:#b91c1c;
+  }
+
+  .inv-metrics{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:6px;
+    margin-top:8px;
+  }
+  .inv-pill{
+    border-radius:10px;
+    background:#ffffff;
+    border:1px solid #e5e7eb;
+    padding:6px 8px;
+  }
+  .inv-pill-label{
+    font-size:11px;
+    color:var(--muted);
+  }
+  .inv-pill-value{
+    font-size:13px;
+    font-weight:600;
+  }
+  .inv-pill-total .inv-pill-value{ color:#111827; }
+  .inv-pill-paid .inv-pill-value{ color:#15803d; }
+  .inv-pill-due .inv-pill-value{ color:#b91c1c; }
+
+  .side-actions .btn{
+    width:100%;
+    border-radius:10px;
+    font-size:13px;
+  }
+
+  .link-soft{
+    font-size:12.5px;
+    color:var(--accent);
+    text-decoration:none;
+  }
+  .link-soft:hover{
+    text-decoration:underline;
+  }
+
+  @media(max-width:575.98px){
+    .card-lite{ padding:16px 12px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="refund-page">
+  <div class="refund-container">
+
+    <!-- HEADER -->
+    <div class="refund-header">
+      <div>
+        <div class="eyebrow">Refund</div>
+        <h3 class="page-heading mb-1">
+          Refund #{{ refund.id }}
+        </h3>
+        <div class="page-sub">
+          Adjustment recorded against your invoice collections & customer balance.
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <a href="{% url 'sales:refund_list' %}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-arrow-left"></i> All Refunds
+        </a>
+
+        {# 🔽 DOWNLOAD REFUND PDF (you will create this view/url) #}
+        <a href="{% url 'sales:refund_pdf' refund.id %}" class="btn btn-outline-primary btn-sm">
+          <i class="bi bi-file-earmark-pdf"></i> Download PDF
+        </a>
+
+        <a href="{% url 'sales:refund_delete' refund.id %}" class="btn btn-outline-danger btn-sm">
+          <i class="bi bi-trash"></i> Delete
+        </a>
+      </div>
+    </div>
+
+    <!-- META CHIPS -->
+    <div class="chip-row">
+      <div class="chip red">
+        <i class="bi bi-arrow-counterclockwise"></i>
+        Amount: <strong>₹{{ refund.amount|floatformat:2|intcomma }}</strong>
+      </div>
+      <div class="chip">
+        <i class="bi bi-calendar2-day"></i>
+        {{ refund.date|date:"M d, Y" }}
+      </div>
+      <div class="chip">
+        <i class="bi bi-credit-card-2-front"></i>
+        {{ refund.method|default:"Refund" }}
+      </div>
+      {% if refund.invoice %}
+        <div class="chip">
+          <i class="bi bi-receipt"></i>
+          Invoice: {{ refund.invoice.number }}
+        </div>
+      {% endif %}
+    </div>
+
+
+    <!-- MAIN LAYOUT -->
+    <div class="refund-layout">
+
+      <!-- LEFT: MAIN OVERVIEW -->
+      <div class="refund-main">
+        <div class="card-lite">
+
+          <div class="section-header">
+            <div>
+              <div class="section-title">Refund Overview</div>
+              <div class="small-muted">
+                High-level snapshot of this refund entry.
+              </div>
+            </div>
+          </div>
+
+          <!-- SUMMARY CARDS -->
+          <div class="summary-grid">
+            <div class="summary-card">
+              <div class="summary-label">Refund Amount</div>
+              <div class="summary-value red">
+                ₹{{ refund.amount|floatformat:2|intcomma }}
+              </div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">Refund Date</div>
+              <div class="summary-value">
+                {{ refund.date|date:"M d, Y" }}
+              </div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">Method</div>
+              <div class="summary-value">
+                {{ refund.method|default:"Refund" }}
+              </div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">Linked Invoice</div>
+              <div class="summary-value" style="font-size:15px;">
+                {% if refund.invoice %}
+                  {{ refund.invoice.number }}
+                {% else %}
+                  —
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- DETAIL GRID -->
+          <div class="info-grid">
+            <div>
+              <div class="info-label">Customer</div>
+              <div class="info-value">
+                {% if refund.invoice and refund.invoice.customer %}
+                  {{ refund.invoice.customer.name }}
+                {% else %}
+                  —
+                {% endif %}
+              </div>
+            </div>
+
+            <div>
+              <div class="info-label">Type</div>
+              <div class="info-value">
+                Refund entry (negative adjustment)
+              </div>
+            </div>
+
+            <div>
+              <div class="info-label">Reference Invoice</div>
+              <div class="info-value">
+                {% if refund.invoice %}
+                  <a href="{% url 'sales:invoice_detail' refund.invoice.id %}">
+                    View Invoice →
+                  </a>
+                {% else %}
+                  —
+                {% endif %}
+              </div>
+            </div>
+
+            <div>
+              <div class="info-label">Internal Note</div>
+              <div class="info-value">
+                {{ refund.note|default:"—" }}
+              </div>
+            </div>
+          </div>
+
+          <div class="note-box">
+            <strong>Impact on books:</strong><br>
+            This refund reduces your collected amount and effectively increases the customer’s balance
+            for the linked invoice. Deleting it will re-add this amount back to collections.
+          </div>
+
+        </div>
+      </div>
+
+
+      <!-- RIGHT: INVOICE & CUSTOMER SNAPSHOT -->
+      <div class="refund-side">
+        <div class="card-lite">
+          <!-- INVOICE SNAPSHOT -->
+          <div class="side-title">Invoice Snapshot</div>
+          <div class="small-muted mb-2">
+            Current state of the invoice associated with this refund.
+          </div>
+
+          {% if refund.invoice %}
+            <div class="side-block">
+              <div class="side-label">Invoice</div>
+              <div class="side-main">
+                <a href="{% url 'sales:invoice_detail' refund.invoice.id %}">
+                  {{ refund.invoice.number }}
+                </a>
+              </div>
+              <div class="side-sub">
+                {{ refund.invoice.date|date:"M d, Y" }}
+              </div>
+
+              {% if refund.invoice.status == 'paid' %}
+                <span class="status-badge status-paid">
+                  <i class="bi bi-check-circle"></i> Paid
+                </span>
+              {% elif refund.invoice.status == 'partial' %}
+                <span class="status-badge status-partial">
+                  <i class="bi bi-hourglass-split"></i> Partial
+                </span>
+              {% else %}
+                <span class="status-badge status-unpaid">
+                  <i class="bi bi-x-circle"></i> Unpaid
+                </span>
+              {% endif %}
+            </div>
+
+            <div class="inv-metrics">
+              <div class="inv-pill inv-pill-total">
+                <div class="inv-pill-label">Total</div>
+                <div class="inv-pill-value">
+                  ₹{{ refund.invoice.grand_total|default:0|floatformat:2|intcomma }}
+                </div>
+              </div>
+              <div class="inv-pill inv-pill-paid">
+                <div class="inv-pill-label">Paid</div>
+                <div class="inv-pill-value">
+                  ₹{{ refund.invoice.paid_amount|default:0|floatformat:2|intcomma }}
+                </div>
+              </div>
+              <div class="inv-pill inv-pill-due">
+                <div class="inv-pill-label">Balance</div>
+                <div class="inv-pill-value">
+                  ₹{{ refund.invoice.balance_due|default:0|floatformat:2|intcomma }}
+                </div>
+              </div>
+            </div>
+          {% else %}
+            <div class="side-block">
+              <div class="side-label">Invoice</div>
+              <div class="side-main">No invoice linked</div>
+              <div class="side-sub">
+                This refund is not attached to a specific invoice.
+              </div>
+            </div>
+          {% endif %}
+
+          <hr class="my-3">
+
+          <!-- CUSTOMER SNAPSHOT -->
+          <div class="side-title">Customer Snapshot</div>
+          <div class="small-muted mb-2">
+            Details fetched from the invoice’s customer.
+          </div>
+
+          {% if refund.invoice and refund.invoice.customer %}
+            <div class="side-block">
+              <div class="side-label">Customer</div>
+              <div class="side-main">
+                {{ refund.invoice.customer.name }}
+              </div>
+              {% if refund.invoice.customer.email %}
+                <div class="side-sub">
+                  {{ refund.invoice.customer.email }}
+                </div>
+              {% endif %}
+              {% if refund.invoice.customer.phone %}
+                <div class="side-sub">
+                  📞 {{ refund.invoice.customer.phone }}
+                </div>
+              {% endif %}
+            </div>
+
+            {# 🔽 VIEW ALL REFUNDS FOR THIS CUSTOMER #}
+            <a
+              href="{% url 'sales:refund_list' %}?customer={{ refund.invoice.customer.id }}"
+              class="link-soft d-inline-flex align-items-center mt-1"
+            >
+              <i class="bi bi-arrow-repeat me-1"></i>
+              View all refunds for this customer
+            </a>
+
+          {% else %}
+            <div class="side-block">
+              <div class="side-label">Customer</div>
+              <div class="side-main">—</div>
+              <div class="side-sub">
+                No customer available via invoice.
+              </div>
+            </div>
+          {% endif %}
+
+          <div class="side-actions mt-3">
+            <a href="{% url 'sales:refund_delete' refund.id %}" class="btn btn-danger">
+              <i class="bi bi-trash"></i> Delete Refund
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}
