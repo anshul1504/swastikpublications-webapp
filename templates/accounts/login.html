@@ -1,499 +1,379 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>The Webfix – Login</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Webfix - Login</title>
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-        *{
-            margin:0;
-            padding:0;
-            box-sizing:border-box;
-            font-family: "Poppins", sans-serif;
-        }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
 
-        body{
-            background:#ffffff;
-            padding:40px 0;
-        }
+    html,
+    body {
+      min-height: 100%;
+    }
 
-        .wrapper{
-            width:900px;
-            margin:40px auto;
-            display:flex;
-            border-radius:14px;
-            overflow:hidden;
-            border:1px solid #e5e7eb;
-            box-shadow:0 4px 20px rgba(0,0,0,0.05);
-        }
+    body {
+      min-height: 100vh;
+      background: #f3f4f6;
+      color: #111827;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+    }
 
-        /* Left side */
-        .left-box{
-            width:50%;
-            background:#fff;
-            padding:45px 50px;
-        }
+    .login-card {
+      width: min(900px, 100%);
+      min-height: 560px;
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 28px 65px rgba(15, 23, 42, 0.18);
+    }
 
-        .logo{
-            text-align:center;
-            margin-bottom:25px;
-        }
+    .visual-panel {
+      position: relative;
+      min-height: 560px;
+      color: #ffffff;
+      background:
+        linear-gradient(180deg, rgba(15, 23, 42, 0.10) 0%, rgba(7, 64, 38, 0.82) 100%),
+        url("https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=760&q=85") center / cover;
+      padding: 28px 26px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
 
-        .logo img{
-            width:85px;
-        }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    }
 
-        h2{
-            text-align:center;
-            margin-bottom:5px;
-            font-size:22px;
-            font-weight:600;
-            color:#111827;
-        }
+    .brand-logo {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      object-fit: cover;
+      background: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.55);
+    }
 
-        p.subtext{
-            text-align:center;
-            font-size:13px;
-            color:#6b7280;
-            margin-bottom:25px;
-        }
+    .testimonial {
+      max-width: 280px;
+    }
 
-        label{
-            display:block;
-            font-size:14px;
-            margin-bottom:5px;
-            color:#374151;
-        }
+    .testimonial h1 {
+      font-size: 22px;
+      line-height: 1.25;
+      font-weight: 700;
+      letter-spacing: 0;
+      margin-bottom: 18px;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+    }
 
-        input{
-            width:100%;
-            padding:10px;
-            border:1px solid #d1d5db;
-            border-radius:6px;
-            outline:none;
-            font-size:14px;
-            margin-bottom:18px;
-            transition:0.2s;
-        }
+    .testimonial .name {
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
 
-        input:focus{
-            border-color:#2563eb;
-        }
+    .testimonial .role {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.78);
+    }
 
-        .password-wrap{
-            position: relative;
-        }
+    .form-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 52px 70px;
+      background: #ffffff;
+    }
 
-        .eye{
-            position:absolute;
-            right:12px;
-            top:10px;
-            font-size:16px;
-            cursor:pointer;
-            color:#6b7280;
-        }
+    .form-shell {
+      width: 100%;
+      max-width: 310px;
+    }
 
-        .btn-login{
-            width:100%;
-            padding:11px;
-            border:none;
-            border-radius:6px;
-            background:#198754;
-            color:#fff;
-            font-size:15px;
-            font-weight:500;
-            cursor:pointer;
-            margin-top:6px;
-        }
+    .form-logo {
+      width: 74px;
+      height: 74px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto 18px;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      padding: 4px;
+    }
 
-        .btn-login:hover{
-            background:#157347;
-        }
+    .form-shell h2 {
+      font-size: 18px;
+      line-height: 1.25;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 6px;
+      color: #111827;
+    }
 
-        .form-footer{
-            display:flex;
-            justify-content:space-between;
-            font-size:13px;
-            margin-bottom:15px;
-        }
+    .subtext {
+      text-align: center;
+      font-size: 11px;
+      line-height: 1.55;
+      color: #6b7280;
+      margin-bottom: 22px;
+    }
 
-        a{
-            text-decoration:none;
-            color:#2563eb;
-        }
+    .message {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      border-radius: 7px;
+      padding: 9px 10px;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
 
-        .signup{
-            text-align:center;
-            margin-top:10px;
-            font-size:13px;
-        }
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 5px;
+    }
 
-        /* Divider */
-        .divider{
-            width:100%;
-            height:1px;
-            background:#e5e7eb;
-            margin:18px 0;
-        }
+    input {
+      width: 100%;
+      height: 34px;
+      border: 1px solid #d1d5db;
+      border-radius: 5px;
+      padding: 0 10px;
+      font-size: 12px;
+      color: #111827;
+      outline: none;
+      transition: border-color .16s ease, box-shadow .16s ease;
+    }
 
-        .social{
-            text-align:center;
-            margin-top:10px;
-        }
+    input:focus {
+      border-color: #198754;
+      box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.14);
+    }
 
-        .social-icon{
-            display:inline-block;
-            width:34px;
-            height:34px;
-            border-radius:50%;
-            background:#f3f4f6;
-            margin:0 5px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            cursor:pointer;
-        }
+    .field {
+      margin-bottom: 12px;
+    }
 
-        /* Right side */
-        .right-box{
-            width:50%;
-            background:#73A79C; /* Teal like screenshot */
-            padding:45px;
-            color:white;
-        }
+    .password-wrap {
+      position: relative;
+    }
 
-        .quote{
-            margin-top:100px;
-            font-size:20px;
-            line-height:28px;
-            font-weight:500;
-            text-align:center;
-        }
+    .password-wrap input {
+      padding-right: 50px;
+    }
 
-        .quote-text{
-            margin-top:15px;
-            font-size:14px;
-            opacity:0.85;
-            text-align:center;
-            line-height:22px;
-        }
+    .password-toggle {
+      position: absolute;
+      right: 9px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 0;
+      background: transparent;
+      color: #198754;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 3px;
+    }
 
-        footer{
-            text-align:center;
-            margin-top:40px;
-            font-size:12px;
-            color:#6b7280;
-        }
+    .options-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 2px 0 14px;
+      font-size: 11px;
+    }
 
-    </style>
+    .options-row a {
+      color: #198754;
+      text-decoration: none;
+      font-weight: 500;
+    }
 
+    .remember {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: #6b7280;
+      white-space: nowrap;
+    }
+
+    .switch {
+      width: 30px;
+      height: 17px;
+      border-radius: 999px;
+      background: #198754;
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .switch::after {
+      content: "";
+      position: absolute;
+      width: 13px;
+      height: 13px;
+      top: 2px;
+      right: 2px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+    }
+
+    .btn-login {
+      width: 100%;
+      height: 34px;
+      border: 0;
+      border-radius: 999px;
+      background: #198754;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(25, 135, 84, 0.22);
+      transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+    }
+
+    .btn-login:hover {
+      background: #157347;
+      transform: translateY(-1px);
+      box-shadow: 0 14px 24px rgba(25, 135, 84, 0.28);
+    }
+
+    @media (max-width: 820px) {
+      body {
+        padding: 18px;
+      }
+
+      .login-card {
+        grid-template-columns: 1fr;
+        min-height: 0;
+      }
+
+      .visual-panel {
+        min-height: 260px;
+      }
+
+      .form-panel {
+        padding: 36px 28px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 0;
+        background: #ffffff;
+      }
+
+      .login-card {
+        width: 100%;
+        min-height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .visual-panel {
+        min-height: 220px;
+        padding: 22px;
+      }
+
+      .testimonial h1 {
+        font-size: 19px;
+      }
+
+      .form-panel {
+        align-items: flex-start;
+        padding: 32px 24px 40px;
+      }
+    }
+  </style>
 </head>
 <body>
+  <main class="login-card">
+    <section class="visual-panel" aria-label="Publisher CRM highlight">
+      <div class="brand">
+        <img class="brand-logo" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRUX2mQ7xUvQXlEjrfXAdHw5rdKgjYQkMqYA&s" alt="The Webfix">
+        <span>The Webfix</span>
+      </div>
 
-    <div class="logo">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRUX2mQ7xUvQXlEjrfXAdHw5rdKgjYQkMqYA&s" alt="The Webfix">
-        </div>
+      <div class="testimonial">
+        <h1>"Simply all the tools that my team and I need."</h1>
+        <p class="name">Swastik Publications</p>
+        <p class="role">Publisher billing and inventory workspace</p>
+      </div>
+    </section>
 
-<div class="wrapper">
-    
-    <!-- LEFT SIDE -->
-    <div class="left-box">
-
-        
-
-        <h2>Welcome Back !</h2>
-        <p class="subtext">Sign in to continue to The Webfix Panel</p>
+    <section class="form-panel">
+      <div class="form-shell">
+        <img class="form-logo" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRUX2mQ7xUvQXlEjrfXAdHw5rdKgjYQkMqYA&s" alt="The Webfix">
+        <h2>Welcome Back to The Webfix</h2>
+        <p class="subtext">Sign in to continue managing invoices, payments, stock, and reports.</p>
 
         {% if messages %}
-            {% for m in messages %}
-                <div style="background:#fee2e2;padding:10px;border-radius:5px;
-                color:#b91c1c;margin-bottom:12px;font-size:13px;">
-                    {{ m }}
-                </div>
-            {% endfor %}
+          {% for m in messages %}
+            <div class="message">{{ m }}</div>
+          {% endfor %}
         {% endif %}
 
         <form method="post">
-            {% csrf_token %}
+          {% csrf_token %}
 
-            <label>Username</label>
-            <input type="text" name="username" required placeholder="Enter username">
+          <div class="field">
+            <label for="username">Email or Username</label>
+            <input id="username" type="text" name="username" required placeholder="Enter username">
+          </div>
 
-            <label>Password</label>
+          <div class="field">
+            <label for="password">Password</label>
             <div class="password-wrap">
-                <input type="password" name="password" required placeholder="Enter password" id="password">
-                <span class="eye" onclick="togglePass()">👁</span>
+              <input id="password" type="password" name="password" required placeholder="Enter password">
+              <button class="password-toggle" type="button" onclick="togglePass()">Show</button>
             </div>
+          </div>
 
-            <div class="form-footer">
-                
-                <a href="{% url 'accounts:password_reset' %}">Forgot your password?</a>
-            </div>
+          <div class="options-row">
+            <a href="{% url 'accounts:password_reset' %}">Forgot password?</a>
+            <span class="remember">Remember <span class="switch" aria-hidden="true"></span></span>
+          </div>
 
-            <button class="btn-login">Log In</button>
-
-            <!--div class="divider"></div>
-
-            
-
-            <div class="signup">
-                Don't have an account? 
-                <a href="{% url 'accounts:signup' %}">Signup now</a>
-            </div-->
-
+          <button class="btn-login" type="submit">Log In</button>
         </form>
 
-    </div>
+      </div>
+    </section>
+  </main>
 
-    <!-- RIGHT SIDE CAROUSEL -->
-<div class="right-box">
-
-    <div class="carousel">
-
-        <!-- Slide 1 -->
-        <div class="slide active">
-            <img src="https://cdn.prod.website-files.com/603d48021c4d3f9a76f3f408/6587655b76a064d50232d4db_online-invoicing.jpg" class="slide-img">
-            <h3 class="quote">Smart Invoice Automation</h3>
-            <p class="quote-text">
-                Auto-generate invoices, send reminders, and track payments with 1-click.
-            </p>
-        </div>
-
-        <!-- Slide 2 -->
-        <div class="slide">
-            <img src="https://cdn.prod.website-files.com/603d48021c4d3f9a76f3f408/6587655b76a064d50232d4db_online-invoicing.jpg" class="slide-img">
-            <h3 class="quote">Instant Payment Tracking</h3>
-            <p class="quote-text">
-                Get real-time updates on paid, pending, and overdue invoices instantly.
-            </p>
-        </div>
-
-        <!-- Slide 3 -->
-        <div class="slide">
-            <img src="https://cdn.prod.website-files.com/603d48021c4d3f9a76f3f408/6587655b76a064d50232d4db_online-invoicing.jpg" class="slide-img">
-            <h3 class="quote">Inventory & Product Management</h3>
-            <p class="quote-text">
-                Manage items, stock, pricing, and discounts directly from your dashboard.
-            </p>
-        </div>
-
-    </div>
-
-    <div class="dots">
-        <span class="dot active" onclick="goToSlide(0)"></span>
-        <span class="dot" onclick="goToSlide(1)"></span>
-        <span class="dot" onclick="goToSlide(2)"></span>
-    </div>
-
-</div>
-
-
-</div>
-
-<footer>
-    © 2025 The Webfix. Crafted with ❤️ by The Webfix Team.
-</footer>
-
-<style>
-    /* -------------------- RESPONSIVE DESIGN -------------------- */
-
-@media (max-width: 992px) {
-    .wrapper {
-        width: 90%;
-        flex-direction: column;
-        margin-top: 20px;
-    }
-
-    .left-box, 
-    .right-box {
-        width: 100%;
-    }
-
-    .left-box {
-        padding: 30px 30px;
-    }
-
-    .right-box {
-        padding: 30px 20px;
-        text-align: center;
-    }
-}
-
-@media (max-width: 768px) {
-
-    .wrapper {
-        width: 95%;
-        margin: 15px auto;
-    }
-
-    .logo img {
-        width: 65px;
-    }
-
-    h2 {
-        font-size: 20px;
-    }
-
-    p.subtext {
-        font-size: 12px;
-    }
-
-    input {
-        font-size: 13px;
-    }
-
-    .btn-login,
-    .btn-signup {
-        font-size: 14px;
-        padding: 10px;
-    }
-
-    .quote {
-        font-size: 18px;
-    }
-
-    .quote-text {
-        font-size: 13px;
-        padding: 0 10px;
-    }
-
-    .slide-img {
-        width: 140px;
-    }
-}
-
-@media (max-width: 576px) {
-
-    body {
-        padding: 10px;
-    }
-
-    .wrapper {
-        border-radius: 10px;
-        box-shadow: none;
-        border: none;
-    }
-
-    .left-box,
-    .right-box {
-        padding: 20px 18px;
-    }
-
-    input {
-        padding: 8px;
-    }
-
-    .form-footer {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
-        font-size: 12px;
-    }
-
-    .btn-login,
-    .btn-signup {
-        padding: 9px;
-    }
-
-    .dots {
-        margin-top: 15px;
-    }
-
-    .dot {
-        height: 8px;
-        width: 8px;
-    }
-
-    footer {
-        font-size: 11px;
-        margin-top: 20px;
-    }
-}
-
-    .carousel {
-    position: relative;
-    width: 100%;
-    height: 100%;
-}
-
-.slide {
-    display: none;
-    text-align: center;
-    animation: fade 0.8s ease-in-out;
-}
-
-.slide.active {
-    display: block;
-}
-
-@keyframes fade {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-.slide-img {
-    width: 170px;
-    margin: 0 auto 18px auto;
-    display: block;
-    filter: drop-shadow(0 3px 8px rgba(0,0,0,0.15));
-}
-
-.dots {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.dot {
-    height: 9px;
-    width: 9px;
-    margin: 0 4px;
-    display: inline-block;
-    background: rgba(255,255,255,0.5);
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-.dot.active {
-    background: #ffffff;
-}
-
-</style>
-
-<script>
-let slideIndex = 0;
-const slides = document.querySelectorAll(".slide");
-const dots = document.querySelectorAll(".dot");
-
-function showSlide(index) {
-    slides.forEach((s, i) => {
-        s.classList.toggle("active", i === index);
-        dots[i].classList.toggle("active", i === index);
-    });
-}
-
-function goToSlide(i){
-    slideIndex = i;
-    showSlide(slideIndex);
-}
-
-function autoSlide(){
-    slideIndex = (slideIndex + 1) % slides.length;
-    showSlide(slideIndex);
-}
-
-setInterval(autoSlide, 4000); // auto-change every 4 sec
-
-showSlide(slideIndex);
-</script>
-
-<script>
+  <script>
     function togglePass(){
-        let pwd = document.getElementById("password");
-        pwd.type = (pwd.type === "password") ? "text" : "password";
+      const pwd = document.getElementById("password");
+      const btn = document.querySelector(".password-toggle");
+      const show = pwd.type === "password";
+      pwd.type = show ? "text" : "password";
+      btn.textContent = show ? "Hide" : "Show";
     }
-</script>
-
+  </script>
 </body>
 </html>

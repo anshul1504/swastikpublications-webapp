@@ -1,20 +1,5 @@
 from decimal import Decimal
 from django.db.models import Sum
-import pdfkit
-
-
-WKHTMLTOPDF_PATH = "/home2/swaspub/bin/wkhtmltopdf"
-
-
-def pdf_config():
-    return pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
-
-
-def pdf_options():
-    return {
-        "encoding": "UTF-8",
-        "enable-local-file-access": None,
-    }
 
 def compute_invoice_totals(invoice):
     subtotal = Decimal('0')

@@ -14,7 +14,6 @@ idna==3.11
 openpyxl==3.1.5
 packaging==25.0
 pathspec==0.12.1
-pdfkit==1.0.0
 pillow==12.0.0
 psycopg2-binary==2.9.11
 pycparser==2.23
@@ -30,4 +29,4 @@ sqlparse==0.5.3
 tqdm==4.67.1
 tzdata==2025.2
 urllib3==2.5.0
-weasyprint==62.3
+weasyprint==68.1

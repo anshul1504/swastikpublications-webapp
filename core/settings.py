@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import sys
+
+from dotenv import load_dotenv
 
 
 def env_value(name, default=None, cast=str):
@@ -20,8 +23,17 @@ def env_value(name, default=None, cast=str):
         return str(value).strip().lower() in {"1", "true", "yes", "on"}
     return cast(value) if value is not None else value
 
+
+def env_list(name, default=None):
+    value = os.environ.get(name)
+    if value is None:
+        return default or []
+    return [item.strip() for item in value.split(",") if item.strip()]
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
+IS_TESTING = "test" in sys.argv
 
 
 # Quick-start development settings - unsuitable for production
@@ -33,18 +45,24 @@ SECRET_KEY = env_value("SECRET_KEY", default="django-insecure-local-dev-change-m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env_value("DEBUG", default=True, cast=bool)
 
-ALLOWED_HOSTS = [
-    "127.0.0.1",
-    "localhost",
-    "crm.swastikpublicationspvtltd.in",
-    "www.crm.swastikpublicationspvtltd.in",
-]
+ALLOWED_HOSTS = env_list(
+    "ALLOWED_HOSTS",
+    default=[
+        "127.0.0.1",
+        "localhost",
+        "crm.swastikpublicationspvtltd.in",
+        "www.crm.swastikpublicationspvtltd.in",
+    ],
+)
 
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://crm.swastikpublicationspvtltd.in",
-    "https://www.crm.swastikpublicationspvtltd.in",
-]
+CSRF_TRUSTED_ORIGINS = env_list(
+    "CSRF_TRUSTED_ORIGINS",
+    default=[
+        "https://crm.swastikpublicationspvtltd.in",
+        "https://www.crm.swastikpublicationspvtltd.in",
+    ],
+)
 
 
 
@@ -109,7 +127,18 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASE_ENGINE = env_value("DB_ENGINE", default="sqlite").lower()
 
-if DATABASE_ENGINE == "mysql":
+if DATABASE_ENGINE in {"postgres", "postgresql"}:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env_value("DB_NAME"),
+            "USER": env_value("DB_USER"),
+            "PASSWORD": env_value("DB_PASSWORD"),
+            "HOST": env_value("DB_HOST", default="localhost"),
+            "PORT": env_value("DB_PORT", default="5432"),
+        }
+    }
+elif DATABASE_ENGINE == "mysql":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
@@ -166,7 +195,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = env_value("STATIC_ROOT", default=str(BASE_DIR / "staticfiles"))
 
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'dashboard' 
@@ -179,10 +208,27 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 900   # 15 mins (choose your value)
 SESSION_SAVE_EVERY_REQUEST = True   # resets timeout on every click
 
+if not DEBUG and not IS_TESTING:
+    SECURE_SSL_REDIRECT = env_value("SECURE_SSL_REDIRECT", default=True, cast=bool)
+    SESSION_COOKIE_SECURE = env_value("SESSION_COOKIE_SECURE", default=True, cast=bool)
+    CSRF_COOKIE_SECURE = env_value("CSRF_COOKIE_SECURE", default=True, cast=bool)
+    SECURE_HSTS_SECONDS = env_value("SECURE_HSTS_SECONDS", default=31536000, cast=int)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = env_value("SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True, cast=bool)
+    SECURE_HSTS_PRELOAD = env_value("SECURE_HSTS_PRELOAD", default=True, cast=bool)
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = "DENY"
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = env_value("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST = env_value("EMAIL_HOST", default="")
+EMAIL_PORT = env_value("EMAIL_PORT", default=587, cast=int)
+EMAIL_HOST_USER = env_value("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env_value("EMAIL_HOST_PASSWORD", default="")
+EMAIL_USE_TLS = env_value("EMAIL_USE_TLS", default=True, cast=bool)
+DEFAULT_FROM_EMAIL = env_value("DEFAULT_FROM_EMAIL", default=EMAIL_HOST_USER or "webmaster@localhost")

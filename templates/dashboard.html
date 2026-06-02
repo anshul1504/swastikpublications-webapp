@@ -25,6 +25,12 @@
     color: var(--text-dark);
   }
 
+  body:has(.dashboard-page) .content-wrap {
+    flex: 0 0 auto;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
   /* PAGE WRAPPER */
   .dashboard-page {
     width: 100%;
@@ -33,7 +39,7 @@
   .dashboard-container {
     max-width: 1150px;
     margin: 0 auto;
-    padding: 14px 6px 20px;
+    padding: 14px 6px 0;
   }
 
   /* HEADER */
@@ -534,7 +540,7 @@
     </div>
 
     <!-- Bottom row: recent invoices + recent payments -->
-    <div class="row g-3">
+    <div class="row g-3 dashboard-bottom-row">
       <div class="col-12 col-lg-7">
         <div class="card-lite">
           <div class="d-flex justify-content-between align-items-center mb-2">

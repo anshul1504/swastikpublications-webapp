@@ -1,12 +1,9 @@
 from django.db import models
+from django.db.models import Sum
 from django.utils import timezone
 from decimal import Decimal
 from catalog.models import Product
 
-
-from django.db import models
-from django.db.models import Sum
-from decimal import Decimal
 
 class Customer(models.Model):
     name = models.CharField(max_length=255)
@@ -55,9 +52,6 @@ class SavedItem(models.Model):
 
 # sales/models.py (relevant parts)
 
-from django.db import models
-from decimal import Decimal
-
 class Invoice(models.Model):
     STATUS_CHOICES = [
         ('unpaid', 'Unpaid'),
@@ -67,6 +61,7 @@ class Invoice(models.Model):
 
     number = models.CharField(max_length=50, unique=True)
     date = models.DateField()
+    due_date = models.DateField(null=True, blank=True)
 
     company = models.ForeignKey(
         'CompanyProfile',
@@ -98,12 +93,16 @@ class Invoice(models.Model):
     paid_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     balance_due = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='unpaid')
+    manual_status = models.BooleanField(default=False)
 
     bank_name = models.CharField(max_length=200, blank=True)
     bank_branch = models.CharField(max_length=200, blank=True)
     account_number = models.CharField(max_length=100, blank=True)
     ifsc = models.CharField(max_length=50, blank=True)
     upi = models.CharField(max_length=100, blank=True)
+    bank_account_type = models.CharField(max_length=50, blank=True)
+    bank_notes = models.TextField(blank=True)
+    signatory_name = models.CharField(max_length=160, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -167,16 +166,17 @@ class Invoice(models.Model):
 
         balance = self.grand_total - net_received
         if balance <= 0:
-            status = 'paid'
+            computed_status = 'paid'
             balance = Decimal('0.00')
         elif net_received > 0:
-            status = 'partial'
+            computed_status = 'partial'
         else:
-            status = 'unpaid'
+            computed_status = 'unpaid'
 
         self.paid_amount = net_received.quantize(Decimal('0.01'))
         self.balance_due = balance.quantize(Decimal('0.01'))
-        self.status = status
+        if not self.manual_status:
+            self.status = computed_status
         self.save(update_fields=['paid_amount', 'balance_due', 'status'])
 
     def save(self, *args, **kwargs):

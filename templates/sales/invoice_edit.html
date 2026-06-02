@@ -247,6 +247,10 @@
             <input type="date" class="form-control" name="date" value="{{ inv.date|date:'Y-m-d' }}">
           </div>
           <div class="col-md-4">
+            <label class="form-label">Due Date</label>
+            <input type="date" class="form-control" name="due_date" value="{{ inv.due_date|date:'Y-m-d' }}">
+          </div>
+          <div class="col-md-4">
             <label class="form-label">Customer</label>
             <select class="form-select" name="customer" id="customerSelect" required>
               <option value="">-- Select customer --</option>
@@ -379,6 +383,7 @@
             <thead>
               <tr>
                 <th>Item / Service</th>
+                <th>HSN</th>
                 <th>Qty</th>
                 <th>Rate</th>
                 <th>Tax %</th>
@@ -415,6 +420,14 @@
           {% if item.product.hsn_code %} · HSN {{ item.product.hsn_code }}{% endif %}
         </div>
       {% endif %}
+    </td>
+
+    <td style="width:110px;">
+      <input type="text"
+             name="hsn_code[]"
+             class="form-control hsn-code"
+             maxlength="8"
+             value="{% if item.hsn_code %}{{ item.hsn_code }}{% elif item.product and item.product.hsn_code %}{{ item.product.hsn_code }}{% endif %}">
     </td>
 
     <td style="width:110px;">
@@ -631,6 +644,18 @@
           <div class="col-md-4">
             <label class="form-label">UPI</label>
             <input name="upi" class="form-control" value="{{ inv.upi }}" placeholder="yourupi@bank">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Account Type</label>
+            <input name="bank_account_type" class="form-control" value="{{ inv.bank_account_type }}" placeholder="Current / Savings">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Signatory</label>
+            <input name="signatory_name" class="form-control" value="{{ inv.signatory_name }}" placeholder="Authorized person">
+          </div>
+          <div class="col-md-8">
+            <label class="form-label">Bank Note</label>
+            <input name="bank_notes" class="form-control" value="{{ inv.bank_notes }}" placeholder="Optional payment instruction">
           </div>
         </div>
       </div>
@@ -940,6 +965,7 @@ document.addEventListener('DOMContentLoaded', function(){
     tr.classList.add('item-row');
     tr.innerHTML = `
       <td><input type="text" name="manual_product[]" class="form-control" placeholder="Item name"></td>
+      <td><input type="text" name="hsn_code[]" class="form-control hsn-code" maxlength="8" placeholder="HSN"></td>
       <td><input type="number" step="0.01" name="qty[]" class="form-control qty" value="1"></td>
       <td><input type="number" step="0.01" name="rate[]" class="form-control rate" value="0"></td>
       <td><input type="number" step="0.01" name="tax[]" class="form-control tax" value="0"></td>

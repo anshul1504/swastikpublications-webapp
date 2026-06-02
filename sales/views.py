@@ -1,13 +1,17 @@
 # sales/views.py
 
-from datetime import datetime
+from datetime import datetime, timedelta
+import csv
 import logging
+from io import BytesIO
 
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseBadRequest
-from .utils import pdf_config, pdf_options, aggregate_payment_totals, aggregate_legacy_refunds, aggregate_refunds_unified
+from weasyprint import HTML
+
+from .utils import aggregate_payment_totals, aggregate_legacy_refunds, aggregate_refunds_unified
 logger = logging.getLogger(__name__)
 
 
@@ -28,7 +32,7 @@ except Exception:
 
 
 
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 from catalog.models_stock import StockLedger
 from catalog.models import Product as CatalogProduct
@@ -39,6 +43,7 @@ from django.db.models.functions import Cast, Coalesce
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import get_template, render_to_string
+from django.utils import timezone
 
 
 
@@ -85,6 +90,16 @@ def parse_int(value, default=0):
         return int(float(value))
     except Exception:
         return default
+
+
+def render_pdf_response(request, html, filename):
+    pdf_bytes = HTML(
+        string=html,
+        base_url=request.build_absolute_uri("/"),
+    ).write_pdf()
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
 
 
 # ============================================================
@@ -255,6 +270,7 @@ from catalog import inventory_utils as inv_utils
 allocate_fifo = getattr(inv_utils, "allocate_fifo", None)
 commit_allocation = getattr(inv_utils, "commit_allocation", None)
 reverse_allocation_for_invoice = getattr(inv_utils, "reverse_allocation_for_invoice", None)
+allocate_invoice = getattr(inv_utils, "allocate_invoice", None)
 
 # Use Catalog's Product when we need to lock DB rows for allocation (if different, adjust)
 from catalog.models import Product as CatalogProduct
@@ -305,20 +321,27 @@ def invoice_add(request):
 
     if request.method == "POST":
         # ---------- HEADER ----------
+        is_manual_status = request.POST.get("manual_status") == "1"
         inv = Invoice.objects.create(
             number=request.POST.get("number", next_number),
             customer_id=request.POST.get("customer") or None,
             company_id=request.POST.get("company") or None,
             date=request.POST.get("date") or today,
+            due_date=request.POST.get("due_date") or None,
             billing_address=request.POST.get("billing_address", ""),
             shipping_address=request.POST.get("shipping_address", ""),
             notes=request.POST.get("notes", ""),
             terms=request.POST.get("terms", ""),
+            manual_status=is_manual_status,
+            status=(request.POST.get("status") or "unpaid") if is_manual_status else "unpaid",
             bank_name=request.POST.get("bank_name", ""),
             bank_branch=request.POST.get("bank_branch", ""),
             account_number=request.POST.get("account_number", ""),
             ifsc=request.POST.get("ifsc", ""),
             upi=request.POST.get("upi", ""),
+            bank_account_type=request.POST.get("bank_account_type", ""),
+            bank_notes=request.POST.get("bank_notes", ""),
+            signatory_name=request.POST.get("signatory_name", ""),
             logo=request.FILES.get("logo"),
         )
 
@@ -567,7 +590,12 @@ def invoice_add(request):
 
             inv.save(update_fields=["paid_amount", "balance_due", "status"])
 
-        allocate_invoice(inv)
+        if inv.manual_status:
+            inv.status = request.POST.get("status") or inv.status
+            inv.save(update_fields=["status", "manual_status"])
+
+        if allocate_invoice:
+            allocate_invoice(inv)
 
         messages.success(request, f"Invoice {inv.number} created successfully.")
         return redirect("sales:invoice_detail", pk=inv.pk)
@@ -643,6 +671,7 @@ def invoice_edit(request, pk):
         inv.customer_id = request.POST.get("customer") or None
         inv.company_id = request.POST.get("company") or None
         inv.date = request.POST.get("date") or today
+        inv.due_date = request.POST.get("due_date") or None
         inv.billing_address = request.POST.get("billing_address", "")
         inv.shipping_address = request.POST.get("shipping_address", "")
         inv.notes = request.POST.get("notes", "")
@@ -652,6 +681,9 @@ def invoice_edit(request, pk):
         inv.account_number = request.POST.get("account_number", "")
         inv.ifsc = request.POST.get("ifsc", "")
         inv.upi = request.POST.get("upi", "")
+        inv.bank_account_type = request.POST.get("bank_account_type", "")
+        inv.bank_notes = request.POST.get("bank_notes", "")
+        inv.signatory_name = request.POST.get("signatory_name", "")
         # logo ko optional hi rehne do
         if "logo" in request.FILES:
             inv.logo = request.FILES["logo"]
@@ -890,7 +922,8 @@ def invoice_edit(request, pk):
             inv.manual_status = False
 
         inv.save()
-        allocate_invoice(inv) 
+        if allocate_invoice:
+            allocate_invoice(inv)
         return redirect("sales:invoice_detail", pk=inv.pk)
 
     # GET request
@@ -1144,16 +1177,7 @@ def invoice_pdf(request, pk):
         request=request,
     )
 
-    from weasyprint import HTML
-
-    pdf_bytes = HTML(
-        string=html_string,
-        base_url=request.build_absolute_uri("/"),
-    ).write_pdf()
-
-    response = HttpResponse(pdf_bytes, content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="{inv.number}.pdf"'
-    return response
+    return render_pdf_response(request, html_string, f"{inv.number}.pdf")
 
 
 # ============================================================
@@ -2010,20 +2034,8 @@ def unpaid_invoices(request):
             request=request,
         )
 
-        config = pdf_config()
-        options = pdf_options()
-
-        pdf_bytes = pdfkit.from_string(
-            html,
-            False,
-            configuration=config,
-            options=options,
-        )
-
         fname = f"collection_summary_{today}.pdf"
-        resp = HttpResponse(pdf_bytes, content_type="application/pdf")
-        resp["Content-Disposition"] = f'attachment; filename="{fname}"'
-        return resp
+        return render_pdf_response(request, html, fname)
 
     # PAGINATION
     per_page = 25
@@ -2375,100 +2387,72 @@ from django.utils.dateparse import parse_date
 @login_required
 def refund_statement_pdf(request):
     """
-    Refund Statement PDF WITHOUT wkhtmltopdf / xhtml2pdf.
-    Pure ReportLab se table-based PDF banata hai.
+    Refund statement PDF generated from payment refunds via WeasyPrint.
     """
+    today = timezone.localdate()
+    period = request.GET.get("period", "quarter")
+    from_str = request.GET.get("from")
+    to_str = request.GET.get("to")
+    customer_id = request.GET.get("customer")
 
-    # Refunds -> invoice + customer ke saath
+    date_from = None
+    date_to = None
+    period_label = None
+
+    if period == "custom" and from_str and to_str:
+        try:
+            date_from = datetime.strptime(from_str, "%Y-%m-%d").date()
+            date_to = datetime.strptime(to_str, "%Y-%m-%d").date()
+            period_label = f"{date_from:%d %b %Y} - {date_to:%d %b %Y}"
+        except ValueError:
+            date_from = date_to = None
+
+    if not date_from or not date_to:
+        date_to = today
+        if period == "half":
+            date_from = today - timedelta(days=180)
+            period_label = "Last 6 months"
+        elif period == "year":
+            date_from = today - timedelta(days=365)
+            period_label = "Last 12 months"
+        else:
+            date_from = today - timedelta(days=90)
+            period_label = "Last 3 months"
+
     refunds = (
-        Refund.objects
+        Payment.objects
+        .filter(is_refund=True, date__gte=date_from, date__lte=date_to)
         .select_related("invoice", "invoice__customer")
         .order_by("date", "id")
     )
 
-    total_refunded = (
-        refunds.aggregate(total=Sum("amount"))["total"]
-        or Decimal("0.00")
-    ).quantize(Decimal("0.01"))
+    customer = None
+    if customer_id:
+        customer = Customer.objects.filter(pk=customer_id).first()
+        refunds = refunds.filter(invoice__customer_id=customer_id)
 
-    # HTTP response prepare
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = 'attachment; filename="refund-statement.pdf"'
+    total_refunds = (refunds.aggregate(total=Sum("amount"))["total"] or Decimal("0.00")).quantize(Decimal("0.01"))
+    refund_count = refunds.count()
+    avg_refund = (total_refunds / refund_count).quantize(Decimal("0.01")) if refund_count else Decimal("0.00")
 
-    # PDF doc setup
-    doc = SimpleDocTemplate(
-        response,
-        pagesize=A4,
-        leftMargin=15 * mm,
-        rightMargin=15 * mm,
-        topMargin=20 * mm,
-        bottomMargin=20 * mm,
+    company = CompanyProfile.objects.first()
+    html = render_to_string(
+        "sales/refund_statement_pdf.html",
+        {
+            "company": company,
+            "customer": customer,
+            "refunds": refunds,
+            "total_refunds": total_refunds,
+            "refund_count": refund_count,
+            "avg_refund": avg_refund,
+            "date_from": date_from,
+            "date_to": date_to,
+            "period_label": period_label,
+            "generated_at": timezone.now(),
+        },
+        request=request,
     )
-
-    styles = getSampleStyleSheet()
-    elements = []
-
-    # Title
-    elements.append(Paragraph("Refund Statement", styles["Title"]))
-    elements.append(
-        Paragraph(
-            f"Generated at: {timezone.now().strftime('%d-%m-%Y %H:%M')}",
-            styles["Normal"],
-        )
-    )
-    elements.append(Spacer(1, 10))
-
-    # Table header
-    data = [["Date", "Invoice #", "Customer", "Amount"]]
-
-    # Table rows
-    for r in refunds:
-        inv = getattr(r, "invoice", None)
-        cust = getattr(inv, "customer", None) if inv else None
-
-        date_str = r.date.strftime("%d-%m-%Y") if getattr(r, "date", None) else ""
-        inv_num = inv.number if inv else ""
-        cust_name = cust.name if cust else ""
-        amount_str = f"{r.amount}"
-
-        data.append([date_str, inv_num, cust_name, amount_str])
-
-    # Total row
-    data.append(["", "", "Total Refunded", f"{total_refunded}"])
-
-    # Table layout
-    table = Table(
-        data,
-        colWidths=[25 * mm, 30 * mm, 80 * mm, 25 * mm],
-        repeatRows=1,  # header har page pe repeat
-    )
-
-    table.setStyle(
-        TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
-                ("ALIGN", (0, 0), (-1, 0), "CENTER"),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, 0), 10),
-
-                ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
-
-                ("ALIGN", (3, 1), (3, -1), "RIGHT"),
-                ("FONTSIZE", (0, 1), (-1, -2), 9),
-
-                # Total row style (last row)
-                ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
-                ("BACKGROUND", (0, -1), (-1, -1), colors.whitesmoke),
-            ]
-        )
-    )
-
-    elements.append(table)
-
-    # build PDF
-    doc.build(elements)
-    return response
+    return render_pdf_response(request, html, f"refund_statement_{date_from}_{date_to}.pdf")
 
 
 
@@ -2675,7 +2659,7 @@ def refund_edit(request, pk):
 @login_required
 def refund_pdf(request, pk):
     """
-    Single refund ka professional PDF export (pdfkit + wkhtmltopdf).
+    Single refund professional PDF export.
     """
     refund = get_object_or_404(Payment, pk=pk, is_refund=True)
 
@@ -2700,20 +2684,8 @@ def refund_pdf(request, pk):
     template = get_template("sales/refund_pdf.html")
     html = template.render(context, request=request)
 
-    config = pdf_config()
-    options = pdf_options()
-
-    pdf_bytes = pdfkit.from_string(
-        html,
-        False,
-        configuration=config,
-        options=options,
-    )
-
     filename = f"refund_{refund.id}.pdf"
-    response = HttpResponse(pdf_bytes, content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="{filename}"'
-    return response
+    return render_pdf_response(request, html, filename)
 
 
 
@@ -2861,23 +2833,9 @@ def customer_statement_pdf(request, pk):
     template = get_template("sales/customer_statement_pdf.html")
     html = template.render(context, request=request)
 
-    config = pdf_config()
-    options = pdf_options()
-
-    pdf_bytes = pdfkit.from_string(
-        html,
-        False,
-        configuration=config,
-        options=options,
-    )
-
     filename = f"statement_{customer.id}.pdf"
-    response = HttpResponse(pdf_bytes, content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="{filename}"'
-    return response
+    return render_pdf_response(request, html, filename)
 
-
-from datetime import datetime, timedelta
 
 @login_required
 def payments_statement_pdf(request):
@@ -2949,20 +2907,8 @@ def payments_statement_pdf(request):
     template = get_template("sales/payments_statement_pdf.html")
     html = template.render(context, request=request)
 
-    config = pdf_config()
-    options = pdf_options()
-
-    pdf_bytes = pdfkit.from_string(
-        html,
-        False,
-        configuration=config,
-        options=options,
-    )
-
     filename = f"payments_statement_{from_date}_{to_date}.pdf"
-    response = HttpResponse(pdf_bytes, content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="{filename}"'
-    return response
+    return render_pdf_response(request, html, filename)
 
 
 from django.urls import reverse

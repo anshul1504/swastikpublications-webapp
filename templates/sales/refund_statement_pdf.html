@@ -9,7 +9,8 @@
 
   <style>
     :root{
-      --accent:#dc2626;
+      --accent:#b91c1c;
+      --accent-soft:#fef2f2;
       --text-main:#111827;
       --text-muted:#6b7280;
       --border:#e5e7eb;
@@ -19,12 +20,12 @@
 
     @page{
       size:A4;
-      margin:16mm 14mm;
+      margin:14mm 12mm;
     }
 
     body{
       font-family:"Poppins",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      font-size:11px;
+      font-size:10.5px;
       color:var(--text-main);
       margin:0;
       padding:0;
@@ -45,9 +46,9 @@
     .header{
       display:table;
       width:100%;
-      padding-bottom:10px;
-      border-bottom:1px solid var(--border);
-      margin-bottom:8px;
+      padding-bottom:12px;
+      border-bottom:2px solid #111827;
+      margin-bottom:10px;
     }
     .header-col{
       display:table-cell;
@@ -94,7 +95,7 @@
       line-height:1.5;
     }
     .title-main{
-      font-size:15px;
+      font-size:18px;
       letter-spacing:.14em;
       text-transform:uppercase;
       margin-bottom:3px;
@@ -124,8 +125,8 @@
 
     /* Section title */
     .section-title{
-      margin-top:10px;
-      padding-bottom:3px;
+      margin-top:12px;
+      padding-bottom:4px;
       border-bottom:1px solid var(--border);
       font-size:11.5px;
       font-weight:600;
@@ -133,7 +134,7 @@
       letter-spacing:.12em;
     }
     .section-title span{
-      border-bottom:2px solid var(--accent);
+      border-bottom:3px solid var(--accent);
       padding-bottom:1px;
       display:inline-block;
     }
@@ -148,13 +149,14 @@
     .summary-card{
       flex:1 1 30%;
       border:1px solid var(--border);
-      border-radius:6px;
-      padding:6px 7px;
+      border-radius:8px;
+      padding:8px 9px;
       background:#ffffff;
       box-sizing:border-box;
     }
     .summary-card.highlight{
-      background:var(--bg-soft);
+      background:var(--accent-soft);
+      border-color:#fecaca;
     }
     .summary-label{
       font-size:9.5px;
@@ -178,7 +180,7 @@
 
     /* Customer info (optional) */
     .info-block{
-      margin-top:8px;
+      margin-top:10px;
       padding:7px 8px;
       background:var(--bg-soft);
       border-radius:6px;
@@ -210,18 +212,22 @@
     table.refunds th,
     table.refunds td{
       border:1px solid var(--border);
-      padding:5px 4px;
+      padding:6px 6px;
     }
     table.refunds th{
-      background:var(--bg-soft);
-      text-align:left;
+      background:#111827;
+      text-align:center;
       font-size:9.5px;
       text-transform:uppercase;
       letter-spacing:.08em;
-      color:var(--text-muted);
+      color:#ffffff;
     }
     table.refunds tbody tr:nth-child(even){
       background:var(--row-alt);
+    }
+    table.refunds td:last-child{
+      color:var(--accent);
+      font-weight:600;
     }
     .text-right{
       text-align:right;

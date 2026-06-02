@@ -306,7 +306,7 @@ body {
   font-size:13px;
   color:var(--muted);
   padding:12px 14px;
-  text-align:left;
+  text-align:center;
   border-bottom:1px solid var(--border);
 }
 .table td, .table th {
@@ -623,32 +623,33 @@ body {
                 </div>
               {% endif %}
             </td>
+            <td class="text-center">{% if it.hsn_code %}{{ it.hsn_code }}{% elif it.product and it.product.hsn_code %}{{ it.product.hsn_code }}{% else %}-{% endif %}</td>
             <td class="text-center">{{ it.quantity }}</td>
             <td class="text-right">₹{{ it.rate|floatformat:2|intcomma }}</td>
             <td class="text-center">{{ it.discount_percent }}%</td>
-            <td class="text-center">{{ it.product.hsn_code|default:"-" }}</td><td class="text-center">{{ it.tax_rate }}%</td>
+            <td class="text-center">{{ it.tax_rate }}%</td>
             <td class="text-right">₹{{ it.line_total|floatformat:2|intcomma }}</td>
           </tr>
           {% endfor %}
         </tbody>
         <tfoot>
           <tr>
-            <td colspan="4"></td>
+            <td colspan="5"></td>
             <td class="text-right" style="font-weight:700; color:var(--muted);">Subtotal</td>
             <td class="text-right">₹{{ inv.subtotal|floatformat:2|intcomma }}</td>
           </tr>
           <tr>
-            <td colspan="4"></td>
+            <td colspan="5"></td>
             <td class="text-right" style="font-weight:700; color:var(--muted);">Discount</td>
             <td class="text-right">−₹{{ inv.discount_total|floatformat:2|intcomma }}</td>
           </tr>
           <tr>
-            <td colspan="4"></td>
+            <td colspan="5"></td>
             <td class="text-right" style="font-weight:700; color:var(--muted);">Tax</td>
             <td class="text-right">₹{{ inv.tax_total|floatformat:2|intcomma }}</td>
           </tr>
           <tr class="total-row">
-            <td colspan="4"></td>
+            <td colspan="5"></td>
             <td class="text-right" style="font-weight:900;">Grand Total</td>
             <td class="text-right">₹{{ inv.grand_total|floatformat:2|intcomma }}</td>
           </tr>

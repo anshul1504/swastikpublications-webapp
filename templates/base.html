@@ -32,7 +32,7 @@
       --sidebar-active:#16a34a;
       --sidebar-hover:#111827;
 
-      --sidebar-width:250px;
+      --sidebar-width:244px;
       --sidebar-collapsed-width:84px;
       --radius:8px;
       --shadow-sm:0 6px 18px rgba(2,6,23,0.08);
@@ -61,7 +61,6 @@
     .app{
       display:flex;
       min-height:100vh;
-      height:auto;
     }
 
     /* SIDEBAR */
@@ -71,10 +70,10 @@
       background:var(--sidebar-bg);
       color:#cbd5e1;
       border-right:1px solid var(--sidebar-border);
-      position:sticky;
+      position:fixed;
+      left:0;
       top:0;
-      height:auto;
-      min-height:100vh;
+      height:100vh;
       display:flex;
       flex-direction:column;
       transition:width .22s ease, transform .28s cubic-bezier(.2,.9,.3,1);
@@ -90,6 +89,7 @@
 
     .brand{
       height:70px;
+      min-height:70px;
       display:flex;
       align-items:center;
       gap:12px;
@@ -143,9 +143,10 @@
 
     .sidebar-inner{
       flex:1;
-      height:calc(100vh - 70px);
+      min-height:0;
       overflow-y:auto;
-      padding:12px 8px 16px;
+      overflow-x:hidden;
+      padding:14px 10px 16px;
       -webkit-overflow-scrolling:touch;
       scroll-behavior:smooth;
     }
@@ -163,21 +164,26 @@
     }
 
     .nav-group{
-      margin-top:8px;
+      margin-top:10px;
+    }
+    .nav-group + .nav-group{
+      margin-top:18px;
+      padding-top:12px;
+      border-top:1px solid rgba(148,163,184,.12);
     }
     .nav-section-toggle{
       width:100%;
-      padding:8px 10px;
+      padding:6px 10px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       background:transparent;
       border:none;
-      color:#9aa4b2;
+      color:#8b98aa;
       font-size:11px;
       text-transform:uppercase;
-      letter-spacing:.12em;
-      cursor:pointer;
+      letter-spacing:.10em;
+      cursor:default;
     }
     .nav-section-toggle i{
       transition:transform .18s ease;
@@ -197,7 +203,7 @@
     .nav-list{
       list-style:none;
       margin:0;
-      padding:6px 6px;
+      padding:4px 4px;
       display:block;
     }
 
@@ -205,7 +211,7 @@
       display:flex;
       align-items:center;
       gap:12px;
-      margin-bottom:6px;
+      margin-bottom:4px;
       position:relative;
     }
     .nav-link{
@@ -213,10 +219,11 @@
       align-items:center;
       gap:12px;
       width:100%;
-      padding:10px;
+      padding:9px 10px;
       border-radius:8px;
-      color:#e5e7eb;
+      color:#dbe3ee;
       font-size:13px;
+      font-weight:500;
       transition:background-color var(--btn-transition),
                  transform var(--btn-transition),
                  box-shadow var(--btn-transition),
@@ -224,9 +231,9 @@
       outline:none;
     }
     .nav-icon{
-      width:36px;
-      height:36px;
-      min-width:36px;
+      width:34px;
+      height:34px;
+      min-width:34px;
       display:inline-grid;
       place-items:center;
       border-radius:8px;
@@ -244,24 +251,24 @@
     }
 
     .nav-link:hover{
-      transform:translateY(-3px);
+      transform:translateY(-1px);
       background:var(--sidebar-hover);
       color:#ffffff;
-      box-shadow:var(--shadow-sm);
+      box-shadow:0 6px 16px rgba(2,6,23,0.18);
     }
 
     .nav-link.active{
-      background:linear-gradient(90deg, rgba(22,163,74,0.12), rgba(22,163,74,0.06));
+      background:rgba(22,163,74,0.16);
       color:#fff;
-      box-shadow:0 6px 18px rgba(22,163,74,0.06);
+      box-shadow:inset 0 0 0 1px rgba(34,197,94,0.16);
     }
     .nav-link.active::after{
       content:"";
       position:absolute;
-      left:8px;
+      left:6px;
       top:8px;
       bottom:8px;
-      width:4px;
+      width:3px;
       border-radius:6px;
       background:var(--sidebar-active);
       display:block;
@@ -271,7 +278,7 @@
     }
 
     .nav-icon i{
-      font-size:18px;
+      font-size:17px;
     }
 
     /* MAIN */
@@ -281,19 +288,33 @@
       flex-direction:column;
       min-width:0;
       min-height:100vh;
+      margin-left:var(--sidebar-width);
+      transition:margin-left .22s ease;
+    }
+
+    .app-sidebar.collapsed + .overlay + .app-main{
+      margin-left:var(--sidebar-collapsed-width);
     }
 
     .topbar{
       height:64px;
+      min-height:64px;
       display:flex;
       align-items:center;
       gap:12px;
       padding:0 16px;
       border-bottom:1px solid var(--border);
       background:#ffffff;
-      position:sticky;
+      position:fixed;
       top:0;
+      left:var(--sidebar-width);
+      right:0;
       z-index:1050;
+      transition:left .22s ease;
+    }
+
+    .app-sidebar.collapsed + .overlay + .app-main .topbar{
+      left:var(--sidebar-collapsed-width);
     }
 
     .toggle-btn{
@@ -392,8 +413,9 @@
       flex:1 1 auto;
       max-width:1280px;
       width:100%;
-      margin:18px auto;
+      margin:64px auto 0;
       padding:18px;
+      min-height:calc(100vh - 64px - 41px);
     }
 
     .card,
@@ -475,11 +497,19 @@
       .app-sidebar.collapsed{
         width:var(--sidebar-width);
       }
+      .app-main,
+      .app-sidebar.collapsed + .overlay + .app-main{
+        margin-left:0;
+      }
+      .topbar,
+      .app-sidebar.collapsed + .overlay + .app-main .topbar{
+        left:0;
+      }
 
       .content-wrap{
         height:auto;
         min-height:calc(100vh - 64px - 56px);
-        margin:12px;
+        margin:64px 12px 0;
         padding:12px;
       }
     }
@@ -508,283 +538,75 @@
         <span class="brand-title">
           {% if company_profile and company_profile.name %}{{ company_profile.name }}{% else %}Invoice Suite{% endif %}
         </span>
-        <span class="brand-sub">Finance & Billing</span>
+        <span class="brand-sub">Publisher CRM</span>
       </div>
     </div>
 
     <nav class="sidebar-inner" id="sidebarInner" role="navigation" aria-label="Sidebar menu">
       {% with resolver=request.resolver_match %}
 
-      <!-- Analytics -->
       <div class="nav-group" role="group" aria-label="Analytics">
-        <button class="nav-section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#nav-analytics" aria-expanded="true" aria-controls="nav-analytics">
-          <span class="nav-section-label">Analytics</span>
-          <i class="bi bi-chevron-up" aria-hidden="true"></i>
-        </button>
-
-        <div id="nav-analytics" class="collapse show nav-collapse">
-          <ul class="nav-list" role="menu">
-            <li class="nav-item" role="none">
-              <a href="{% url 'dashboard' %}" class="nav-link {% if resolver and resolver.url_name == 'dashboard' %}active{% endif %}" role="menuitem" title="Main Dashboard" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon" aria-hidden="true"><i class="bi bi-speedometer2"></i></span>
-                <span class="nav-text">Main Dashboard</span>
-              </a>
-            </li>
-
-            <li class="nav-item" role="none">
-              <a href="{% url 'sales:payments_dashboard' %}" class="nav-link {% if resolver and resolver.url_name == 'payments_dashboard' %}active{% endif %}" role="menuitem" title="Payment Analytics" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon" aria-hidden="true"><i class="bi bi-graph-up-arrow"></i></span>
-                <span class="nav-text">Payment Analytics</span>
-              </a>
-            </li>
-          </ul>
-        </div>
+        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Analytics</span></button>
+        <ul class="nav-list" role="menu">
+          <li class="nav-item" role="none"><a href="{% url 'dashboard' %}" class="nav-link {% if resolver and resolver.url_name == 'dashboard' %}active{% endif %}" role="menuitem" title="Main Dashboard" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-speedometer2"></i></span><span class="nav-text">Main Dashboard</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'sales:payments_dashboard' %}" class="nav-link {% if resolver and resolver.url_name == 'payments_dashboard' %}active{% endif %}" role="menuitem" title="Payment Analytics" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-graph-up-arrow"></i></span><span class="nav-text">Payment Analytics</span></a></li>
+        </ul>
       </div>
 
-      <!-- Invoices -->
       <div class="nav-group" role="group" aria-label="Invoices">
-        <button class="nav-section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#nav-invoices" aria-expanded="true" aria-controls="nav-invoices">
-          <span class="nav-section-label">Invoices</span>
-          <i class="bi bi-chevron-up" aria-hidden="true"></i>
-        </button>
-
-        <div id="nav-invoices" class="collapse show nav-collapse">
-          <ul class="nav-list" role="menu">
-            <li class="nav-item" role="none">
-              <a href="{% url 'sales:invoice_list' %}" class="nav-link {% if resolver and resolver.url_name == 'invoice_list' %}active{% endif %}" role="menuitem" title="All Invoices" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon" aria-hidden="true"><i class="bi bi-receipt"></i></span>
-                <span class="nav-text">All Invoices</span>
-              </a>
-            </li>
-
-            <li class="nav-item" role="none">
-              <a href="{% url 'sales:invoice_add' %}" class="nav-link {% if resolver and resolver.url_name == 'invoice_add' %}active{% endif %}" role="menuitem" title="Create Invoice" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon" aria-hidden="true"><i class="bi bi-plus-square"></i></span>
-                <span class="nav-text">New Invoice</span>
-              </a>
-            </li>
-
-            <li class="nav-item" role="none">
-              <a href="{% url 'sales:unpaid_invoices' %}" class="nav-link {% if resolver and resolver.url_name == 'unpaid_invoices' %}active{% endif %}" role="menuitem" title="Unpaid Invoices" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon" aria-hidden="true"><i class="bi bi-exclamation-octagon"></i></span>
-                <span class="nav-text">Unpaid Invoices</span>
-              </a>
-            </li>
-
-            <li class="nav-item" role="none">
-              <a href="{% url 'sales:invoice_bin_list' %}" class="nav-link {% if resolver and resolver.url_name == 'invoice_bin_list' %}active{% endif %}" role="menuitem" title="Bin" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon" aria-hidden="true"><i class="bi bi-archive-fill"></i></span>
-                <span class="nav-text">Bin</span>
-              </a>
-            </li>
-          </ul>
-        </div>
+        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Invoices</span></button>
+        <ul class="nav-list" role="menu">
+          <li class="nav-item" role="none"><a href="{% url 'sales:invoice_list' %}" class="nav-link {% if resolver and resolver.url_name == 'invoice_list' %}active{% endif %}" role="menuitem" title="All Invoices" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-receipt"></i></span><span class="nav-text">All Invoices</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'sales:invoice_add' %}" class="nav-link {% if resolver and resolver.url_name == 'invoice_add' %}active{% endif %}" role="menuitem" title="Create Invoice" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-plus-square"></i></span><span class="nav-text">New Invoice</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'sales:unpaid_invoices' %}" class="nav-link {% if resolver and resolver.url_name == 'unpaid_invoices' %}active{% endif %}" role="menuitem" title="Unpaid Invoices" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-exclamation-octagon"></i></span><span class="nav-text">Unpaid Invoices</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'sales:invoice_bin_list' %}" class="nav-link {% if resolver and resolver.url_name == 'invoice_bin_list' %}active{% endif %}" role="menuitem" title="Bin" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-archive-fill"></i></span><span class="nav-text">Bin</span></a></li>
+        </ul>
       </div>
 
-      <!-- Customers -->
       <div class="nav-group" role="group" aria-label="Customers">
-        <button class="nav-section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#nav-customers" aria-expanded="true" aria-controls="nav-customers">
-          <span class="nav-section-label">Customers</span>
-          <i class="bi bi-chevron-up" aria-hidden="true"></i>
-        </button>
-        <div id="nav-customers" class="collapse show nav-collapse">
-          <ul class="nav-list" role="menu">
-            <li class="nav-item" role="none">
-              <a href="{% url 'sales:customer_list' %}" class="nav-link {% if resolver and resolver.url_name == 'customer_list' %}active{% endif %}" role="menuitem" title="Customers" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon" aria-hidden="true"><i class="bi bi-people"></i></span>
-                <span class="nav-text">All Customers</span>
-              </a>
-            </li>
-
-            <li class="nav-item" role="none">
-              <a href="{% url 'sales:customer_add' %}" class="nav-link {% if resolver and resolver.url_name == 'customer_add' %}active{% endif %}" role="menuitem" title="Add Customer" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon" aria-hidden="true"><i class="bi bi-person-plus"></i></span>
-                <span class="nav-text">Add Customer</span>
-              </a>
-            </li>
-          </ul>
-        </div>
+        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Customers</span></button>
+        <ul class="nav-list" role="menu">
+          <li class="nav-item" role="none"><a href="{% url 'sales:customer_list' %}" class="nav-link {% if resolver and resolver.url_name == 'customer_list' %}active{% endif %}" role="menuitem" title="Customers" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-people"></i></span><span class="nav-text">All Customers</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'sales:customer_add' %}" class="nav-link {% if resolver and resolver.url_name == 'customer_add' %}active{% endif %}" role="menuitem" title="Add Customer" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-person-plus"></i></span><span class="nav-text">Add Customer</span></a></li>
+        </ul>
       </div>
 
-      <!-- Payments & Refunds -->
       <div class="nav-group" role="group" aria-label="Payments and refunds">
-        <button class="nav-section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#nav-payments" aria-expanded="true" aria-controls="nav-payments">
-          <span class="nav-section-label">Payments</span>
-          <i class="bi bi-chevron-up" aria-hidden="true"></i>
-        </button>
-        <div id="nav-payments" class="collapse show nav-collapse">
-          <ul class="nav-list" role="menu">
-            <li class="nav-item" role="none">
-              <a href="{% url 'sales:payment_list' %}" class="nav-link {% if resolver and resolver.url_name == 'payment_list' %}active{% endif %}" role="menuitem" title="Payments" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-credit-card"></i></span>
-                <span class="nav-text">Payments</span>
-              </a>
-            </li>
-
-            <li class="nav-item" role="none">
-              <a href="{% url 'sales:payment_add' %}" class="nav-link {% if resolver and resolver.url_name == 'payment_add' %}active{% endif %}" role="menuitem" title="Add Payment" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-plus-circle"></i></span>
-                <span class="nav-text">Add Payment</span>
-              </a>
-            </li>
-
-            <li class="nav-item" role="none">
-              <a href="{% url 'sales:refund_list' %}" class="nav-link {% if resolver and resolver.url_name == 'refund_list' %}active{% endif %}" role="menuitem" title="Refunds" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-arrow-counterclockwise"></i></span>
-                <span class="nav-text">Refunds</span>
-              </a>
-            </li>
-
-            <li class="nav-item" role="none">
-              <a href="{% url 'sales:refund_add' %}" class="nav-link {% if resolver and resolver.url_name == 'refund_add' %}active{% endif %}" role="menuitem" title="Add Refund" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-plus-square"></i></span>
-                <span class="nav-text">Add Refund</span>
-              </a>
-            </li>
-
-            <li class="nav-item" role="none">
-              <a href="{% url 'sales:refund_statement_pdf' %}" class="nav-link {% if resolver and resolver.url_name == 'refund_statement_pdf' %}active{% endif %}" role="menuitem" title="Refund Statement" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-file-earmark-text"></i></span>
-                <span class="nav-text">Refund Statement</span>
-              </a>
-            </li>
-          </ul>
-        </div>
+        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Payments</span></button>
+        <ul class="nav-list" role="menu">
+          <li class="nav-item" role="none"><a href="{% url 'sales:payment_list' %}" class="nav-link {% if resolver and resolver.url_name == 'payment_list' %}active{% endif %}" role="menuitem" title="Payments" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-credit-card"></i></span><span class="nav-text">Payments</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'sales:payment_add' %}" class="nav-link {% if resolver and resolver.url_name == 'payment_add' %}active{% endif %}" role="menuitem" title="Add Payment" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-plus-circle"></i></span><span class="nav-text">Add Payment</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'sales:refund_list' %}" class="nav-link {% if resolver and resolver.url_name == 'refund_list' %}active{% endif %}" role="menuitem" title="Refunds" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-arrow-counterclockwise"></i></span><span class="nav-text">Refunds</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'sales:refund_add' %}" class="nav-link {% if resolver and resolver.url_name == 'refund_add' %}active{% endif %}" role="menuitem" title="Add Refund" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-plus-square"></i></span><span class="nav-text">Add Refund</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'sales:refund_statement_pdf' %}" class="nav-link {% if resolver and resolver.url_name == 'refund_statement_pdf' %}active{% endif %}" role="menuitem" title="Refund Statement" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-file-earmark-text"></i></span><span class="nav-text">Refund Statement</span></a></li>
+        </ul>
       </div>
 
-      <!-- Inventory (full catalog urls) -->
       <div class="nav-group" role="group" aria-label="Inventory">
-        <button class="nav-section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#nav-inventory" aria-expanded="true" aria-controls="nav-inventory">
-          <span class="nav-section-label">Inventory</span>
-          <i class="bi bi-chevron-up" aria-hidden="true"></i>
-        </button>
-
-        <div id="nav-inventory" class="collapse show nav-collapse">
-          <ul class="nav-list" role="menu">
-            <!-- Inventory home -->
-            <li class="nav-item" role="none">
-              <a href="{% url 'catalog:inventory_home' %}" class="nav-link {% if resolver and resolver.url_name == 'inventory_home' %}active{% endif %}" role="menuitem" title="Inventory Home" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-bar-chart-line"></i></span>
-                <span class="nav-text">Inventory Home</span>
-              </a>
-            </li>
-
-            <!-- Product stock search -->
-            <li class="nav-item" role="none">
-              <a href="{% url 'catalog:product_stock_search' %}" class="nav-link {% if resolver and resolver.url_name == 'product_stock_search' %}active{% endif %}" role="menuitem" title="Product Stock" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-box-seam"></i></span>
-                <span class="nav-text">Product Stock (search)</span>
-              </a>
-            </li>
-
-            <!-- Stock ledger + export -->
-            <li class="nav-item" role="none">
-              <a href="{% url 'catalog:stock_ledger' %}" class="nav-link {% if resolver and resolver.url_name == 'stock_ledger' %}active{% endif %}" role="menuitem" title="Stock Ledger" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-stack"></i></span>
-                <span class="nav-text">Stock Ledger</span>
-              </a>
-            </li>
-
-            <li class="nav-item" role="none">
-              <a href="{% url 'catalog:stock_ledger_export' %}" class="nav-link {% if resolver and resolver.url_name == 'stock_ledger_export' %}active{% endif %}" role="menuitem" title="Export Stock Ledger" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-file-earmark-arrow-down"></i></span>
-                <span class="nav-text">Export Stock Ledger</span>
-              </a>
-            </li>
-
-            <!-- Print runs / batches -->
-            <li class="nav-item" role="none">
-              <a href="{% url 'catalog:pr_list' %}" class="nav-link {% if resolver and resolver.url_name == 'pr_list' %}active{% endif %}" role="menuitem" title="Print Runs (GRN)" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-journal-bookmark"></i></span>
-                <span class="nav-text">Print Runs (GRN)</span>
-              </a>
-            </li>
-
-            <li class="nav-item" role="none">
-              <a href="{% url 'catalog:pr_create' %}" class="nav-link {% if resolver and resolver.url_name == 'pr_create' %}active{% endif %}" role="menuitem" title="Create Batch" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-plus-square"></i></span>
-                <span class="nav-text">Create Batch</span>
-              </a>
-            </li>
-
-            <li class="nav-item" role="none">
-              <a href="{% url 'catalog:export_csv' %}" class="nav-link {% if resolver and resolver.url_name == 'export_csv' %}active{% endif %}" role="menuitem" title="Export Print Runs (CSV)" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-filetype-csv"></i></span>
-                <span class="nav-text">Export Print Runs</span>
-              </a>
-            </li>
-
-            <!-- Warehouses -->
-            <li class="nav-item" role="none">
-              <a href="{% url 'catalog:warehouse_list' %}" class="nav-link {% if resolver and resolver.url_name == 'warehouse_list' %}active{% endif %}" role="menuitem" title="Warehouses" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-buildings"></i></span>
-                <span class="nav-text">Warehouses</span>
-              </a>
-            </li>
-
-            <li class="nav-item" role="none">
-              <a href="{% url 'catalog:warehouse_add' %}" class="nav-link {% if resolver and resolver.url_name == 'warehouse_add' %}active{% endif %}" role="menuitem" title="Add Warehouse" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-plus-circle"></i></span>
-                <span class="nav-text">Add Warehouse</span>
-              </a>
-            </li>
-
-            <li class="nav-item" role="none">
-              <a href="{% url 'catalog:warehouse_import_xlsx' %}" class="nav-link {% if resolver and resolver.url_name == 'warehouse_import_xlsx' %}active{% endif %}" role="menuitem" title="Import Warehouses (XLSX)" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-upload"></i></span>
-                <span class="nav-text">Import Warehouses</span>
-              </a>
-            </li>
-
-            <li class="nav-item" role="none">
-              <a href="{% url 'catalog:warehouse_export_xlsx' %}" class="nav-link {% if resolver and resolver.url_name == 'warehouse_export_xlsx' %}active{% endif %}" role="menuitem" title="Export Warehouses (XLSX)" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-download"></i></span>
-                <span class="nav-text">Export Warehouses</span>
-              </a>
-            </li>
-
-          </ul>
-        </div>
+        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Inventory</span></button>
+        <ul class="nav-list" role="menu">
+          <li class="nav-item" role="none"><a href="{% url 'catalog:inventory_home' %}" class="nav-link {% if resolver and resolver.url_name == 'inventory_home' %}active{% endif %}" role="menuitem" title="Inventory Home" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-bar-chart-line"></i></span><span class="nav-text">Inventory Home</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'catalog:product_stock_search' %}" class="nav-link {% if resolver and resolver.url_name == 'product_stock_search' %}active{% endif %}" role="menuitem" title="Product Stock" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-box-seam"></i></span><span class="nav-text">Product Stock (search)</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'catalog:stock_ledger' %}" class="nav-link {% if resolver and resolver.url_name == 'stock_ledger' %}active{% endif %}" role="menuitem" title="Stock Ledger" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-stack"></i></span><span class="nav-text">Stock Ledger</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'catalog:stock_ledger_export' %}" class="nav-link {% if resolver and resolver.url_name == 'stock_ledger_export' %}active{% endif %}" role="menuitem" title="Export Stock Ledger" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-file-earmark-arrow-down"></i></span><span class="nav-text">Export Stock Ledger</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'catalog:pr_list' %}" class="nav-link {% if resolver and resolver.url_name == 'pr_list' %}active{% endif %}" role="menuitem" title="Print Runs" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-journal-bookmark"></i></span><span class="nav-text">Print Runs (GRN)</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'catalog:pr_create' %}" class="nav-link {% if resolver and resolver.url_name == 'pr_create' %}active{% endif %}" role="menuitem" title="Create Batch" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-plus-square"></i></span><span class="nav-text">Create Batch</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'catalog:export_csv' %}" class="nav-link {% if resolver and resolver.url_name == 'export_csv' %}active{% endif %}" role="menuitem" title="Export Print Runs" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-filetype-csv"></i></span><span class="nav-text">Export Print Runs</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'catalog:warehouse_list' %}" class="nav-link {% if resolver and resolver.url_name == 'warehouse_list' %}active{% endif %}" role="menuitem" title="Warehouses" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-buildings"></i></span><span class="nav-text">Warehouses</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'catalog:warehouse_add' %}" class="nav-link {% if resolver and resolver.url_name == 'warehouse_add' %}active{% endif %}" role="menuitem" title="Add Warehouse" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-plus-circle"></i></span><span class="nav-text">Add Warehouse</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'catalog:warehouse_import_xlsx' %}" class="nav-link {% if resolver and resolver.url_name == 'warehouse_import_xlsx' %}active{% endif %}" role="menuitem" title="Import Warehouses" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-upload"></i></span><span class="nav-text">Import Warehouses</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'catalog:warehouse_export_xlsx' %}" class="nav-link {% if resolver and resolver.url_name == 'warehouse_export_xlsx' %}active{% endif %}" role="menuitem" title="Export Warehouses" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-download"></i></span><span class="nav-text">Export Warehouses</span></a></li>
+        </ul>
       </div>
 
-      <!-- Products & Catalog -->
-      <div class="nav-group" role="group" aria-label="Products and catalog">
-        <button class="nav-section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#nav-products" aria-expanded="true" aria-controls="nav-products">
-          <span class="nav-section-label">Products</span>
-          <i class="bi bi-chevron-up" aria-hidden="true"></i>
-        </button>
-
-        <div id="nav-products" class="collapse show nav-collapse">
-          <ul class="nav-list" role="menu">
-            <li class="nav-item" role="none">
-              <a href="{% url 'catalog:product_list' %}" class="nav-link {% if resolver and resolver.url_name == 'product_list' %}active{% endif %}" role="menuitem" title="Products & Services" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-box-seam"></i></span>
-                <span class="nav-text">Products / Services</span>
-              </a>
-            </li>
-
-            <li class="nav-item" role="none">
-              <a href="{% url 'catalog:product_add' %}" class="nav-link {% if resolver and resolver.url_name == 'product_add' %}active{% endif %}" role="menuitem" title="Add product" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-plus-circle"></i></span>
-                <span class="nav-text">Add Product</span>
-              </a>
-            </li>
-
-            <li class="nav-item" role="none">
-              <a href="{% url 'catalog:product_import_xlsx' %}" class="nav-link {% if resolver and resolver.url_name == 'product_import_xlsx' %}active{% endif %}" role="menuitem" title="Import Products (XLSX)" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-upload"></i></span>
-                <span class="nav-text">Import Products</span>
-              </a>
-            </li>
-
-            <li class="nav-item" role="none">
-              <a href="{% url 'catalog:product_export_xlsx' %}" class="nav-link {% if resolver and resolver.url_name == 'product_export_xlsx' %}active{% endif %}" role="menuitem" title="Export Products (XLSX)" data-bs-toggle="tooltip" data-bs-placement="right">
-                <span class="nav-icon"><i class="bi bi-download"></i></span>
-                <span class="nav-text">Export Products</span>
-              </a>
-            </li>
-          </ul>
-        </div>
+      <div class="nav-group" role="group" aria-label="Products">
+        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Products</span></button>
+        <ul class="nav-list" role="menu">
+          <li class="nav-item" role="none"><a href="{% url 'catalog:product_list' %}" class="nav-link {% if resolver and resolver.url_name == 'product_list' %}active{% endif %}" role="menuitem" title="Products & Services" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-box-seam"></i></span><span class="nav-text">Products / Services</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'catalog:product_add' %}" class="nav-link {% if resolver and resolver.url_name == 'product_add' %}active{% endif %}" role="menuitem" title="Add Product" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-plus-circle"></i></span><span class="nav-text">Add Product</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'catalog:product_import_xlsx' %}" class="nav-link {% if resolver and resolver.url_name == 'product_import_xlsx' %}active{% endif %}" role="menuitem" title="Import Products" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-upload"></i></span><span class="nav-text">Import Products</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'catalog:product_export_xlsx' %}" class="nav-link {% if resolver and resolver.url_name == 'product_export_xlsx' %}active{% endif %}" role="menuitem" title="Export Products" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-download"></i></span><span class="nav-text">Export Products</span></a></li>
+        </ul>
       </div>
 
       {% endwith %}
