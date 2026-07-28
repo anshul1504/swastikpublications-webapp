@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}New Return / Replacement{% endblock %}
+{% block content %}
+<div class="container-fluid py-4" style="max-width:1100px">
+  <div class="mb-4">
+    <a href="{% url 'sales:return_list' %}" class="text-decoration-none small">← Returns</a>
+    <h2 class="mt-2 mb-1">New return or replacement</h2>
+    <p class="text-muted">Damaged books stay out of saleable inventory; good books are restocked automatically.</p>
+  </div>
+  <form method="post" id="returnForm">{% csrf_token %}
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4"><div class="card-body p-4">
+          <label class="form-label fw-semibold" for="invoice">Invoice</label>
+          <select class="form-select" name="invoice" id="invoice" required>
+            <option value="">Choose an invoice…</option>
+            {% for inv in invoices %}<option value="{{ inv.pk }}">{{ inv.number }} · {{ inv.customer.name|default:"Customer" }} · {{ inv.date|date:"d M Y" }}</option>{% endfor %}
+          </select>
+        </div></div>
+        <div class="card border-0 shadow-sm"><div class="card-body p-4">
+          <div class="d-flex justify-content-between mb-3"><h5 class="mb-0">Books being returned</h5><span class="badge text-bg-light">Condition-aware stock</span></div>
+          <div id="returnItems" class="text-muted">Select an invoice to load its items.</div>
+        </div></div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm"><div class="card-body p-4">
+          <label class="form-label fw-semibold">Resolution</label>
+          <select class="form-select mb-3" name="resolution" id="resolution" required>
+            <option value="replacement">Replace books</option>
+            <option value="refund">Refund amount</option>
+            <option value="credit">Store credit</option>
+          </select>
+          <div id="refundMethodWrap" class="d-none">
+            <label class="form-label">Refund method</label>
+            <select class="form-select mb-3" name="refund_method"><option>Bank Transfer</option><option>Cash</option><option>UPI</option><option>Card</option></select>
+          </div>
+          <label class="form-label">Return date</label>
+          <input class="form-control mb-3" type="date" name="date" value="{{ today|date:'Y-m-d' }}" required>
+          <label class="form-label">Reason</label>
+          <select class="form-select mb-3" name="reason"><option>Damaged in transit</option><option>Printing defect</option><option>Wrong book supplied</option><option>Customer return</option><option>Other</option></select>
+          <label class="form-label">Notes</label>
+          <textarea class="form-control mb-4" name="notes" rows="3" placeholder="Optional inspection or courier details"></textarea>
+          <button class="btn btn-primary w-100" type="submit">Complete return</button>
+        </div></div>
+      </div>
+    </div>
+  </form>
+</div>
+<script>
+(() => {
+  const invoice = document.getElementById('invoice'), wrap = document.getElementById('returnItems');
+  const resolution = document.getElementById('resolution'), refundWrap = document.getElementById('refundMethodWrap');
+  function toggleRefund(){ refundWrap.classList.toggle('d-none', resolution.value !== 'refund'); }
+  resolution.addEventListener('change', toggleRefund); toggleRefund();
+  invoice.addEventListener('change', async () => {
+    if (!invoice.value) { wrap.textContent = 'Select an invoice to load its items.'; return; }
+    wrap.innerHTML = '<div class="spinner-border spinner-border-sm"></div> Loading items…';
+    try {
+      const urlTemplate = "{% url 'sales:return_items_api' 0 %}";
+      const response = await fetch(urlTemplate.replace("/0/", `/${invoice.value}/`));
+      const data = await response.json();
+      const rows = data.items.map(item => `<tr>
+        <td><input type="hidden" name="item_id[]" value="${item.id}"><strong>${item.description}</strong><div class="small text-muted">Sold ${item.quantity} · already returned ${item.returned}</div></td>
+        <td style="width:130px"><input class="form-control" type="number" name="quantity[]" min="0" max="${item.available}" value="0" ${item.available ? '' : 'disabled'}></td>
+        <td style="width:190px"><select class="form-select" name="condition[]"><option value="saleable">Good / saleable</option><option value="damaged">Damaged</option></select></td>
+      </tr>`).join('');
+      wrap.innerHTML = rows ? `<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Book</th><th>Return qty</th><th>Condition</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<div class="alert alert-info">No items on this invoice.</div>';
+    } catch (error) { wrap.innerHTML = '<div class="alert alert-danger">Could not load invoice items. Please retry.</div>'; }
+  });
+})();
+</script>
+{% endblock %}

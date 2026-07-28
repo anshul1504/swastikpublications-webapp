@@ -1,5 +1,14 @@
 from django.contrib import admin
-from .models import Customer, Invoice, InvoiceItem, Payment, SavedItem, CompanyProfile
+from .models import (
+    CompanyProfile,
+    Customer,
+    Invoice,
+    InvoiceItem,
+    Payment,
+    SalesReturn,
+    SalesReturnItem,
+    SavedItem,
+)
 
 class InvoiceItemInline(admin.TabularInline):
     model = InvoiceItem
@@ -30,3 +39,19 @@ class SavedItemAdmin(admin.ModelAdmin):
 @admin.register(CompanyProfile)
 class CompanyProfileAdmin(admin.ModelAdmin):
     list_display = ("name", "phone", "email", "gstin")
+
+
+class SalesReturnItemInline(admin.TabularInline):
+    model = SalesReturnItem
+    extra = 0
+    readonly_fields = ("invoice_item", "quantity", "condition")
+    can_delete = False
+
+
+@admin.register(SalesReturn)
+class SalesReturnAdmin(admin.ModelAdmin):
+    list_display = ("return_number", "invoice", "date", "resolution", "total_quantity")
+    list_filter = ("resolution", "date")
+    search_fields = ("return_number", "invoice__number", "invoice__customer__name")
+    readonly_fields = ("return_number", "created_at", "refund_payment")
+    inlines = [SalesReturnItemInline]

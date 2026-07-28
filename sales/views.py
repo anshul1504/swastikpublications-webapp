@@ -3105,3 +3105,252 @@ def inventory_home(request):
     return redirect("catalog:inventory_home")
 
 
+# ============================================================
+# SALES RETURNS & REPLACEMENTS
+# ============================================================
+
+@login_required
+def sales_return_list(request):
+    from .models import SalesReturn
+
+    returns = (
+        SalesReturn.objects.select_related(
+            "invoice", "invoice__customer", "refund_payment"
+        )
+        .prefetch_related("items", "items__invoice_item")
+    )
+    query = request.GET.get("q", "").strip()
+    if query:
+        returns = returns.filter(
+            Q(return_number__icontains=query)
+            | Q(invoice__number__icontains=query)
+            | Q(invoice__customer__name__icontains=query)
+        )
+    return render(
+        request,
+        "sales/return_list.html",
+        {"returns": returns, "query": query},
+    )
+
+
+@login_required
+def sales_return_items_api(request, invoice_id):
+    from .models import SalesReturnItem
+
+    invoice = get_object_or_404(Invoice, pk=invoice_id)
+    items = []
+    for item in invoice.items.select_related("product"):
+        returned = (
+            SalesReturnItem.objects.filter(invoice_item=item)
+            .aggregate(total=Sum("quantity"))["total"]
+            or 0
+        )
+        available = max(0, int(item.quantity or 0) - int(returned))
+        items.append(
+            {
+                "id": item.id,
+                "description": item.description
+                or (item.product.name if item.product else "Item"),
+                "quantity": int(item.quantity or 0),
+                "returned": int(returned),
+                "available": available,
+                "rate": str(item.rate or 0),
+                "tracked": bool(item.product_id),
+            }
+        )
+    return JsonResponse({"ok": True, "invoice": invoice.number, "items": items})
+
+
+@login_required
+@transaction.atomic
+def sales_return_add(request):
+    from .models import SalesReturn, SalesReturnItem
+    from catalog.inventory_utils import allocate_and_commit, allocate_fifo_preview
+
+    invoices = Invoice.objects.select_related("customer").order_by("-date", "-id")
+    if request.method != "POST":
+        return render(
+            request,
+            "sales/return_add.html",
+            {"invoices": invoices, "today": timezone.localdate()},
+        )
+
+    invoice_id = request.POST.get("invoice")
+    if not invoice_id:
+        messages.error(request, "Please select an invoice.")
+        return redirect("sales:return_add")
+    invoice = get_object_or_404(Invoice, pk=invoice_id)
+
+    resolution = request.POST.get("resolution")
+    if resolution not in dict(SalesReturn.RESOLUTION_CHOICES):
+        messages.error(request, "Please select a valid resolution.")
+        return redirect("sales:return_add")
+
+    item_ids = request.POST.getlist("item_id[]")
+    quantities = request.POST.getlist("quantity[]")
+    conditions = request.POST.getlist("condition[]")
+    requested = []
+    seen = set()
+
+    for index, raw_id in enumerate(item_ids):
+        try:
+            item_id = int(raw_id)
+            quantity = int(quantities[index])
+        except (TypeError, ValueError, IndexError):
+            continue
+        if quantity <= 0:
+            continue
+        if item_id in seen:
+            messages.error(request, "An invoice item can only appear once in a return.")
+            return redirect("sales:return_add")
+        seen.add(item_id)
+
+        condition = conditions[index] if index < len(conditions) else "saleable"
+        if condition not in dict(SalesReturnItem.CONDITION_CHOICES):
+            condition = "saleable"
+        item = get_object_or_404(
+            InvoiceItem.objects.select_related("product"),
+            pk=item_id,
+            invoice=invoice,
+        )
+        already_returned = (
+            SalesReturnItem.objects.filter(invoice_item=item)
+            .aggregate(total=Sum("quantity"))["total"]
+            or 0
+        )
+        remaining = int(item.quantity or 0) - int(already_returned)
+        if quantity > remaining:
+            messages.error(
+                request,
+                f"{item.description}: only {remaining} unit(s) can still be returned.",
+            )
+            return redirect("sales:return_add")
+        requested.append((item, quantity, condition))
+
+    if not requested:
+        messages.error(
+            request, "Select at least one book and enter a return quantity."
+        )
+        return redirect("sales:return_add")
+
+    total_value = sum(
+        (Decimal(item.rate or 0) * quantity for item, quantity, _ in requested),
+        Decimal("0.00"),
+    ).quantize(Decimal("0.01"))
+
+    if resolution == "refund" and min(
+        total_value, invoice.paid_amount or Decimal("0.00")
+    ) <= 0:
+        messages.error(request, "This invoice has no refundable paid amount.")
+        return redirect("sales:return_add")
+
+    if resolution == "replacement":
+        for item, quantity, _condition in requested:
+            if item.product_id and allocate_fifo_preview(item.product, quantity) is None:
+                messages.error(
+                    request, f"Not enough stock to replace {item.description}."
+                )
+                return redirect("sales:return_add")
+
+    sales_return = SalesReturn.objects.create(
+        invoice=invoice,
+        date=request.POST.get("date") or timezone.localdate(),
+        resolution=resolution,
+        reason=request.POST.get("reason", "").strip(),
+        notes=request.POST.get("notes", "").strip(),
+    )
+
+    for item, quantity, condition in requested:
+        SalesReturnItem.objects.create(
+            sales_return=sales_return,
+            invoice_item=item,
+            quantity=quantity,
+            condition=condition,
+        )
+
+        if item.product_id and condition == "saleable":
+            original = (
+                StockLedger.objects.filter(
+                    product=item.product,
+                    ref_type="invoice",
+                    ref_id=invoice.id,
+                    out_qty__gt=0,
+                )
+                .select_related("print_run", "warehouse")
+                .order_by("id")
+                .first()
+            )
+            last = (
+                StockLedger.objects.filter(product=item.product)
+                .order_by("-id")
+                .first()
+            )
+            StockLedger.objects.create(
+                product=item.product,
+                print_run=original.print_run if original else None,
+                warehouse=original.warehouse if original else None,
+                in_qty=quantity,
+                out_qty=0,
+                balance=(last.balance if last else 0) + quantity,
+                ref_type="sales_return",
+                ref_id=sales_return.id,
+                notes=(
+                    f"{sales_return.return_number}: saleable return "
+                    f"for invoice item {item.id}"
+                ),
+                created_by=request.user,
+            )
+
+        if item.product_id and resolution == "replacement":
+            allocate_and_commit(
+                item.product,
+                quantity,
+                ref_type="sales_return_replacement",
+                ref_id=sales_return.id,
+                user=request.user,
+                notes=(
+                    f"{sales_return.return_number}: replacement issued "
+                    f"for invoice item {item.id}"
+                ),
+            )
+
+    if resolution == "refund":
+        refundable = min(
+            total_value, invoice.paid_amount or Decimal("0.00")
+        ).quantize(Decimal("0.01"))
+        payment = Payment.objects.create(
+            invoice=invoice,
+            amount=refundable,
+            date=sales_return.date,
+            method=request.POST.get("refund_method") or "Refund",
+            note=f"{sales_return.return_number}: {sales_return.reason}".strip(),
+            is_refund=True,
+        )
+        sales_return.refund_payment = payment
+        sales_return.save(update_fields=["refund_payment"])
+
+    messages.success(
+        request, f"{sales_return.return_number} completed successfully."
+    )
+    return redirect("sales:return_detail", pk=sales_return.pk)
+
+
+@login_required
+def sales_return_detail(request, pk):
+    from .models import SalesReturn
+
+    sales_return = get_object_or_404(
+        SalesReturn.objects.select_related(
+            "invoice", "invoice__customer", "refund_payment"
+        ).prefetch_related(
+            "items", "items__invoice_item", "items__invoice_item__product"
+        ),
+        pk=pk,
+    )
+    return render(
+        request,
+        "sales/return_detail.html",
+        {"sales_return": sales_return},
+    )
+
+

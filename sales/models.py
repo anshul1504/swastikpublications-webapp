@@ -266,6 +266,86 @@ class Payment(models.Model):
                 pass
 
 
+class SalesReturn(models.Model):
+    RESOLUTION_CHOICES = [
+        ("refund", "Amount refund"),
+        ("replacement", "Replacement"),
+        ("credit", "Store credit"),
+    ]
+
+    invoice = models.ForeignKey(
+        Invoice, on_delete=models.PROTECT, related_name="sales_returns"
+    )
+    return_number = models.CharField(max_length=30, unique=True, blank=True)
+    date = models.DateField(default=timezone.localdate)
+    resolution = models.CharField(max_length=20, choices=RESOLUTION_CHOICES)
+    reason = models.CharField(max_length=120, blank=True)
+    notes = models.TextField(blank=True)
+    refund_payment = models.OneToOneField(
+        Payment,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sales_return",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-date", "-id"]
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if not self.return_number:
+            self.return_number = f"RET-{self.pk:06d}"
+            super().save(update_fields=["return_number"])
+
+    @property
+    def total_quantity(self):
+        return sum(line.quantity for line in self.items.all())
+
+    @property
+    def total_value(self):
+        return sum((line.line_value for line in self.items.all()), Decimal("0.00"))
+
+    def __str__(self):
+        return self.return_number or f"Return #{self.pk}"
+
+
+class SalesReturnItem(models.Model):
+    CONDITION_CHOICES = [
+        ("saleable", "Good / saleable"),
+        ("damaged", "Damaged"),
+    ]
+
+    sales_return = models.ForeignKey(
+        SalesReturn, on_delete=models.CASCADE, related_name="items"
+    )
+    invoice_item = models.ForeignKey(
+        InvoiceItem, on_delete=models.PROTECT, related_name="return_items"
+    )
+    quantity = models.PositiveIntegerField()
+    condition = models.CharField(
+        max_length=20, choices=CONDITION_CHOICES, default="saleable"
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["sales_return", "invoice_item"],
+                name="unique_item_per_sales_return",
+            )
+        ]
+
+    @property
+    def line_value(self):
+        return (Decimal(self.invoice_item.rate or 0) * self.quantity).quantize(
+            Decimal("0.01")
+        )
+
+    def __str__(self):
+        return f"{self.sales_return} · {self.invoice_item} × {self.quantity}"
+
+
 class CompanyProfile(models.Model):
     name = models.CharField(max_length=255, default="The Webfix")
     address = models.TextField(blank=True)

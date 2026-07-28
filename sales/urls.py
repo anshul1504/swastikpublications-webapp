@@ -47,5 +47,9 @@ urlpatterns = [
     path("refunds/statement/", views.refund_statement_pdf, name="refund_statement_pdf"),
     path('api/company/<int:pk>/', views.company_info_api, name='api_company_info'),
     path('invoices/bulk-action/', views.bulk_invoice_action, name='bulk_invoice_action'),
-    path('api/invoice-items/<int:invoice_id>/', views.invoice_items_api, name='api_invoice_items')
+    path('api/invoice-items/<int:invoice_id>/', views.invoice_items_api, name='api_invoice_items'),
+    path("returns/", views.sales_return_list, name="return_list"),
+    path("returns/add/", views.sales_return_add, name="return_add"),
+    path("returns/<int:pk>/", views.sales_return_detail, name="return_detail"),
+    path("api/return-items/<int:invoice_id>/", views.sales_return_items_api, name="return_items_api"),
 ]

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}{{ sales_return.return_number }}{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:960px">
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div><a href="{% url 'sales:return_list' %}" class="small text-decoration-none">← Returns</a><h2 class="mt-2">{{ sales_return.return_number }}</h2><div class="text-muted">{{ sales_return.invoice.customer.name }} · Invoice {{ sales_return.invoice.number }}</div></div>
+    <span class="badge fs-6 text-bg-primary">{{ sales_return.get_resolution_display }}</span>
+  </div>
+  <div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">Return date</div><strong>{{ sales_return.date|date:"d M Y" }}</strong></div></div></div>
+    <div class="col-md-4"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">Quantity</div><strong>{{ sales_return.total_quantity }} book{{ sales_return.total_quantity|pluralize }}</strong></div></div></div>
+    <div class="col-md-4"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">Return value</div><strong>₹{{ sales_return.total_value|floatformat:2|intcomma }}</strong></div></div></div>
+  </div>
+  <div class="card border-0 shadow-sm"><div class="card-body p-0"><div class="table-responsive"><table class="table align-middle mb-0">
+    <thead class="table-light"><tr><th>Book</th><th>Qty</th><th>Condition</th><th>Inventory treatment</th></tr></thead><tbody>
+    {% for line in sales_return.items.all %}<tr><td>{{ line.invoice_item.description }}</td><td>{{ line.quantity }}</td><td>{{ line.get_condition_display }}</td><td>{% if line.condition == 'saleable' %}<span class="text-success">Returned to stock</span>{% else %}<span class="text-danger">Quarantined / not saleable</span>{% endif %}{% if sales_return.resolution == 'replacement' %}<div class="small text-primary">Replacement issued</div>{% endif %}</td></tr>{% endfor %}
+    </tbody></table></div></div></div>
+  {% if sales_return.reason or sales_return.notes %}<div class="card border-0 shadow-sm mt-4"><div class="card-body"><strong>{{ sales_return.reason }}</strong>{% if sales_return.notes %}<p class="text-muted mb-0 mt-2">{{ sales_return.notes }}</p>{% endif %}</div></div>{% endif %}
+</div>
+{% endblock %}
