@@ -92,6 +92,31 @@ def parse_int(value, default=0):
         return default
 
 
+def paginate_records(request, records, default_page_size=25):
+    """Return a consistent, filter-preserving pagination context."""
+    try:
+        page_size = int(request.GET.get("page_size", default_page_size))
+    except (TypeError, ValueError):
+        page_size = default_page_size
+    if page_size not in {25, 50, 100}:
+        page_size = default_page_size
+
+    paginator = Paginator(records, page_size)
+    page_obj = paginator.get_page(request.GET.get("page"))
+    query_params = request.GET.copy()
+    query_params.pop("page", None)
+    query_params.pop("export", None)
+    return {
+        "page_obj": page_obj,
+        "paginator": paginator,
+        "page_range": paginator.get_elided_page_range(
+            page_obj.number, on_each_side=2, on_ends=1
+        ),
+        "query_params": query_params.urlencode(),
+        "page_size": page_size,
+    }
+
+
 def render_pdf_response(request, html, filename):
     pdf_bytes = HTML(
         string=html,
@@ -1095,10 +1120,11 @@ def invoice_bin_list(request):
         .order_by("-date", "-id")
     )
 
+    pagination = paginate_records(request, invoices)
     return render(
         request,
         "sales/invoice_bin_list.html",
-        {"invoices": invoices},
+        {"invoices": pagination["page_obj"].object_list, **pagination},
     )
 
 
@@ -1308,14 +1334,16 @@ def customer_list(request):
     elif export == "xlsx":
         return export_customers_excel(customers)
 
+    pagination = paginate_records(request, customers)
     context = {
-        "customers": customers,
+        "customers": pagination["page_obj"].object_list,
         "total_customers": total_customers,
         "active_customers": active_customers,
         "top_spender": top_spender,
         "query": q,
         "status": status,
         "ctype": ctype,
+        **pagination,
     }
     return render(request, "sales/customer_list.html", context)
 
@@ -1782,12 +1810,8 @@ def payment_list(request):
     refund_today = agg_today["refunded"] or Decimal("0.00")
     total_today = (paid_today - refund_today).quantize(Decimal("0.01"))
 
-    # Simple manual pagination (page/per_page)
-    page = int(request.GET.get("page", 1))
-    per = 25
-    start = (page - 1) * per
-    end = start + per
-    payments = qs[start:end]
+    pagination = paginate_records(request, qs)
+    payments = pagination["page_obj"].object_list
 
     return render(
         request,
@@ -1799,6 +1823,7 @@ def payment_list(request):
             "period": period,
             "method": method,
             "q": q,
+            **pagination,
         },
     )
 
@@ -2572,11 +2597,12 @@ def refund_list(request):
         .order_by('name')
     )
 
+    pagination = paginate_records(request, refunds)
     return render(
         request,
         'sales/refund_list.html',
         {
-            'refunds': refunds,
+            'refunds': pagination["page_obj"].object_list,
             'total_refunds': total_refunds,
             'refund_count': refund_count,
             'last_refund': last_refund,
@@ -2584,6 +2610,7 @@ def refund_list(request):
             'customers_with_refunds': customers_with_refunds,
             'q': q,
             'avg_refund': avg_refund,
+            **pagination,
         }
     )
 
@@ -3182,16 +3209,18 @@ def sales_return_list(request):
         (item.total_value for item in returns),
         Decimal("0.00"),
     )
+    pagination = paginate_records(request, returns)
     return render(
         request,
         "sales/return_list.html",
         {
-            "returns": returns,
+            "returns": pagination["page_obj"].object_list,
             "query": query,
             "resolution_filter": resolution_filter,
             "return_count": len(returns),
             "total_quantity": total_quantity,
             "total_value": total_value,
+            **pagination,
         },
     )
 

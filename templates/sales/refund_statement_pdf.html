@@ -333,7 +333,7 @@
     <div class="summary-card highlight">
       <div class="summary-label">Total Refunded</div>
       <div class="summary-value summary-value-strong">
-        ₹{{ total_refunds|floatformat:2 }}
+        ₹{{ total_refunds|floatformat:2|intcomma }}
       </div>
       <div class="summary-sub">Amount returned in selected period.</div>
     </div>
@@ -347,7 +347,7 @@
     <div class="summary-card">
       <div class="summary-label">Average Refund</div>
       <div class="summary-value">
-        ₹{{ avg_refund|floatformat:2 }}
+        ₹{{ avg_refund|floatformat:2|intcomma }}
       </div>
       <div class="summary-sub">Average size of each refund.</div>
     </div>
@@ -399,7 +399,7 @@
           </td>
           <td>{{ r.method|default:"Refund" }}</td>
           <td>{{ r.note|default:"" }}</td>
-          <td class="text-right">₹{{ r.amount|floatformat:2 }}</td>
+          <td class="text-right">₹{{ r.amount|floatformat:2|intcomma }}</td>
         </tr>
       {% empty %}
         <tr>

@@ -498,31 +498,31 @@
         <div class="summary-card">
           <div class="summary-label">Total Spent</div>
           <div class="summary-value summary-value-strong">
-            ₹{{ total_spent|floatformat:2 }}
+            ₹{{ total_spent|floatformat:2|intcomma }}
           </div>
         </div>
         <div class="summary-card">
           <div class="summary-label">Total Paid</div>
           <div class="summary-value">
-            ₹{{ total_paid|floatformat:2 }}
+            ₹{{ total_paid|floatformat:2|intcomma }}
           </div>
         </div>
         <div class="summary-card">
           <div class="summary-label">Total Refunded</div>
           <div class="summary-value">
-            ₹{{ total_refunded|floatformat:2 }}
+            ₹{{ total_refunded|floatformat:2|intcomma }}
           </div>
         </div>
         <div class="summary-card highlight">
           <div class="summary-label">Net Received</div>
           <div class="summary-value summary-value-strong">
-            ₹{{ net_received|floatformat:2 }}
+            ₹{{ net_received|floatformat:2|intcomma }}
           </div>
         </div>
         <div class="summary-card">
           <div class="summary-label">Pending Balance</div>
           <div class="summary-value">
-            ₹{{ pending_balance|floatformat:2 }}
+            ₹{{ pending_balance|floatformat:2|intcomma }}
           </div>
         </div>
       </div>
@@ -554,9 +554,9 @@
                 <span class="status-pill status-unpaid">Unpaid</span>
               {% endif %}
             </td>
-            <td class="text-right">₹{{ inv.grand_total|floatformat:2 }}</td>
-            <td class="text-right">₹{{ inv.paid_amount|floatformat:2 }}</td>
-            <td class="text-right">₹{{ inv.balance_due|floatformat:2 }}</td>
+            <td class="text-right">₹{{ inv.grand_total|floatformat:2|intcomma }}</td>
+            <td class="text-right">₹{{ inv.paid_amount|floatformat:2|intcomma }}</td>
+            <td class="text-right">₹{{ inv.balance_due|floatformat:2|intcomma }}</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -583,7 +583,7 @@
                 <td>{% if r.invoice %}{{ r.invoice.number }}{% endif %}</td>
                 <td>{{ r.method }}</td>
                 <td>{{ r.note }}</td>
-                <td class="text-right">₹{{ r.amount|floatformat:2 }}</td>
+                <td class="text-right">₹{{ r.amount|floatformat:2|intcomma }}</td>
               </tr>
             {% endfor %}
 
@@ -593,7 +593,7 @@
                 <td>{% if lr.invoice %}{{ lr.invoice.number }}{% endif %}</td>
                 <td>Refund</td>
                 <td>{{ lr.note }}</td>
-                <td class="text-right">₹{{ lr.amount|floatformat:2 }}</td>
+                <td class="text-right">₹{{ lr.amount|floatformat:2|intcomma }}</td>
               </tr>
             {% endfor %}
           </tbody>

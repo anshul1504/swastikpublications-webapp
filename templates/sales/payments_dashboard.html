@@ -231,11 +231,11 @@
           </div>
           <div class="meta-chip">
             <span class="meta-dot" style="background:#16a34a;"></span>
-            Collected (all time): ₹ {{ total_collected|floatformat:2 }}
+            Collected (all time): ₹ {{ total_collected|floatformat:2|intcomma }}
           </div>
           <div class="meta-chip">
             <span class="meta-dot" style="background:#f97316;"></span>
-            Refunded: ₹ {{ total_refunded|floatformat:2 }}
+            Refunded: ₹ {{ total_refunded|floatformat:2|intcomma }}
           </div>
         </div>
       </div>
@@ -261,7 +261,7 @@
           </div>
           <div>
             <h6>Total Revenue</h6>
-            <div class="value">₹ {{ total_revenue|floatformat:2 }}</div>
+            <div class="value">₹ {{ total_revenue|floatformat:2|intcomma }}</div>
             <div class="hint">All invoices issued</div>
           </div>
         </div>
@@ -274,7 +274,7 @@
           </div>
           <div>
             <h6>Total Collected</h6>
-            <div class="value text-success">₹ {{ total_collected|floatformat:2 }}</div>
+            <div class="value text-success">₹ {{ total_collected|floatformat:2|intcomma }}</div>
             <div class="hint">Net receipts (paid invoices)</div>
           </div>
         </div>
@@ -287,7 +287,7 @@
           </div>
           <div>
             <h6>Total Refunded</h6>
-            <div class="value text-danger">₹ {{ total_refunded|floatformat:2 }}</div>
+            <div class="value text-danger">₹ {{ total_refunded|floatformat:2|intcomma }}</div>
             <div class="hint">All processed refunds</div>
           </div>
         </div>
@@ -300,7 +300,7 @@
           </div>
           <div>
             <h6>Outstanding</h6>
-            <div class="value text-warning">₹ {{ outstanding|floatformat:2 }}</div>
+            <div class="value text-warning">₹ {{ outstanding|floatformat:2|intcomma }}</div>
             <div class="hint">Pending to be collected</div>
           </div>
         </div>
@@ -365,7 +365,7 @@
                     {% endif %}
                   </td>
                   <td>{{ p.method }}</td>
-                  <td class="text-end fw-semibold text-success">₹{{ p.amount|floatformat:2 }}</td>
+                  <td class="text-end fw-semibold text-success">₹{{ p.amount|floatformat:2|intcomma }}</td>
                 </tr>
                 {% empty %}
                 <tr>
@@ -412,7 +412,7 @@
                   {{ c.customer__name|default:"—" }}
                 </div>
                 <div class="fw-semibold">
-                  ₹ {{ c.total|floatformat:2 }}
+                  ₹ {{ c.total|floatformat:2|intcomma }}
                 </div>
               </li>
             {% empty %}

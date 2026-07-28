@@ -509,7 +509,7 @@
               <div class="field-label">Unit cost</div>
               <div class="field-value">
                 {% if pr.unit_cost %}
-                  ₹ {{ pr.unit_cost|floatformat:2 }}
+                  ₹ {{ pr.unit_cost|floatformat:2|intcomma }}
                 {% else %}
                   <span class="field-muted">Not set</span>
                 {% endif %}
@@ -588,7 +588,7 @@
         {% if qty %}
           {# qty * unit_cost => widthratio se multiply #}
           {% widthratio qty 1 pr.unit_cost as total_val %}
-          ₹ {{ total_val|floatformat:2 }}
+          ₹ {{ total_val|floatformat:2|intcomma }}
         {% else %}
           <span class="field-muted">No stock on hand</span>
         {% endif %}

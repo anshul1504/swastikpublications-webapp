@@ -267,7 +267,7 @@
         <div class="chip-row">
           <div class="chip">
             <i class="bi bi-arrow-counterclockwise"></i>
-            Refund amount: <strong>₹{{ refund.amount|floatformat:2 }}</strong>
+            Refund amount: <strong>₹{{ refund.amount|floatformat:2|intcomma }}</strong>
           </div>
           <div class="chip">
             <i class="bi bi-calendar2-day"></i>
@@ -316,7 +316,7 @@
             <div class="col-md-4">
               <div class="summary-label">Refund Amount</div>
               <div class="summary-value text-danger">
-                ₹{{ refund.amount|floatformat:2 }}
+                ₹{{ refund.amount|floatformat:2|intcomma }}
               </div>
               <div class="summary-sub">
                 Dated {{ refund.date|date:"M d, Y" }}
@@ -372,7 +372,7 @@
             </li>
             <li class="list-group-item d-flex justify-content-between">
               <span><strong>Amount</strong></span>
-              <span class="text-danger">₹{{ refund.amount|floatformat:2 }}</span>
+              <span class="text-danger">₹{{ refund.amount|floatformat:2|intcomma }}</span>
             </li>
             <li class="list-group-item d-flex justify-content-between">
               <span><strong>Method</strong></span>

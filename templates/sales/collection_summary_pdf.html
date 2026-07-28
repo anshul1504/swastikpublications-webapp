@@ -161,7 +161,7 @@
           </div>
           <div class="meta-line">
             <span class="meta-label">Outstanding</span>
-            <span class="meta-value">₹{{ total_outstanding|default:0|floatformat:2 }}</span>
+            <span class="meta-value">₹{{ total_outstanding|default:0|floatformat:2|intcomma }}</span>
           </div>
         </div>
       </div>
@@ -183,14 +183,14 @@
         <div class="summary-card">
           <div class="summary-label">Total invoice value</div>
           <div class="summary-value">
-            ₹{{ total_value|default:0|floatformat:2 }}
+            ₹{{ total_value|default:0|floatformat:2|intcomma }}
           </div>
         </div>
 
         <div class="summary-card highlight">
           <div class="summary-label">Total outstanding</div>
           <div class="summary-value summary-value-strong">
-            ₹{{ total_outstanding|default:0|floatformat:2 }}
+            ₹{{ total_outstanding|default:0|floatformat:2|intcomma }}
           </div>
         </div>
       </div>
@@ -206,7 +206,7 @@
             {% for row in by_method %}
               <tr>
                 <td>{{ row.method|default:"N/A" }}</td>
-                <td class="text-right">₹{{ row.total|floatformat:2 }}</td>
+                <td class="text-right">₹{{ row.total|floatformat:2|intcomma }}</td>
               </tr>
             {% endfor %}
           </tbody>
@@ -238,8 +238,8 @@
                   &mdash;
                 {% endif %}
               </td>
-              <td class="text-right">₹{{ inv.grand_total|floatformat:2 }}</td>
-              <td class="text-right">₹{{ inv.balance_due|floatformat:2 }}</td>
+              <td class="text-right">₹{{ inv.grand_total|floatformat:2|intcomma }}</td>
+              <td class="text-right">₹{{ inv.balance_due|floatformat:2|intcomma }}</td>
               <td class="text-right">{{ inv.days_overdue }}</td>
             </tr>
           {% empty %}
@@ -266,7 +266,7 @@
                 <td>{% if p.invoice %}{{ p.invoice.number }}{% else %}&mdash;{% endif %}</td>
                 <td>{% if p.invoice and p.invoice.customer %}{{ p.invoice.customer.name }}{% else %}&mdash;{% endif %}</td>
                 <td>{{ p.method }}</td>
-                <td class="text-right">₹{{ p.amount|floatformat:2 }}</td>
+                <td class="text-right">₹{{ p.amount|floatformat:2|intcomma }}</td>
               </tr>
             {% endfor %}
           </tbody>
@@ -289,7 +289,7 @@
                 <td>{% if r.invoice and r.invoice.customer %}{{ r.invoice.customer.name }}{% else %}&mdash;{% endif %}</td>
                 <td>{{ r.method }}</td>
                 <td>{{ r.note|default:"" }}</td>
-                <td class="text-right">₹{{ r.amount|floatformat:2 }}</td>
+                <td class="text-right">₹{{ r.amount|floatformat:2|intcomma }}</td>
               </tr>
             {% endfor %}
           </tbody>

@@ -605,7 +605,7 @@
               <div class="summary-label">Unit cost</div>
               <div class="summary-value">
                 {% if object.unit_cost %}
-                  ₹ {{ object.unit_cost|floatformat:2 }}
+                  ₹ {{ object.unit_cost|floatformat:2|intcomma }}
                 {% else %}
                   <span class="summary-muted">Not set</span>
                 {% endif %}
@@ -643,7 +643,7 @@
               <span class="meta-label">Approx. value</span>
               {% if approx_value %}
                 <span>
-                  ₹ {{ object.unit_cost|floatformat:2 }}
+                  ₹ {{ object.unit_cost|floatformat:2|intcomma }}
                   × {{ available_qty_resolved|intcomma }}
                   = <span class="kpi-value-amount">
                       ₹ {{ approx_value|floatformat:2|intcomma }}

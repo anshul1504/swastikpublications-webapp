@@ -236,10 +236,10 @@
           invoices in collection
         </div>
         <div class="chip">
-          Total value <strong>₹{{ total_value|floatformat:2 }}</strong>
+          Total value <strong>₹{{ total_value|floatformat:2|intcomma }}</strong>
         </div>
         <div class="chip danger">
-          Outstanding <strong>₹{{ total_outstanding|floatformat:2 }}</strong>
+          Outstanding <strong>₹{{ total_outstanding|floatformat:2|intcomma }}</strong>
         </div>
       </div>
     </div>
@@ -289,7 +289,7 @@
       <div class="kpi-icon red"><i class="bi bi-exclamation-triangle"></i></div>
       <div>
         <h6>Outstanding Amount</h6>
-        <div class="value danger">₹{{ total_outstanding|floatformat:2 }}</div>
+        <div class="value danger">₹{{ total_outstanding|floatformat:2|intcomma }}</div>
       </div>
     </div>
 
@@ -297,7 +297,7 @@
       <div class="kpi-icon green"><i class="bi bi-wallet2"></i></div>
       <div>
         <h6>Total Invoice Value</h6>
-        <div class="value">₹{{ total_value|floatformat:2 }}</div>
+        <div class="value">₹{{ total_value|floatformat:2|intcomma }}</div>
       </div>
     </div>
   </div>
@@ -368,8 +368,8 @@
               <div style="color:var(--muted); font-size:13px;">{{ inv.customer.company|default:"" }}</div>
             </td>
             <td>{{ inv.date|date:"d M, Y" }}</td>
-            <td style="text-align:right; font-weight:600;">₹{{ inv.grand_total|floatformat:2 }}</td>
-            <td style="text-align:right"><span class="balance-pill">₹{{ inv.balance_due|floatformat:2 }}</span></td>
+            <td style="text-align:right; font-weight:600;">₹{{ inv.grand_total|floatformat:2|intcomma }}</td>
+            <td style="text-align:right"><span class="balance-pill">₹{{ inv.balance_due|floatformat:2|intcomma }}</span></td>
             <td style="text-align:right">
               {% if inv.days_overdue <= 7 %}
                 <span style="color:var(--muted)">{{ inv.days_overdue }} days</span>
@@ -403,7 +403,7 @@
             <div class="mobile-meta" style="color:var(--muted); margin-top:6px;">{{ inv.customer.name|default:"—" }} • {{ inv.date|date:"d M Y" }}</div>
           </div>
           <div style="text-align:right;">
-            <div class="balance-pill">₹{{ inv.balance_due|floatformat:2 }}</div>
+            <div class="balance-pill">₹{{ inv.balance_due|floatformat:2|intcomma }}</div>
             <div style="font-size:13px; color:var(--muted); margin-top:6px;">{{ inv.days_overdue }} days</div>
           </div>
         </div>

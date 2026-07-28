@@ -338,7 +338,7 @@
           </div>
           <div class="meta-chip">
             <span class="meta-dot" style="background:#f97316;"></span>
-            Avg. invoice: ₹ {{ avg_invoice_value|floatformat:2 }}
+            Avg. invoice: ₹ {{ avg_invoice_value|floatformat:2|intcomma }}
           </div>
         </div>
       </div>
@@ -361,7 +361,7 @@
           </div>
           <div>
             <h6>Total Revenue</h6>
-            <div class="value">₹ {{ total_revenue|floatformat:2 }}</div>
+            <div class="value">₹ {{ total_revenue|floatformat:2|intcomma }}</div>
             <div class="hint">All invoices generated</div>
           </div>
         </div>
@@ -374,7 +374,7 @@
           </div>
           <div>
             <h6>Total Collected</h6>
-            <div class="value">₹ {{ total_paid|floatformat:2 }}</div>
+            <div class="value">₹ {{ total_paid|floatformat:2|intcomma }}</div>
             <div class="hint">Payments recorded</div>
           </div>
         </div>
@@ -387,7 +387,7 @@
           </div>
           <div>
             <h6>Outstanding</h6>
-            <div class="value text-danger">₹ {{ outstanding|floatformat:2 }}</div>
+            <div class="value text-danger">₹ {{ outstanding|floatformat:2|intcomma }}</div>
             <div class="hint">{{ unpaid_count }} invoice(s) open</div>
           </div>
         </div>
@@ -488,15 +488,15 @@
           <div class="pill-row mb-1">
             <div class="pill">
               <div class="pill-label">Invoices Created</div>
-              <div class="pill-value">₹ {{ today_invoices_total|floatformat:2 }}</div>
+              <div class="pill-value">₹ {{ today_invoices_total|floatformat:2|intcomma }}</div>
             </div>
             <div class="pill">
               <div class="pill-label">Payments Received</div>
-              <div class="pill-value text-success">₹ {{ today_payments_total|floatformat:2 }}</div>
+              <div class="pill-value text-success">₹ {{ today_payments_total|floatformat:2|intcomma }}</div>
             </div>
             <div class="pill">
               <div class="pill-label">Refunds Issued</div>
-              <div class="pill-value text-danger">₹ {{ today_refunds_total|floatformat:2 }}</div>
+              <div class="pill-value text-danger">₹ {{ today_refunds_total|floatformat:2|intcomma }}</div>
             </div>
           </div>
         </div>
@@ -529,7 +529,7 @@
                   <div class="fw-semibold">{{ c.customer__name|default:"—" }}</div>
                   <div class="small-muted">Invoices: {{ c.invoice_count }}</div>
                 </div>
-                <div class="fw-semibold">₹ {{ c.total_amount|floatformat:2 }}</div>
+                <div class="fw-semibold">₹ {{ c.total_amount|floatformat:2|intcomma }}</div>
               </li>
             {% empty %}
               <li class="list-group-item text-center text-muted">No customers yet</li>
@@ -568,7 +568,7 @@
                   <td><a href="{% url 'sales:invoice_detail' inv.id %}">{{ inv.number }}</a></td>
                   <td>{{ inv.customer.name }}</td>
                   <td>{{ inv.date|date:"M d, Y" }}</td>
-                  <td class="text-end">₹{{ inv.grand_total|floatformat:2 }}</td>
+                  <td class="text-end">₹{{ inv.grand_total|floatformat:2|intcomma }}</td>
                   <td>
                     {% if inv.status == 'paid' %}
                       <span class="badge bg-success">Paid</span>
@@ -603,7 +603,7 @@
             {% for p in recent_payments %}
               <li class="list-group-item d-flex justify-content-between align-items-center">
                 <div>
-                  <div class="fw-semibold text-success">₹{{ p.amount|floatformat:2 }}</div>
+                  <div class="fw-semibold text-success">₹{{ p.amount|floatformat:2|intcomma }}</div>
                   <div class="small-muted">
                     {{ p.date|date:"M d, Y" }} — {{ p.method }}
                     {% if p.invoice and p.invoice.number %} · {{ p.invoice.number }}{% endif %}

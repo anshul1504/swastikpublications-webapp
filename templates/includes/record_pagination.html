@@ -1,0 +1,52 @@
+{% if page_obj %}
+<div class="crm-pagination">
+  <div class="crm-pagination__summary">
+    {% if paginator.count %}
+      Showing <strong>{{ page_obj.start_index }}-{{ page_obj.end_index }}</strong>
+      of <strong>{{ paginator.count }}</strong>
+    {% else %}
+      No records
+    {% endif %}
+  </div>
+
+  {% if paginator.num_pages > 1 %}
+  <nav aria-label="Record pages">
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+        <a class="page-link" href="?{% if query_params %}{{ query_params }}&{% endif %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}" aria-label="Previous">
+          <i class="bi bi-chevron-left"></i>
+        </a>
+      </li>
+      {% for page_num in page_range %}
+        {% if page_num == paginator.ELLIPSIS %}
+          <li class="page-item disabled"><span class="page-link">{{ page_num }}</span></li>
+        {% else %}
+          <li class="page-item {% if page_num == page_obj.number %}active{% endif %}">
+            <a class="page-link" href="?{% if query_params %}{{ query_params }}&{% endif %}page={{ page_num }}">{{ page_num }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+      <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+        <a class="page-link" href="?{% if query_params %}{{ query_params }}&{% endif %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ paginator.num_pages }}{% endif %}" aria-label="Next">
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  {% endif %}
+
+  <form class="crm-pagination__size" method="get">
+    <span>Rows</span>
+    {% for key,value in request.GET.items %}
+      {% if key != "page" and key != "page_size" and key != "export" %}
+        <input type="hidden" name="{{ key }}" value="{{ value }}">
+      {% endif %}
+    {% endfor %}
+    <select class="form-select form-select-sm" name="page_size" onchange="this.form.submit()">
+      <option value="25" {% if page_size == 25 %}selected{% endif %}>25</option>
+      <option value="50" {% if page_size == 50 %}selected{% endif %}>50</option>
+      <option value="100" {% if page_size == 100 %}selected{% endif %}>100</option>
+    </select>
+  </form>
+</div>
+{% endif %}
