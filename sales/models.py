@@ -348,12 +348,21 @@ class SalesReturnItem(models.Model):
 
 class CompanyProfile(models.Model):
     name = models.CharField(max_length=255, default="The Webfix")
+    legal_name = models.CharField(max_length=255, blank=True)
     address = models.TextField(blank=True)
     phone = models.CharField(max_length=50, blank=True)
     email = models.EmailField(blank=True)
+    website = models.URLField(blank=True)
     gstin = models.CharField(max_length=20, blank=True)
+    pan = models.CharField(max_length=10, blank=True)
+    state_code = models.CharField(max_length=2, blank=True)
     bank_details = models.TextField(blank=True)
+    invoice_prefix = models.CharField(max_length=12, blank=True)
+    invoice_terms = models.TextField(blank=True)
     logo = models.ImageField(upload_to='company_logos/', blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    is_default = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name

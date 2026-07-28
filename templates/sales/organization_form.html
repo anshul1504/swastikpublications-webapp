@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{% if is_create %}Add Organization{% else %}Edit Organization{% endif %}{% endblock %}
+{% block extra_css %}
+<style>
+  .org-form-page{max-width:1250px;margin:0 auto}.org-form-head{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:20px}
+  .org-form-head h1{font-size:1.6rem;font-weight:800;margin:0;color:#0f172a}.org-form-head p{color:#64748b;margin:5px 0 0}
+  .form-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:18px}
+  .form-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:22px;box-shadow:0 3px 14px rgba(15,23,42,.04);margin-bottom:16px}
+  .form-card h2{font-size:1rem;font-weight:800;color:#0f172a;margin:0 0 16px}.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .field.full{grid-column:1/-1}.field label{display:block;font-weight:700;color:#334155;font-size:.84rem;margin-bottom:6px}.field .errorlist{color:#b91c1c;font-size:.8rem;margin:5px 0;padding-left:18px}
+  .form-check-row{display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:10px}.form-check-row input{margin-top:3px}.form-check-row label{font-weight:700;color:#334155}.form-check-row small{display:block;color:#64748b}
+  .sticky-actions{position:sticky;top:82px}.help-list{padding-left:18px;color:#64748b;font-size:.88rem}.help-list li{margin-bottom:8px}
+  @media(max-width:900px){.form-layout{grid-template-columns:1fr}.sticky-actions{position:static}}@media(max-width:600px){.field-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.org-form-head{align-items:flex-start;flex-direction:column}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="org-form-page">
+  <div class="org-form-head">
+    <div><h1>{% if is_create %}Add Organization{% else %}Edit {{ organization.name }}{% endif %}</h1><p>These details appear across invoices, statements and reports.</p></div>
+    <a class="btn btn-outline-secondary" href="{% url 'sales:organization_list' %}"><i class="bi bi-arrow-left me-1"></i>Organizations</a>
+  </div>
+  <form method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}
+    <div class="form-layout">
+      <div>
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        <section class="form-card"><h2><i class="bi bi-building me-2 text-success"></i>Business identity</h2><div class="field-grid">
+          <div class="field"><label for="{{ form.name.id_for_label }}">Display name *</label>{{ form.name }}{{ form.name.errors }}</div>
+          <div class="field"><label for="{{ form.legal_name.id_for_label }}">Legal name</label>{{ form.legal_name }}{{ form.legal_name.errors }}</div>
+          <div class="field full"><label for="{{ form.logo.id_for_label }}">Organization logo</label>{{ form.logo }}{{ form.logo.errors }}</div>
+          <div class="field full"><label for="{{ form.address.id_for_label }}">Registered address</label>{{ form.address }}{{ form.address.errors }}</div>
+          <div class="field"><label for="{{ form.phone.id_for_label }}">Phone</label>{{ form.phone }}{{ form.phone.errors }}</div>
+          <div class="field"><label for="{{ form.email.id_for_label }}">Email</label>{{ form.email }}{{ form.email.errors }}</div>
+          <div class="field full"><label for="{{ form.website.id_for_label }}">Website</label>{{ form.website }}{{ form.website.errors }}</div>
+        </div></section>
+        <section class="form-card"><h2><i class="bi bi-shield-check me-2 text-success"></i>Tax and invoice settings</h2><div class="field-grid">
+          <div class="field"><label for="{{ form.gstin.id_for_label }}">GSTIN</label>{{ form.gstin }}{{ form.gstin.errors }}</div>
+          <div class="field"><label for="{{ form.pan.id_for_label }}">PAN</label>{{ form.pan }}{{ form.pan.errors }}</div>
+          <div class="field"><label for="{{ form.state_code.id_for_label }}">GST state code</label>{{ form.state_code }}{{ form.state_code.errors }}</div>
+          <div class="field"><label for="{{ form.invoice_prefix.id_for_label }}">Invoice prefix</label>{{ form.invoice_prefix }}{{ form.invoice_prefix.errors }}</div>
+          <div class="field full"><label for="{{ form.bank_details.id_for_label }}">Bank details</label>{{ form.bank_details }}{{ form.bank_details.errors }}</div>
+          <div class="field full"><label for="{{ form.invoice_terms.id_for_label }}">Default invoice terms</label>{{ form.invoice_terms }}{{ form.invoice_terms.errors }}</div>
+        </div></section>
+      </div>
+      <aside>
+        <section class="form-card sticky-actions"><h2>Publishing controls</h2>
+          <div class="form-check-row">{{ form.is_active }}<div><label for="{{ form.is_active.id_for_label }}">Active organization</label><small>Available for new invoices and documents.</small></div></div>
+          <div class="form-check-row">{{ form.is_default }}<div><label for="{{ form.is_default.id_for_label }}">Default organization</label><small>Used as the primary business identity.</small></div></div>
+          <button class="btn btn-success w-100 mt-2" type="submit"><i class="bi bi-check2-circle me-1"></i>Save Organization</button>
+          <a class="btn btn-light border w-100 mt-2" href="{% url 'sales:organization_list' %}">Cancel</a>
+          <hr><ul class="help-list"><li>Only staff users can manage organizations.</li><li>Linked organizations cannot be deleted.</li><li>Setting a default automatically clears the previous default.</li></ul>
+        </section>
+      </aside>
+    </div>
+  </form>
+</div>
+{% endblock %}

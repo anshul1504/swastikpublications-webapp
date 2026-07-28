@@ -6,7 +6,7 @@ import logging
 from io import BytesIO
 
 from django.core.paginator import Paginator
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.http import HttpResponseBadRequest
 from weasyprint import HTML
@@ -57,7 +57,99 @@ from .models import (
     Refund,
     CompanyProfile,
 )
+from .forms import CompanyProfileForm
 from catalog.models import Product
+
+
+def staff_required(view):
+    return user_passes_test(lambda user: user.is_active and user.is_staff)(view)
+
+
+@login_required
+@staff_required
+def organization_list(request):
+    organizations = CompanyProfile.objects.annotate(
+        invoice_count=Count("invoices")
+    ).order_by("-is_default", "-is_active", "name")
+    return render(
+        request,
+        "sales/organization_list.html",
+        {
+            "organizations": organizations,
+            "active_count": organizations.filter(is_active=True).count(),
+            "invoice_count": Invoice.objects.filter(company__isnull=False).count(),
+        },
+    )
+
+
+def _save_organization(form):
+    with transaction.atomic():
+        organization = form.save()
+        if organization.is_default:
+            CompanyProfile.objects.exclude(pk=organization.pk).update(is_default=False)
+        elif not CompanyProfile.objects.filter(is_default=True).exists():
+            organization.is_default = True
+            organization.save(update_fields=["is_default"])
+    return organization
+
+
+@login_required
+@staff_required
+def organization_create(request):
+    form = CompanyProfileForm(request.POST or None, request.FILES or None)
+    if request.method == "POST" and form.is_valid():
+        organization = _save_organization(form)
+        messages.success(request, f"{organization.name} organization created successfully.")
+        return redirect("sales:organization_list")
+    return render(request, "sales/organization_form.html", {"form": form, "is_create": True})
+
+
+@login_required
+@staff_required
+def organization_edit(request, pk):
+    organization = get_object_or_404(CompanyProfile, pk=pk)
+    form = CompanyProfileForm(request.POST or None, request.FILES or None, instance=organization)
+    if request.method == "POST" and form.is_valid():
+        organization = _save_organization(form)
+        messages.success(request, f"{organization.name} settings updated.")
+        return redirect("sales:organization_list")
+    return render(
+        request,
+        "sales/organization_form.html",
+        {"form": form, "organization": organization, "is_create": False},
+    )
+
+
+@login_required
+@staff_required
+def organization_set_default(request, pk):
+    if request.method != "POST":
+        return HttpResponseBadRequest("POST request required.")
+    organization = get_object_or_404(CompanyProfile, pk=pk)
+    with transaction.atomic():
+        CompanyProfile.objects.update(is_default=False)
+        organization.is_default = True
+        organization.is_active = True
+        organization.save(update_fields=["is_default", "is_active"])
+    messages.success(request, f"{organization.name} is now the default organization.")
+    return redirect("sales:organization_list")
+
+
+@login_required
+@staff_required
+def organization_delete(request, pk):
+    if request.method != "POST":
+        return HttpResponseBadRequest("POST request required.")
+    organization = get_object_or_404(CompanyProfile, pk=pk)
+    if organization.invoices.exists():
+        messages.error(request, "This organization is linked to invoices and cannot be deleted. Deactivate it instead.")
+    elif organization.is_default:
+        messages.error(request, "The default organization cannot be deleted. Set another default first.")
+    else:
+        name = organization.name
+        organization.delete()
+        messages.success(request, f"{name} deleted.")
+    return redirect("sales:organization_list")
 
 
 # ============================================================

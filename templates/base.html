@@ -183,8 +183,10 @@
       font-size:11px;
       text-transform:uppercase;
       letter-spacing:.10em;
-      cursor:default;
+      cursor:pointer;
+      border-radius:7px;
     }
+    .nav-section-toggle:hover{background:rgba(148,163,184,.08);color:#cbd5e1}
     .nav-section-toggle i{
       transition:transform .18s ease;
     }
@@ -417,6 +419,7 @@
       padding:22px 24px;
       min-height:calc(100vh - 64px - 41px);
     }
+    .nav-group.is-collapsed .nav-list{display:none}
 
     .card,
     .dropdown-menu,
@@ -640,7 +643,7 @@
       {% with resolver=request.resolver_match %}
 
       <div class="nav-group" role="group" aria-label="Analytics">
-        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Analytics</span></button>
+        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Overview</span><i class="bi bi-chevron-down"></i></button>
         <ul class="nav-list" role="menu">
           <li class="nav-item" role="none"><a href="{% url 'dashboard' %}" class="nav-link {% if resolver and resolver.url_name == 'dashboard' %}active{% endif %}" role="menuitem" title="Main Dashboard" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-speedometer2"></i></span><span class="nav-text">Main Dashboard</span></a></li>
           <li class="nav-item" role="none"><a href="{% url 'sales:payments_dashboard' %}" class="nav-link {% if resolver and resolver.url_name == 'payments_dashboard' %}active{% endif %}" role="menuitem" title="Payment Analytics" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-graph-up-arrow"></i></span><span class="nav-text">Payment Analytics</span></a></li>
@@ -648,7 +651,7 @@
       </div>
 
       <div class="nav-group" role="group" aria-label="Invoices">
-        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Invoices</span></button>
+        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Sales</span><i class="bi bi-chevron-down"></i></button>
         <ul class="nav-list" role="menu">
           <li class="nav-item" role="none"><a href="{% url 'sales:invoice_list' %}" class="nav-link {% if resolver and resolver.url_name == 'invoice_list' %}active{% endif %}" role="menuitem" title="All Invoices" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-receipt"></i></span><span class="nav-text">All Invoices</span></a></li>
           <li class="nav-item" role="none"><a href="{% url 'sales:invoice_add' %}" class="nav-link {% if resolver and resolver.url_name == 'invoice_add' %}active{% endif %}" role="menuitem" title="Create Invoice" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-plus-square"></i></span><span class="nav-text">New Invoice</span></a></li>
@@ -658,7 +661,7 @@
       </div>
 
       <div class="nav-group" role="group" aria-label="Customers">
-        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Customers</span></button>
+        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Customers</span><i class="bi bi-chevron-down"></i></button>
         <ul class="nav-list" role="menu">
           <li class="nav-item" role="none"><a href="{% url 'sales:customer_list' %}" class="nav-link {% if resolver and resolver.url_name == 'customer_list' %}active{% endif %}" role="menuitem" title="Customers" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-people"></i></span><span class="nav-text">All Customers</span></a></li>
           <li class="nav-item" role="none"><a href="{% url 'sales:customer_add' %}" class="nav-link {% if resolver and resolver.url_name == 'customer_add' %}active{% endif %}" role="menuitem" title="Add Customer" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-person-plus"></i></span><span class="nav-text">Add Customer</span></a></li>
@@ -666,7 +669,7 @@
       </div>
 
       <div class="nav-group" role="group" aria-label="Payments and refunds">
-        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Payments</span></button>
+        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Accounts & Returns</span><i class="bi bi-chevron-down"></i></button>
         <ul class="nav-list" role="menu">
           <li class="nav-item" role="none"><a href="{% url 'sales:payment_list' %}" class="nav-link {% if resolver and resolver.url_name == 'payment_list' %}active{% endif %}" role="menuitem" title="Payments" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-credit-card"></i></span><span class="nav-text">Payments</span></a></li>
           <li class="nav-item" role="none"><a href="{% url 'sales:payment_add' %}" class="nav-link {% if resolver and resolver.url_name == 'payment_add' %}active{% endif %}" role="menuitem" title="Add Payment" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-plus-circle"></i></span><span class="nav-text">Add Payment</span></a></li>
@@ -678,31 +681,33 @@
       </div>
 
       <div class="nav-group" role="group" aria-label="Inventory">
-        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Inventory</span></button>
+        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Inventory</span><i class="bi bi-chevron-down"></i></button>
         <ul class="nav-list" role="menu">
           <li class="nav-item" role="none"><a href="{% url 'catalog:inventory_home' %}" class="nav-link {% if resolver and resolver.url_name == 'inventory_home' %}active{% endif %}" role="menuitem" title="Inventory Home" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-bar-chart-line"></i></span><span class="nav-text">Inventory Home</span></a></li>
           <li class="nav-item" role="none"><a href="{% url 'catalog:product_stock_search' %}" class="nav-link {% if resolver and resolver.url_name == 'product_stock_search' %}active{% endif %}" role="menuitem" title="Product Stock" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-box-seam"></i></span><span class="nav-text">Product Stock (search)</span></a></li>
           <li class="nav-item" role="none"><a href="{% url 'catalog:stock_ledger' %}" class="nav-link {% if resolver and resolver.url_name == 'stock_ledger' %}active{% endif %}" role="menuitem" title="Stock Ledger" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-stack"></i></span><span class="nav-text">Stock Ledger</span></a></li>
-          <li class="nav-item" role="none"><a href="{% url 'catalog:stock_ledger_export' %}" class="nav-link {% if resolver and resolver.url_name == 'stock_ledger_export' %}active{% endif %}" role="menuitem" title="Export Stock Ledger" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-file-earmark-arrow-down"></i></span><span class="nav-text">Export Stock Ledger</span></a></li>
           <li class="nav-item" role="none"><a href="{% url 'catalog:pr_list' %}" class="nav-link {% if resolver and resolver.url_name == 'pr_list' %}active{% endif %}" role="menuitem" title="Print Runs" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-journal-bookmark"></i></span><span class="nav-text">Print Runs (GRN)</span></a></li>
-          <li class="nav-item" role="none"><a href="{% url 'catalog:pr_create' %}" class="nav-link {% if resolver and resolver.url_name == 'pr_create' %}active{% endif %}" role="menuitem" title="Create Batch" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-plus-square"></i></span><span class="nav-text">Create Batch</span></a></li>
-          <li class="nav-item" role="none"><a href="{% url 'catalog:export_csv' %}" class="nav-link {% if resolver and resolver.url_name == 'export_csv' %}active{% endif %}" role="menuitem" title="Export Print Runs" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-filetype-csv"></i></span><span class="nav-text">Export Print Runs</span></a></li>
           <li class="nav-item" role="none"><a href="{% url 'catalog:warehouse_list' %}" class="nav-link {% if resolver and resolver.url_name == 'warehouse_list' %}active{% endif %}" role="menuitem" title="Warehouses" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-buildings"></i></span><span class="nav-text">Warehouses</span></a></li>
-          <li class="nav-item" role="none"><a href="{% url 'catalog:warehouse_add' %}" class="nav-link {% if resolver and resolver.url_name == 'warehouse_add' %}active{% endif %}" role="menuitem" title="Add Warehouse" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-plus-circle"></i></span><span class="nav-text">Add Warehouse</span></a></li>
-          <li class="nav-item" role="none"><a href="{% url 'catalog:warehouse_import_xlsx' %}" class="nav-link {% if resolver and resolver.url_name == 'warehouse_import_xlsx' %}active{% endif %}" role="menuitem" title="Import Warehouses" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-upload"></i></span><span class="nav-text">Import Warehouses</span></a></li>
-          <li class="nav-item" role="none"><a href="{% url 'catalog:warehouse_export_xlsx' %}" class="nav-link {% if resolver and resolver.url_name == 'warehouse_export_xlsx' %}active{% endif %}" role="menuitem" title="Export Warehouses" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-download"></i></span><span class="nav-text">Export Warehouses</span></a></li>
         </ul>
       </div>
 
       <div class="nav-group" role="group" aria-label="Products">
-        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Products</span></button>
+        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Catalog</span><i class="bi bi-chevron-down"></i></button>
         <ul class="nav-list" role="menu">
           <li class="nav-item" role="none"><a href="{% url 'catalog:product_list' %}" class="nav-link {% if resolver and resolver.url_name == 'product_list' %}active{% endif %}" role="menuitem" title="Products & Services" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-box-seam"></i></span><span class="nav-text">Products / Services</span></a></li>
-          <li class="nav-item" role="none"><a href="{% url 'catalog:product_add' %}" class="nav-link {% if resolver and resolver.url_name == 'product_add' %}active{% endif %}" role="menuitem" title="Add Product" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-plus-circle"></i></span><span class="nav-text">Add Product</span></a></li>
-          <li class="nav-item" role="none"><a href="{% url 'catalog:product_import_xlsx' %}" class="nav-link {% if resolver and resolver.url_name == 'product_import_xlsx' %}active{% endif %}" role="menuitem" title="Import Products" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-upload"></i></span><span class="nav-text">Import Products</span></a></li>
-          <li class="nav-item" role="none"><a href="{% url 'catalog:product_export_xlsx' %}" class="nav-link {% if resolver and resolver.url_name == 'product_export_xlsx' %}active{% endif %}" role="menuitem" title="Export Products" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-download"></i></span><span class="nav-text">Export Products</span></a></li>
         </ul>
       </div>
+
+      {% if user.is_staff %}
+      <div class="nav-group" role="group" aria-label="Administration">
+        <button class="nav-section-toggle" type="button" aria-expanded="true"><span class="nav-section-label">Administration</span><i class="bi bi-chevron-down"></i></button>
+        <ul class="nav-list" role="menu">
+          <li class="nav-item" role="none"><a href="{% url 'sales:organization_list' %}" class="nav-link {% if resolver and resolver.url_name|slice:':12' == 'organization' %}active{% endif %}" role="menuitem" title="Organization Management" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-building-gear"></i></span><span class="nav-text">Organizations</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'admin:auth_user_changelist' %}" class="nav-link" role="menuitem" title="Users and Permissions" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-people-fill"></i></span><span class="nav-text">Users & Permissions</span></a></li>
+          <li class="nav-item" role="none"><a href="{% url 'admin:index' %}" class="nav-link" role="menuitem" title="System Administration" data-bs-toggle="tooltip" data-bs-placement="right"><span class="nav-icon"><i class="bi bi-gear"></i></span><span class="nav-text">System Administration</span></a></li>
+        </ul>
+      </div>
+      {% endif %}
 
       {% endwith %}
     </nav>
@@ -737,12 +742,12 @@
             <ul class="dropdown-menu dropdown-menu-end shadow-sm">
               <li class="dropdown-item-text small text-muted px-3">Signed in as <b>{{ user.username }}</b></li>
               <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" href="#"><i class="bi bi-person-circle me-2"></i>My Profile</a></li>
-              <li><a class="dropdown-item" href="#"><i class="bi bi-sliders me-2"></i>Account Settings</a></li>
-              <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item" href="{% url 'reports:dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
               <li><a class="dropdown-item" href="{% url 'sales:invoice_list' %}"><i class="bi bi-receipt me-2"></i>Invoices</a></li>
               <li><a class="dropdown-item" href="{% url 'catalog:product_list' %}"><i class="bi bi-box-seam me-2"></i>Products</a></li>
+              {% if user.is_staff %}
+              <li><a class="dropdown-item" href="{% url 'sales:organization_list' %}"><i class="bi bi-building-gear me-2"></i>Organization Settings</a></li>
+              {% endif %}
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
             </ul>
@@ -754,6 +759,15 @@
     </header>
 
     <main class="content-wrap" id="workspace" role="main">
+      {% if messages %}
+        <div class="mb-3" aria-live="polite">
+          {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+              {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
       {% block content %}{% endblock %}
     </main>
 
@@ -866,6 +880,24 @@
         document.body.style.overflow = '';
       });
     }
+
+    document.querySelectorAll('.nav-section-toggle').forEach(function(toggle, index){
+      const group = toggle.closest('.nav-group');
+      if (!group) return;
+      const hasActiveLink = !!group.querySelector('.nav-link.active');
+      const key = 'sidebar-group-' + index;
+      try {
+        if (!hasActiveLink && localStorage.getItem(key) === 'collapsed') {
+          group.classList.add('is-collapsed');
+          toggle.setAttribute('aria-expanded', 'false');
+        }
+      } catch(e){}
+      toggle.addEventListener('click', function(){
+        const collapsed = group.classList.toggle('is-collapsed');
+        toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        try { localStorage.setItem(key, collapsed ? 'collapsed' : 'expanded'); } catch(e){}
+      });
+    });
 
     document.addEventListener('keydown', function(e){
       if (e.key === 'Escape') {
