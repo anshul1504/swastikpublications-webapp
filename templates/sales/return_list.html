@@ -1,43 +1,71 @@
 {% extends "base.html" %}
 {% load humanize %}
-{% block title %}Returns & Replacements{% endblock %}
+{% block title %}Returns Register · Swastik CRM{% endblock %}
 {% block content %}
-<div class="container-fluid py-4">
-  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-    <div>
-      <div class="text-uppercase text-muted small fw-semibold">After-sales operations</div>
-      <h2 class="mb-1">Returns & Replacements</h2>
-      <p class="text-muted mb-0">Track returned books, damaged copies, refunds and replacements.</p>
-    </div>
-    <a class="btn btn-primary" href="{% url 'sales:return_add' %}"><i class="bi bi-arrow-return-left me-2"></i>New return</a>
+<style>
+  .rr-shell{padding:24px 18px 40px;color:#172033}
+  .rr-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:20px}
+  .rr-eyebrow{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#87193e;margin-bottom:6px}
+  .rr-title{font-size:28px;font-weight:800;letter-spacing:-.025em;margin:0 0 5px}
+  .rr-sub{color:#64748b;margin:0}.rr-primary{display:inline-flex;align-items:center;gap:7px;background:#87193e;color:#fff;text-decoration:none;font-weight:800;padding:11px 16px;border-radius:10px}.rr-primary:hover{background:#6f1433;color:#fff}
+  .rr-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+  .rr-kpi{background:#fff;border:1px solid #e5eaf1;border-radius:14px;padding:17px 18px;box-shadow:0 5px 20px rgba(15,23,42,.045)}
+  .rr-kpi-label{font-size:12px;font-weight:750;color:#64748b;text-transform:uppercase;letter-spacing:.045em}.rr-kpi-value{font-size:24px;font-weight:850;margin-top:4px;color:#1e293b}
+  .rr-panel{background:#fff;border:1px solid #e5eaf1;border-radius:16px;box-shadow:0 8px 28px rgba(15,23,42,.05);overflow:hidden}
+  .rr-filters{display:flex;gap:10px;padding:16px;border-bottom:1px solid #edf1f5}.rr-search{flex:1;position:relative}.rr-search i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#94a3b8}.rr-search input{padding-left:38px}
+  .form-control,.form-select{border-color:#dbe2ea;border-radius:10px;min-height:42px}.rr-filter-btn{border:1px solid #87193e;color:#87193e;background:#fff;border-radius:10px;padding:8px 15px;font-weight:750}.rr-clear{align-self:center;color:#64748b;font-size:13px;text-decoration:none}
+  .rr-table{margin:0}.rr-table th{font-size:11px;text-transform:uppercase;letter-spacing:.055em;color:#64748b;background:#f8fafc;padding:11px 14px;border-bottom-color:#e5eaf1}.rr-table td{padding:14px;border-bottom-color:#edf1f5;vertical-align:middle}
+  .return-no{font-weight:800;color:#1e293b}.customer-name{font-weight:700}.muted-line{font-size:12px;color:#64748b;margin-top:2px}
+  .status-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:750}.pill-replacement{background:#eef2ff;color:#4338ca}.pill-refund{background:#ecfdf5;color:#047857}.pill-credit{background:#fff7ed;color:#c2410c}
+  .view-btn{display:inline-grid;place-items:center;width:34px;height:34px;border:1px solid #dbe2ea;border-radius:9px;color:#475569;text-decoration:none}.view-btn:hover{border-color:#87193e;color:#87193e}
+  .rr-empty{text-align:center;padding:58px 20px}.rr-empty i{font-size:36px;color:#cbd5e1}.rr-empty h3{font-size:17px;margin:10px 0 5px}.rr-empty p{color:#64748b;margin:0}
+  @media(max-width:760px){.rr-head{display:block}.rr-primary{margin-top:14px}.rr-kpis{grid-template-columns:1fr}.rr-filters{flex-direction:column}.rr-table{min-width:780px}.rr-title{font-size:23px}}
+</style>
+<div class="rr-shell">
+  <header class="rr-head">
+    <div><div class="rr-eyebrow">After-sales</div><h1 class="rr-title">Returns register</h1><p class="rr-sub">One place for returned books, damage inspection, replacements and refunds.</p></div>
+    <a class="rr-primary" href="{% url 'sales:return_add' %}"><i class="bi bi-plus-lg"></i> New return</a>
+  </header>
+
+  <div class="rr-kpis">
+    <div class="rr-kpi"><div class="rr-kpi-label">Return entries</div><div class="rr-kpi-value">{{ return_count|intcomma }}</div></div>
+    <div class="rr-kpi"><div class="rr-kpi-label">Books received</div><div class="rr-kpi-value">{{ total_quantity|intcomma }}</div></div>
+    <div class="rr-kpi"><div class="rr-kpi-label">Return value</div><div class="rr-kpi-value">&#8377;{{ total_value|floatformat:2|intcomma }}</div></div>
   </div>
-  <div class="card border-0 shadow-sm">
-    <div class="card-body border-bottom">
-      <form class="d-flex gap-2" method="get">
-        <input class="form-control" name="q" value="{{ query }}" placeholder="Return no., invoice or customer">
-        <button class="btn btn-outline-primary">Search</button>
-      </form>
-    </div>
+
+  <section class="rr-panel">
+    <form class="rr-filters" method="get">
+      <div class="rr-search"><i class="bi bi-search"></i><input class="form-control" name="q" value="{{ query }}" placeholder="Search return no., invoice or customer"></div>
+      <select class="form-select" name="resolution" style="max-width:190px">
+        <option value="">All resolutions</option>
+        <option value="replacement" {% if resolution_filter == 'replacement' %}selected{% endif %}>Replacement</option>
+        <option value="refund" {% if resolution_filter == 'refund' %}selected{% endif %}>Amount refund</option>
+        <option value="credit" {% if resolution_filter == 'credit' %}selected{% endif %}>Store credit</option>
+      </select>
+      <button class="rr-filter-btn" type="submit">Apply</button>
+      {% if query or resolution_filter %}<a href="{% url 'sales:return_list' %}" class="rr-clear">Clear</a>{% endif %}
+    </form>
     <div class="table-responsive">
-      <table class="table align-middle mb-0">
-        <thead class="table-light"><tr><th>Return</th><th>Date</th><th>Customer / Invoice</th><th>Resolution</th><th>Qty</th><th>Value</th><th></th></tr></thead>
+      <table class="table rr-table">
+        <thead><tr><th>Return</th><th>Date</th><th>Customer</th><th>Invoice</th><th>Resolution</th><th class="text-end">Qty</th><th class="text-end">Value</th><th></th></tr></thead>
         <tbody>
         {% for r in returns %}
           <tr>
-            <td class="fw-semibold">{{ r.return_number }}</td>
+            <td><div class="return-no">{{ r.return_number }}</div><div class="muted-line">{{ r.reason|default:"Return" }}</div></td>
             <td>{{ r.date|date:"d M Y" }}</td>
-            <td>{{ r.invoice.customer.name|default:"—" }}<div class="small text-muted">{{ r.invoice.number }}</div></td>
-            <td><span class="badge {% if r.resolution == 'replacement' %}text-bg-primary{% elif r.resolution == 'refund' %}text-bg-success{% else %}text-bg-secondary{% endif %}">{{ r.get_resolution_display }}</span></td>
-            <td>{{ r.total_quantity }}</td>
-            <td>₹{{ r.total_value|floatformat:2|intcomma }}</td>
-            <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'sales:return_detail' r.pk %}">View</a></td>
+            <td><div class="customer-name">{{ r.invoice.customer.name|default:"Customer" }}</div></td>
+            <td><a href="{% url 'sales:invoice_detail' r.invoice.pk %}" class="text-decoration-none">{{ r.invoice.number }}</a></td>
+            <td><span class="status-pill {% if r.resolution == 'replacement' %}pill-replacement{% elif r.resolution == 'refund' %}pill-refund{% else %}pill-credit{% endif %}"><i class="bi {% if r.resolution == 'replacement' %}bi-arrow-repeat{% elif r.resolution == 'refund' %}bi-cash-coin{% else %}bi-wallet2{% endif %}"></i>{{ r.get_resolution_display }}</span></td>
+            <td class="text-end fw-bold">{{ r.total_quantity }}</td>
+            <td class="text-end fw-bold">&#8377;{{ r.total_value|floatformat:2|intcomma }}</td>
+            <td class="text-end"><a class="view-btn" href="{% url 'sales:return_detail' r.pk %}" title="View return"><i class="bi bi-chevron-right"></i></a></td>
           </tr>
         {% empty %}
-          <tr><td colspan="7" class="text-center py-5 text-muted">No returns recorded yet.</td></tr>
+          <tr><td colspan="8"><div class="rr-empty"><i class="bi bi-arrow-left-right"></i><h3>No returns found</h3><p>{% if query or resolution_filter %}Try clearing the current filters.{% else %}New return transactions will appear here.{% endif %}</p></div></td></tr>
         {% endfor %}
         </tbody>
       </table>
     </div>
-  </div>
+  </section>
 </div>
 {% endblock %}

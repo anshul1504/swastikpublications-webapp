@@ -1,396 +1,139 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load humanize %}
-{% block title %}Invoices · The Webfix{% endblock %}
-
+{% block title %}Invoices · Swastik CRM{% endblock %}
 {% block extra_css %}
 <style>
-  :root{
-    --primary:#198754;
-    --accent:#2563eb;
-    --muted:#6b7280;
-    --border:#e5e7eb;
-    --card-bg:#ffffff;
-  }
-
-  body{
-    background:#ffffff !important;
-    font-family:"Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    color:#0f172a;
-  }
-
-  /* Page header */
-  .page-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:12px;
-    margin-bottom:16px;
-  }
-  .page-title{
-    font-size:1.2rem;
-    font-weight:600;
-    margin-bottom:2px;
-  }
-  .page-sub{
-    font-size:13px;
-    color:var(--muted);
-  }
-
-  .page-actions{
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    align-items:center;
-    justify-content:flex-end;
-  }
-
-  /* Card */
-  .table-card{
-    background:var(--card-bg);
-    border-radius:16px;
-    box-shadow:0 8px 28px rgba(15,23,42,0.08);
-    padding:18px 20px 20px;
-    border:1px solid var(--border);
-  }
-
-  /* Primary big button */
-  .btn-main{
-    font-size:0.9rem;
-    padding:0.45rem 1.2rem;
-    border-radius:999px;
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-  }
-  .btn-main i{
-    font-size:16px;
-  }
-  .btn-success.btn-main{
-    background:var(--primary);
-    border-color:var(--primary);
-  }
-  .btn-success.btn-main:hover{
-    background:#166a43;
-    border-color:#166a43;
-  }
-
- /* EXPORT BUTTONS - Professional UI */
-.export-group{
-  display:flex;
-  gap:8px;
-}
-
-.btn-export{
-  font-size:0.85rem;
-  font-weight:500;
-  padding:0.45rem 0.95rem;
-  border-radius:999px;
-  border:1px solid var(--border);
-  background:#ffffff;
-  color:#374151;
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  text-decoration:none !important; /* remove underline */
-  transition:all .25s ease;
-  box-shadow:0 2px 6px rgba(0,0,0,0.04);
-}
-
-.btn-export i{
-  font-size:16px;
-}
-
-/* Hover (Premium feel) */
-.btn-export:hover{
-  background:#f3f4f6;
-  border-color:var(--accent);
-  color:var(--accent);
-  box-shadow:0 4px 12px rgba(37,99,235,0.15);
-}
-
-/* CSV specific subtle tint */
-.btn-csv:hover{
-  background:#ecfdf5;
-  border-color:#16a34a;
-  color:#166534;
-  box-shadow:0 4px 12px rgba(22,163,74,0.18);
-}
-
-/* EXCEL subtle tint */
-.btn-excel:hover{
-  background:#eef6ff;
-  border-color:#2563eb;
-  color:#1d4ed8;
-  box-shadow:0 4px 12px rgba(37,99,235,0.18);
-}
-
-  /* Top controls row */
-  .controls-row{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-bottom:10px;
-  }
-
-  /* Search */
-  .search-bar{
-    position:relative;
-    min-width:380px;
-    max-width:560px;
-  }
-  .search-bar input{
-    border-radius:999px;
-    font-size:14px;
-    padding:8px 12px 8px 34px;
-  }
-  .search-bar i{
-    position:absolute;
-    top:9px;
-    left:11px;
-    color:#9ca3af;
-    font-size:15px;
-  }
-
-  /* Status filter (chip style) */
-  .status-filter{
-    display:flex;
-    align-items:center;
-    gap:6px;
-    font-size:12px;
-    color:var(--muted);
-  }
-  .status-filter-label{
-    font-size:12px;
-    text-transform:uppercase;
-    letter-spacing:.08em;
-    color:#9ca3af;
-  }
-  .status-filter select{
-    font-size:13px;
-    border-radius:999px;
-    padding:6px 12px;
-    min-width:130px;
-  }
-
-  /* Table */
-  .table thead{
-    background:#f9fafb;
-    color:#374151;
-    font-weight:600;
-  }
-  .table thead th{
-    font-size:11px;
-    text-transform:uppercase;
-    letter-spacing:.06em;
-    border-bottom:0;
-  }
-  .table tbody td{
-    font-size:13px;
-    vertical-align:middle;
-  }
-  .table tbody tr:hover{
-    background:#f3f4f6;
-    transition:all .25s;
-  }
-
-  /* Status badges */
-  .status-badge{
-    font-size:11px;
-    font-weight:500;
-    border-radius:999px;
-    padding:4px 10px;
-    display:inline-flex;
-    align-items:center;
-    gap:4px;
-  }
-  .status-paid{ background:#dcfce7; color:#166534; }
-  .status-partial{ background:#fef9c3; color:#854d0e; }
-  .status-unpaid{ background:#fee2e2; color:#991b1b; }
-
-  /* Action buttons */
-  .action-btns .btn{
-    border-radius:8px;
-    padding:5px 9px;
-    font-size:12px;
-  }
-
-  /* Footer */
-  .table-footer{
-    font-size:12px;
-    color:var(--muted);
-    margin-top:10px;
-  }
-
-  @media (max-width:576px){
-    .page-header{
-      flex-direction:column;
-      align-items:flex-start;
-    }
-    .page-actions{
-      width:100%;
-      justify-content:flex-start;
-    }
-    .controls-row{
-      flex-direction:column;
-      align-items:flex-start;
-    }
-    .search-bar{
-      width:100%;
-      max-width:100%;
-    }
-  }
+  .il-shell{width:100%;padding:2px 0 28px;color:#172033}
+  .il-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:18px}
+  .il-eyebrow{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#166534;margin-bottom:5px}
+  .il-title{font-size:27px;font-weight:800;margin:0 0 4px;letter-spacing:-.025em}.il-sub{color:#64748b;margin:0}
+  .il-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.il-btn{display:inline-flex;align-items:center;gap:7px;padding:10px 14px;border-radius:9px;text-decoration:none;font-size:13px;font-weight:750;border:1px solid #dbe3ea;background:#fff;color:#334155}.il-btn:hover{border-color:#166534;color:#166534}.il-btn.primary{background:#166534;border-color:#166534;color:#fff}.il-btn.primary:hover{background:#14532d;color:#fff}
+  .il-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:15px}.il-kpi{background:#fff;border:1px solid #dfe6ee;border-radius:12px;padding:15px 17px;box-shadow:0 5px 18px rgba(15,23,42,.045)}.il-kpi-label{font-size:11px;font-weight:750;letter-spacing:.05em;text-transform:uppercase;color:#64748b}.il-kpi-value{font-size:22px;font-weight:850;margin-top:3px;color:#172033}.il-kpi-value.success{color:#047857}.il-kpi-value.danger{color:#b91c1c}
+  .il-panel{background:#fff;border:1px solid #dfe6ee;border-radius:13px;box-shadow:0 6px 22px rgba(15,23,42,.05);overflow:hidden}
+  .il-filters{padding:14px 15px;border-bottom:1px solid #e8edf2;background:#fff}.filter-grid{display:grid;grid-template-columns:minmax(240px,1.5fr) 150px 145px 145px 165px auto;gap:9px;align-items:end}.filter-label{display:block;font-size:11px;font-weight:750;color:#64748b;margin-bottom:5px;text-transform:uppercase;letter-spacing:.045em}.search-field{position:relative}.search-field i{position:absolute;left:12px;bottom:11px;color:#94a3b8}.search-field input{padding-left:36px}.filter-apply{min-height:40px;border:0;border-radius:9px;background:#166534;color:#fff;font-size:13px;font-weight:800;padding:0 15px}.filter-clear{display:inline-flex;align-items:center;justify-content:center;min-height:40px;color:#64748b;text-decoration:none;font-size:13px}
+  .bulk-bar{display:none;align-items:center;gap:9px;padding:10px 15px;background:#f0fdf4;border-bottom:1px solid #bbf7d0}.bulk-bar.show{display:flex}.bulk-count{font-size:13px;font-weight:750;color:#166534;margin-right:auto}.bulk-select{max-width:190px;min-height:36px!important}.bulk-run{border:0;background:#166534;color:#fff;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:800}
+  .il-table{margin:0;min-width:1020px}.il-table th{padding:10px 12px!important;font-size:10.5px!important}.il-table td{padding:12px!important;border-bottom-color:#edf1f5}.invoice-no{font-weight:800;color:#172033;text-decoration:none}.invoice-no:hover{color:#166534}.updated{font-size:11px;color:#94a3b8;margin-top:2px}.customer{font-weight:700}.customer-meta{font-size:11px;color:#64748b;margin-top:2px}.money{font-variant-numeric:tabular-nums;font-weight:700}.status-pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:750}.paid{background:#ecfdf5;color:#047857}.partial{background:#fffbeb;color:#b45309}.unpaid{background:#fef2f2;color:#b91c1c}
+  .row-actions{display:flex;justify-content:flex-end;gap:5px}.icon-action{display:inline-grid;place-items:center;width:32px;height:32px;border:1px solid #dbe3ea;border-radius:8px;color:#475569;background:#fff;text-decoration:none}.icon-action:hover{border-color:#166534;color:#166534}.action-menu{min-width:210px;padding:6px}.action-menu .dropdown-item{border-radius:7px;padding:8px 10px;font-size:13px}.action-menu .dropdown-item i{width:20px;color:#64748b}
+  .il-empty{text-align:center;padding:55px 20px}.il-empty i{font-size:35px;color:#cbd5e1}.il-empty h3{font-size:17px;margin:9px 0 4px}.il-empty p{color:#64748b;margin:0}
+  .il-footer{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 15px;background:#fafbfc;border-top:1px solid #e8edf2}.range-copy{font-size:12px;color:#64748b}.pagination{margin:0}.page-link{border-color:#dbe3ea;color:#475569;font-size:12px;min-width:32px;text-align:center}.page-item.active .page-link{background:#166534;border-color:#166534}.page-size{display:flex;align-items:center;gap:7px;font-size:12px;color:#64748b}.page-size select{min-height:32px!important;width:72px;padding:3px 8px}
+  @media(max-width:1180px){.filter-grid{grid-template-columns:1fr 150px 145px 145px}.filter-grid .sort-field{grid-column:1/3}.filter-grid .filter-buttons{grid-column:3/5}}
+  @media(max-width:760px){.il-head{display:block}.il-actions{margin-top:12px}.il-kpis{grid-template-columns:1fr 1fr}.filter-grid{display:flex;flex-direction:column;align-items:stretch}.filter-grid>div{width:100%}.filter-grid .sort-field,.filter-grid .filter-buttons{width:100%}.il-footer{align-items:flex-start;flex-direction:column}.il-title{font-size:23px}.bulk-bar{flex-wrap:wrap}.bulk-count{width:100%}}
+  @media(max-width:430px){.il-kpis{grid-template-columns:1fr}}
 </style>
 {% endblock %}
-
 {% block content %}
-<div class="container-fluid px-2 px-md-3 py-2">
-
-  <!-- Header -->
-  <div class="page-header">
-    <div>
-      <div class="page-title">Invoices</div>
-      <div class="page-sub">
-        Search, filter, export and manage all your invoices in one place.
+<div class="il-shell">
+  <header class="il-head">
+    <div><div class="il-eyebrow">Sales</div><h1 class="il-title">Invoices</h1><p class="il-sub">Create, collect, return, export and track every customer invoice.</p></div>
+    <div class="il-actions">
+      <a class="il-btn" href="{% url 'sales:invoice_bin_list' %}"><i class="bi bi-archive"></i> Invoice bin</a>
+      <div class="dropdown">
+        <button class="il-btn dropdown-toggle" type="button" data-bs-toggle="dropdown"><i class="bi bi-download"></i> Export</button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="?{% if query_params %}{{ query_params }}&{% endif %}export=csv"><i class="bi bi-filetype-csv me-2"></i>Export filtered CSV</a></li>
+          <li><a class="dropdown-item" href="?{% if query_params %}{{ query_params }}&{% endif %}export=xlsx"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Export filtered Excel</a></li>
+        </ul>
       </div>
+      <a class="il-btn primary" href="{% url 'sales:invoice_add' %}"><i class="bi bi-plus-lg"></i> New invoice</a>
     </div>
-    <div class="page-actions">
-      <div class="export-group">
-  {% with request.GET.urlencode as querystring %}
-    <a class="btn-export btn-csv"
-       href="?{% if querystring %}{{ querystring }}&{% endif %}export=csv">
-      <i class="bi bi-filetype-csv"></i>
-      CSV
-    </a>
+  </header>
 
-    <a class="btn-export btn-excel"
-       href="?{% if querystring %}{{ querystring }}&{% endif %}export=xlsx">
-      <i class="bi bi-file-earmark-spreadsheet"></i>
-      Excel
-    </a>
-  {% endwith %}
-</div>
-
-      <a class="btn btn-success shadow-sm btn-main" href="{% url 'sales:invoice_add' %}">
-        <i class="bi bi-plus-lg"></i>
-        <span>New Invoice</span>
-      </a>
-    </div>
+  <div class="il-kpis">
+    <div class="il-kpi"><div class="il-kpi-label">Filtered invoices</div><div class="il-kpi-value">{{ summary.invoice_count|intcomma }}</div></div>
+    <div class="il-kpi"><div class="il-kpi-label">Total billed</div><div class="il-kpi-value">&#8377;{{ summary.total_billed|floatformat:2|intcomma }}</div></div>
+    <div class="il-kpi"><div class="il-kpi-label">Amount received</div><div class="il-kpi-value success">&#8377;{{ summary.total_received|floatformat:2|intcomma }}</div></div>
+    <div class="il-kpi"><div class="il-kpi-label">Outstanding</div><div class="il-kpi-value danger">&#8377;{{ summary.total_outstanding|floatformat:2|intcomma }}</div></div>
   </div>
 
-  <div class="table-card">
+  <section class="il-panel">
+    <form class="il-filters" method="get" id="filterForm">
+      <div class="filter-grid">
+        <div class="search-field"><label class="filter-label" for="invoiceSearch">Search</label><i class="bi bi-search"></i><input class="form-control" id="invoiceSearch" name="q" value="{{ request.GET.q }}" placeholder="Invoice number, customer or email"></div>
+        <div><label class="filter-label" for="statusFilter">Status</label><select class="form-select" id="statusFilter" name="status"><option value="">All statuses</option><option value="paid" {% if request.GET.status == 'paid' %}selected{% endif %}>Paid</option><option value="partial" {% if request.GET.status == 'partial' %}selected{% endif %}>Partial</option><option value="unpaid" {% if request.GET.status == 'unpaid' %}selected{% endif %}>Unpaid</option></select></div>
+        <div><label class="filter-label" for="dateFrom">From date</label><input class="form-control" id="dateFrom" type="date" name="date_from" value="{{ date_from }}"></div>
+        <div><label class="filter-label" for="dateTo">To date</label><input class="form-control" id="dateTo" type="date" name="date_to" value="{{ date_to }}"></div>
+        <div class="sort-field"><label class="filter-label" for="sortFilter">Sort by</label><select class="form-select" id="sortFilter" name="sort"><option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest first</option><option value="oldest" {% if sort == 'oldest' %}selected{% endif %}>Oldest first</option><option value="amount_high" {% if sort == 'amount_high' %}selected{% endif %}>Amount: high to low</option><option value="amount_low" {% if sort == 'amount_low' %}selected{% endif %}>Amount: low to high</option><option value="balance_high" {% if sort == 'balance_high' %}selected{% endif %}>Highest balance</option><option value="customer" {% if sort == 'customer' %}selected{% endif %}>Customer name</option></select></div>
+        <div class="filter-buttons d-flex gap-2"><button class="filter-apply" type="submit">Apply</button>{% if request.GET.q or request.GET.status or date_from or date_to or sort != 'newest' %}<a class="filter-clear" href="{% url 'sales:invoice_list' %}">Clear</a>{% endif %}</div>
+      </div>
+      <input type="hidden" name="page_size" value="{{ page_size }}">
+    </form>
 
-    <!-- Filters + Search -->
-    <div class="controls-row">
-
-      <!-- SEARCH FORM -->
-      <form class="search-bar" method="get">
-        <i class="bi bi-search"></i>
-        <input type="text"
-               class="form-control"
-               name="q"
-               placeholder="Search invoices by number, customer or email"
-               value="{{ request.GET.q }}">
-        {% if request.GET.status %}
-          <input type="hidden" name="status" value="{{ request.GET.status }}">
-        {% endif %}
-      </form>
-
-      <!-- STATUS FILTER -->
-      <form method="get" class="status-filter" id="statusForm">
-        <span class="status-filter-label">Status</span>
-        <input type="hidden" name="q" value="{{ request.GET.q }}">
-        <select class="form-select form-select-sm"
-                name="status"
-                onchange="document.getElementById('statusForm').submit();">
-          <option value="">All invoices</option>
-          <option value="paid" {% if request.GET.status == 'paid' %}selected{% endif %}>Paid</option>
-          <option value="partial" {% if request.GET.status == 'partial' %}selected{% endif %}>Partial</option>
-          <option value="unpaid" {% if request.GET.status == 'unpaid' %}selected{% endif %}>Unpaid</option>
-        </select>
-      </form>
-
-    </div>
-
-    <!-- TABLE -->
-    <div class="table-responsive">
-      <table class="table align-middle mb-0">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Customer</th>
-            <th>Date</th>
-            <th class="text-end">Total</th>
-            <th class="text-end">Paid</th>
-            <th class="text-end">Balance</th>
-            <th class="text-center">Status</th>
-            <th class="text-center">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+    <form method="post" action="{% url 'sales:bulk_invoice_action' %}" id="bulkForm">{% csrf_token %}
+      <div class="bulk-bar" id="bulkBar"><div class="bulk-count"><span id="selectedCount">0</span> invoice(s) selected</div><select class="form-select bulk-select" name="action" id="bulkAction"><option value="">Choose bulk action</option><option value="export_csv">Export selected CSV</option><option value="mark_paid">Mark selected as paid</option></select><button class="bulk-run" type="submit">Run action</button></div>
+      <div class="table-responsive">
+        <table class="table il-table">
+          <thead><tr><th style="width:34px"><input class="form-check-input" type="checkbox" id="selectAll" aria-label="Select all invoices"></th><th>Invoice</th><th>Customer</th><th>Date</th><th class="text-end">Total</th><th class="text-end">Paid</th><th class="text-end">Balance</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+          <tbody>
           {% for i in invoices %}
-          <tr>
-            <td class="fw-semibold">
-              {{ i.number }}
-              <div><small class="text-muted">Updated: {{ i.updated_at|naturaltime }}</small></div>
-            </td>
-            <td>
-              <div class="fw-semibold">{{ i.customer.name }}</div>
-              {% if i.customer.email %}
-                <small class="text-muted">{{ i.customer.email }}</small>
-              {% endif %}
-            </td>
-            <td>{{ i.date|date:"M d, Y" }}</td>
-            <td class="text-end fw-semibold">₹{{ i.grand_total|floatformat:2|intcomma }}</td>
-            <td class="text-end text-success">₹{{ i.paid_amount|floatformat:2|intcomma }}</td>
-            <td class="text-end text-danger">₹{{ i.balance_due|floatformat:2|intcomma }}</td>
-            <td class="text-center">
-              {% if i.status == 'paid' %}
-                <span class="status-badge status-paid">
-                  <i class="bi bi-check-circle"></i><span>Paid</span>
-                </span>
-              {% elif i.status == 'partial' %}
-                <span class="status-badge status-partial">
-                  <i class="bi bi-exclamation-circle"></i><span>Partial</span>
-                </span>
-              {% else %}
-                <span class="status-badge status-unpaid">
-                  <i class="bi bi-clock-history"></i><span>Unpaid</span>
-                </span>
-              {% endif %}
-            </td>
-            <td class="text-center action-btns">
-              <a href="{% url 'sales:invoice_detail' i.id %}" class="btn btn-sm btn-outline-secondary" title="View">
-                <i class="bi bi-eye"></i>
-              </a>
-              <a href="{% url 'sales:invoice_edit' i.id %}" class="btn btn-sm btn-outline-primary" title="Edit">
-                <i class="bi bi-pencil"></i>
-              </a>
-              <a href="{% url 'sales:invoice_delete' i.id %}" class="btn btn-sm btn-outline-danger" title="Delete">
-                <i class="bi bi-trash"></i>
-              </a>
-            </td>
-          </tr>
+            <tr>
+              <td><input class="form-check-input row-check" type="checkbox" name="invoice_ids[]" value="{{ i.id }}" aria-label="Select invoice {{ i.number }}"></td>
+              <td><a class="invoice-no" href="{% url 'sales:invoice_detail' i.id %}">{{ i.number }}</a><div class="updated">Updated {{ i.updated_at|naturaltime }}</div></td>
+              <td><div class="customer">{{ i.customer.name|default:"Customer" }}</div>{% if i.customer.email %}<div class="customer-meta">{{ i.customer.email }}</div>{% endif %}</td>
+              <td>{{ i.date|date:"d M Y" }}</td>
+              <td class="text-end money">&#8377;{{ i.grand_total|floatformat:2|intcomma }}</td>
+              <td class="text-end money text-success">&#8377;{{ i.paid_amount|floatformat:2|intcomma }}</td>
+              <td class="text-end money {% if i.balance_due > 0 %}text-danger{% endif %}">&#8377;{{ i.balance_due|floatformat:2|intcomma }}</td>
+              <td><span class="status-pill {{ i.status }}"><i class="bi {% if i.status == 'paid' %}bi-check-circle{% elif i.status == 'partial' %}bi-circle-half{% else %}bi-clock{% endif %}"></i>{{ i.get_status_display }}</span></td>
+              <td>
+                <div class="row-actions">
+                  <a class="icon-action" href="{% url 'sales:invoice_detail' i.id %}" title="View invoice"><i class="bi bi-eye"></i></a>
+                  <div class="dropdown">
+                    <button class="icon-action" type="button" data-bs-toggle="dropdown" aria-label="More actions"><i class="bi bi-three-dots-vertical"></i></button>
+                    <ul class="dropdown-menu dropdown-menu-end action-menu">
+                      <li><a class="dropdown-item" href="{% url 'sales:invoice_edit' i.id %}"><i class="bi bi-pencil"></i>Edit invoice</a></li>
+                      <li><a class="dropdown-item" href="{% url 'sales:invoice_pdf' i.id %}" target="_blank"><i class="bi bi-file-earmark-pdf"></i>Open PDF</a></li>
+                      {% if i.balance_due > 0 %}<li><a class="dropdown-item" href="{% url 'sales:invoice_mark_paid' i.id %}"><i class="bi bi-cash-coin"></i>Record payment</a></li>{% endif %}
+                      <li><a class="dropdown-item" href="{% url 'sales:return_add' %}?invoice={{ i.id }}"><i class="bi bi-arrow-left-right"></i>Create return</a></li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li><a class="dropdown-item text-danger" href="{% url 'sales:invoice_delete' i.id %}"><i class="bi bi-archive"></i>Move to bin</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </td>
+            </tr>
           {% empty %}
-          <tr>
-            <td colspan="8" class="text-center text-muted py-4">
-              <i class="bi bi-inbox display-6 d-block mb-2"></i>
-              No invoices found.<br>
-              <a href="{% url 'sales:invoice_add' %}" class="btn btn-success btn-sm mt-2">
-                + Create Your First Invoice
-              </a>
-            </td>
-          </tr>
+            <tr><td colspan="9"><div class="il-empty"><i class="bi bi-receipt"></i><h3>No invoices found</h3><p>Adjust the filters or create a new invoice.</p></div></td></tr>
           {% endfor %}
-        </tbody>
-      </table>
-    </div>
+          </tbody>
+        </table>
+      </div>
+    </form>
 
-    <div class="table-footer d-flex justify-content-between flex-wrap mt-2">
-      <div>Showing <strong>{{ invoices|length }}</strong> invoice(s)</div>
-      <div>Last refreshed: <strong>{% now "M d, Y H:i" %}</strong></div>
-    </div>
-  </div>
+    <footer class="il-footer">
+      <div class="range-copy">{% if paginator.count %}Showing <strong>{{ page_obj.start_index }}-{{ page_obj.end_index }}</strong> of <strong>{{ paginator.count }}</strong> invoices{% else %}No invoices to display{% endif %}</div>
+      {% if paginator.num_pages > 1 %}
+      <nav aria-label="Invoice pages"><ul class="pagination pagination-sm">
+        <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}"><a class="page-link" href="?{% if query_params %}{{ query_params }}&{% endif %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}" aria-label="Previous"><i class="bi bi-chevron-left"></i></a></li>
+        {% for page_num in page_range %}
+          {% if page_num == paginator.ELLIPSIS %}<li class="page-item disabled"><span class="page-link">{{ page_num }}</span></li>{% else %}<li class="page-item {% if page_num == page_obj.number %}active{% endif %}"><a class="page-link" href="?{% if query_params %}{{ query_params }}&{% endif %}page={{ page_num }}">{{ page_num }}</a></li>{% endif %}
+        {% endfor %}
+        <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}"><a class="page-link" href="?{% if query_params %}{{ query_params }}&{% endif %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ paginator.num_pages }}{% endif %}" aria-label="Next"><i class="bi bi-chevron-right"></i></a></li>
+      </ul></nav>
+      {% endif %}
+      <form class="page-size" method="get"><span>Rows</span>{% for key,value in request.GET.items %}{% if key != 'page' and key != 'page_size' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}<select class="form-select" name="page_size" onchange="this.form.submit()"><option value="25" {% if page_size == 25 %}selected{% endif %}>25</option><option value="50" {% if page_size == 50 %}selected{% endif %}>50</option><option value="100" {% if page_size == 100 %}selected{% endif %}>100</option></select></form>
+    </footer>
+  </section>
 </div>
+<script>
+(() => {
+  const all = document.getElementById('selectAll');
+  const checks = [...document.querySelectorAll('.row-check')];
+  const bar = document.getElementById('bulkBar');
+  const count = document.getElementById('selectedCount');
+  const form = document.getElementById('bulkForm');
+  function sync(){
+    const selected = checks.filter(box => box.checked).length;
+    count.textContent = selected;
+    bar.classList.toggle('show', selected > 0);
+    if(all){ all.checked = checks.length > 0 && selected === checks.length; all.indeterminate = selected > 0 && selected < checks.length; }
+  }
+  if(all) all.addEventListener('change', () => { checks.forEach(box => box.checked = all.checked); sync(); });
+  checks.forEach(box => box.addEventListener('change', sync));
+  form.addEventListener('submit', event => {
+    const action = document.getElementById('bulkAction').value;
+    if(!checks.some(box => box.checked) || !action){ event.preventDefault(); alert('Select invoices and choose a bulk action.'); return; }
+    if(action === 'mark_paid' && !confirm('Mark the full outstanding balance of selected invoices as paid?')) event.preventDefault();
+  });
+})();
+</script>
 {% endblock %}

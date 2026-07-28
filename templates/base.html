@@ -411,10 +411,10 @@
 
     .content-wrap{
       flex:1 1 auto;
-      max-width:1280px;
+      max-width:none;
       width:100%;
-      margin:64px auto 0;
-      padding:18px;
+      margin:64px 0 0;
+      padding:22px 24px;
       min-height:calc(100vh - 64px - 41px);
     }
 
@@ -509,7 +509,7 @@
       .content-wrap{
         height:auto;
         min-height:calc(100vh - 64px - 56px);
-        margin:64px 12px 0;
+        margin:64px 0 0;
         padding:12px;
       }
     }
@@ -518,6 +518,68 @@
   </style>
 
   {% block extra_css %}{% endblock %}
+  <style id="crm-professional-theme">
+    :root{
+      --crm-primary:#166534;
+      --crm-primary-dark:#14532d;
+      --crm-primary-soft:#ecfdf3;
+      --crm-accent:#2563eb;
+      --crm-bg:#f4f7fb;
+      --crm-surface:#ffffff;
+      --crm-text:#172033;
+      --crm-muted:#64748b;
+      --crm-border:#dfe6ee;
+      --crm-radius:12px;
+      --crm-shadow:0 6px 22px rgba(15,23,42,.055);
+    }
+    body{background:var(--crm-bg)!important;color:var(--crm-text)}
+    .content-wrap>div{max-width:none!important;width:100%!important}
+    .content-wrap>.container,
+    .content-wrap>.container-fluid{max-width:none!important;width:100%!important}
+    .content-wrap .card,
+    .content-wrap .table-card{
+      border:1px solid var(--crm-border)!important;
+      box-shadow:var(--crm-shadow)!important;
+      border-radius:var(--crm-radius)!important;
+    }
+    .content-wrap .form-control,
+    .content-wrap .form-select{
+      border-color:#d7e0e9;
+      border-radius:9px;
+      min-height:40px;
+    }
+    .content-wrap .form-control:focus,
+    .content-wrap .form-select:focus{
+      border-color:var(--crm-primary);
+      box-shadow:0 0 0 3px rgba(22,101,52,.1);
+    }
+    .content-wrap .btn-success,
+    .content-wrap .btn-primary{
+      background:var(--crm-primary);
+      border-color:var(--crm-primary);
+    }
+    .content-wrap .btn-success:hover,
+    .content-wrap .btn-primary:hover{
+      background:var(--crm-primary-dark);
+      border-color:var(--crm-primary-dark);
+    }
+    .content-wrap .table-responsive{border-radius:10px}
+    .content-wrap .table thead th{
+      background:#f7f9fc;
+      color:#536176;
+      font-weight:700;
+    }
+    .content-wrap .table tbody tr{transition:background-color .14s ease}
+    .content-wrap .table tbody tr:hover{background:#f8fbf9}
+    .content-wrap h1,
+    .content-wrap .page-title{color:var(--crm-text);font-weight:750}
+    @media(max-width:991px){
+      .content-wrap{padding:16px 14px}
+    }
+    @media(max-width:575px){
+      .content-wrap{padding:12px 8px}
+    }
+  </style>
 </head>
 <body>
 

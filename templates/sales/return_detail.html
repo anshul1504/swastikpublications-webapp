@@ -1,21 +1,33 @@
 {% extends "base.html" %}
 {% load humanize %}
-{% block title %}{{ sales_return.return_number }}{% endblock %}
+{% block title %}{{ sales_return.return_number }} · Swastik CRM{% endblock %}
 {% block content %}
-<div class="container py-4" style="max-width:960px">
-  <div class="d-flex justify-content-between align-items-start mb-4">
-    <div><a href="{% url 'sales:return_list' %}" class="small text-decoration-none">← Returns</a><h2 class="mt-2">{{ sales_return.return_number }}</h2><div class="text-muted">{{ sales_return.invoice.customer.name }} · Invoice {{ sales_return.invoice.number }}</div></div>
-    <span class="badge fs-6 text-bg-primary">{{ sales_return.get_resolution_display }}</span>
+<style>
+  .rd-shell{max-width:1080px;margin:0 auto;padding:24px 18px 40px;color:#172033}.rd-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:20px}.rd-back{font-size:13px;color:#64748b;text-decoration:none;font-weight:700}.rd-title{font-size:28px;font-weight:850;margin:8px 0 3px}.rd-sub{color:#64748b}
+  .rd-pill{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:999px;font-size:13px;font-weight:800;background:#eef2ff;color:#4338ca}.rd-pill.refund{background:#ecfdf5;color:#047857}.rd-pill.credit{background:#fff7ed;color:#c2410c}
+  .rd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}.rd-stat,.rd-card{background:#fff;border:1px solid #e5eaf1;border-radius:14px;box-shadow:0 5px 20px rgba(15,23,42,.045)}.rd-stat{padding:16px}.rd-label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:750;color:#64748b}.rd-value{font-weight:850;font-size:18px;margin-top:4px}.rd-card{overflow:hidden;margin-bottom:16px}.rd-card-head{padding:15px 18px;border-bottom:1px solid #edf1f5;font-weight:800}.rd-table{margin:0}.rd-table th{font-size:11px;text-transform:uppercase;color:#64748b;background:#f8fafc;padding:10px 14px}.rd-table td{padding:14px;border-bottom-color:#edf1f5;vertical-align:middle}
+  .condition{font-size:12px;font-weight:750;border-radius:999px;padding:5px 8px}.condition.good{color:#047857;background:#ecfdf5}.condition.damaged{color:#b91c1c;background:#fef2f2}.treatment{font-size:13px;color:#475569}.rd-notes{padding:18px}.rd-notes strong{display:block;margin-bottom:5px}.rd-notes p{color:#64748b;margin:0;white-space:pre-line}.invoice-link{display:inline-flex;align-items:center;gap:6px;color:#87193e;text-decoration:none;font-weight:750}
+  @media(max-width:760px){.rd-head{display:block}.rd-pill{margin-top:12px}.rd-grid{grid-template-columns:1fr 1fr}.rd-table{min-width:680px}.rd-title{font-size:23px}}@media(max-width:430px){.rd-grid{grid-template-columns:1fr}}
+</style>
+<div class="rd-shell">
+  <header class="rd-head">
+    <div><a href="{% url 'sales:return_list' %}" class="rd-back"><i class="bi bi-arrow-left"></i> Returns register</a><h1 class="rd-title">{{ sales_return.return_number }}</h1><div class="rd-sub">{{ sales_return.invoice.customer.name|default:"Customer" }} · {{ sales_return.date|date:"d M Y" }}</div></div>
+    <span class="rd-pill {% if sales_return.resolution == 'refund' %}refund{% elif sales_return.resolution == 'credit' %}credit{% endif %}"><i class="bi {% if sales_return.resolution == 'replacement' %}bi-arrow-repeat{% elif sales_return.resolution == 'refund' %}bi-cash-coin{% else %}bi-wallet2{% endif %}"></i>{{ sales_return.get_resolution_display }}</span>
+  </header>
+  <div class="rd-grid">
+    <div class="rd-stat"><div class="rd-label">Invoice</div><div class="rd-value"><a class="invoice-link" href="{% url 'sales:invoice_detail' sales_return.invoice.pk %}">{{ sales_return.invoice.number }}</a></div></div>
+    <div class="rd-stat"><div class="rd-label">Books returned</div><div class="rd-value">{{ sales_return.total_quantity|intcomma }}</div></div>
+    <div class="rd-stat"><div class="rd-label">Return value</div><div class="rd-value">&#8377;{{ sales_return.total_value|floatformat:2|intcomma }}</div></div>
+    <div class="rd-stat"><div class="rd-label">Reason</div><div class="rd-value" style="font-size:14px">{{ sales_return.reason|default:"Not specified" }}</div></div>
   </div>
-  <div class="row g-3 mb-4">
-    <div class="col-md-4"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">Return date</div><strong>{{ sales_return.date|date:"d M Y" }}</strong></div></div></div>
-    <div class="col-md-4"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">Quantity</div><strong>{{ sales_return.total_quantity }} book{{ sales_return.total_quantity|pluralize }}</strong></div></div></div>
-    <div class="col-md-4"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">Return value</div><strong>₹{{ sales_return.total_value|floatformat:2|intcomma }}</strong></div></div></div>
-  </div>
-  <div class="card border-0 shadow-sm"><div class="card-body p-0"><div class="table-responsive"><table class="table align-middle mb-0">
-    <thead class="table-light"><tr><th>Book</th><th>Qty</th><th>Condition</th><th>Inventory treatment</th></tr></thead><tbody>
-    {% for line in sales_return.items.all %}<tr><td>{{ line.invoice_item.description }}</td><td>{{ line.quantity }}</td><td>{{ line.get_condition_display }}</td><td>{% if line.condition == 'saleable' %}<span class="text-success">Returned to stock</span>{% else %}<span class="text-danger">Quarantined / not saleable</span>{% endif %}{% if sales_return.resolution == 'replacement' %}<div class="small text-primary">Replacement issued</div>{% endif %}</td></tr>{% endfor %}
-    </tbody></table></div></div></div>
-  {% if sales_return.reason or sales_return.notes %}<div class="card border-0 shadow-sm mt-4"><div class="card-body"><strong>{{ sales_return.reason }}</strong>{% if sales_return.notes %}<p class="text-muted mb-0 mt-2">{{ sales_return.notes }}</p>{% endif %}</div></div>{% endif %}
+  <section class="rd-card">
+    <div class="rd-card-head">Returned books and inventory treatment</div>
+    <div class="table-responsive"><table class="table rd-table"><thead><tr><th>Book</th><th class="text-end">Qty</th><th>Condition</th><th>System action</th></tr></thead><tbody>
+      {% for line in sales_return.items.all %}
+      <tr><td><strong>{{ line.invoice_item.description }}</strong><div class="small text-muted">&#8377;{{ line.invoice_item.rate|floatformat:2|intcomma }} per book</div></td><td class="text-end fw-bold">{{ line.quantity }}</td><td><span class="condition {% if line.condition == 'saleable' %}good{% else %}damaged{% endif %}">{{ line.get_condition_display }}</span></td><td class="treatment">{% if line.condition == 'saleable' %}<i class="bi bi-box-arrow-in-down text-success me-1"></i>Added back to saleable stock{% else %}<i class="bi bi-shield-exclamation text-danger me-1"></i>Kept out of saleable stock{% endif %}{% if sales_return.resolution == 'replacement' %}<div class="text-primary mt-1"><i class="bi bi-arrow-repeat me-1"></i>Replacement issued</div>{% endif %}</td></tr>
+      {% endfor %}
+    </tbody></table></div>
+  </section>
+  {% if sales_return.notes %}<section class="rd-card"><div class="rd-notes"><strong>Internal notes</strong><p>{{ sales_return.notes }}</p></div></section>{% endif %}
 </div>
 {% endblock %}

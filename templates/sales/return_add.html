@@ -1,72 +1,266 @@
 {% extends "base.html" %}
-{% block title %}New Return / Replacement{% endblock %}
+{% block title %}New Return · Swastik CRM{% endblock %}
 {% block content %}
-<div class="container-fluid py-4" style="max-width:1100px">
-  <div class="mb-4">
-    <a href="{% url 'sales:return_list' %}" class="text-decoration-none small">← Returns</a>
-    <h2 class="mt-2 mb-1">New return or replacement</h2>
-    <p class="text-muted">Damaged books stay out of saleable inventory; good books are restocked automatically.</p>
+<style>
+  .return-shell{max-width:1180px;margin:0 auto;padding:24px 18px 40px;color:#172033}
+  .return-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:22px}
+  .return-eyebrow{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#166534;margin-bottom:6px}
+  .return-title{font-size:28px;font-weight:800;letter-spacing:-.025em;margin:0 0 5px}
+  .return-subtitle{color:#64748b;margin:0;max-width:680px}
+  .back-link{display:inline-flex;align-items:center;gap:7px;color:#475569;text-decoration:none;font-weight:700;font-size:13px;padding:8px 11px;border:1px solid #e2e8f0;border-radius:9px;background:#fff}
+  .workflow{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:22px;align-items:start}
+  .step-card,.summary-card{background:#fff;border:1px solid #e5eaf1;border-radius:16px;box-shadow:0 8px 28px rgba(15,23,42,.055)}
+  .step-card{margin-bottom:16px;overflow:hidden}
+  .step-header{display:flex;gap:13px;align-items:center;padding:18px 20px;border-bottom:1px solid #edf1f5}
+  .step-no{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:#166534;color:#fff;font-weight:800}
+  .step-copy h3{font-size:16px;font-weight:800;margin:0}
+  .step-copy p{font-size:13px;color:#64748b;margin:2px 0 0}
+  .step-body{padding:20px}
+  .field-label{font-size:13px;font-weight:800;color:#334155;margin-bottom:7px}
+  .form-select,.form-control{border-color:#dbe2ea;border-radius:10px;min-height:44px}
+  .form-select:focus,.form-control:focus{border-color:#166534;box-shadow:0 0 0 3px rgba(22,101,52,.1)}
+  .invoice-empty{display:grid;place-items:center;min-height:180px;text-align:center;border:1px dashed #cbd5e1;border-radius:12px;background:#f8fafc;color:#64748b;padding:24px}
+  .invoice-empty i{font-size:30px;color:#94a3b8;margin-bottom:8px}
+  .item-table{margin:0}
+  .item-table th{font-size:11px;text-transform:uppercase;letter-spacing:.055em;color:#64748b;background:#f8fafc;border-bottom-color:#e5eaf1;padding:11px 12px}
+  .item-table td{padding:13px 12px;border-bottom-color:#edf1f5;vertical-align:middle}
+  .book-title{font-weight:750;color:#1e293b}
+  .book-meta{font-size:12px;color:#64748b;margin-top:3px}
+  .qty-input{max-width:92px}
+  .condition-select{min-width:166px}
+  .resolution-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .resolution-option{position:relative}
+  .resolution-option input{position:absolute;opacity:0;pointer-events:none}
+  .resolution-label{height:100%;display:flex;gap:10px;align-items:flex-start;padding:14px;border:1px solid #dbe2ea;border-radius:12px;cursor:pointer;transition:.16s;background:#fff}
+  .resolution-label i{font-size:20px;color:#64748b}
+  .resolution-label strong{display:block;font-size:14px;color:#1e293b}
+  .resolution-label small{display:block;color:#64748b;line-height:1.35;margin-top:2px}
+  .resolution-option input:checked + .resolution-label{border-color:#166534;background:#f0fdf4;box-shadow:0 0 0 2px rgba(22,101,52,.08)}
+  .resolution-option input:checked + .resolution-label i{color:#166534}
+  .summary-card{position:sticky;top:84px;overflow:hidden}
+  .summary-top{padding:19px 20px;background:linear-gradient(135deg,#14532d,#15803d);color:#fff}
+  .summary-top h3{font-size:16px;font-weight:800;margin:0 0 4px}
+  .summary-top p{font-size:12px;margin:0;color:rgba(255,255,255,.78)}
+  .summary-body{padding:18px 20px}
+  .summary-row{display:flex;justify-content:space-between;gap:15px;padding:10px 0;border-bottom:1px solid #edf1f5;font-size:13px}
+  .summary-row span{color:#64748b}.summary-row strong{text-align:right;color:#1e293b}
+  .impact-box{padding:12px;border-radius:10px;background:#f8fafc;border:1px solid #e5eaf1;margin:14px 0;font-size:12px;color:#475569;line-height:1.5}
+  .impact-box i{color:#166534;margin-right:5px}
+  .submit-btn{width:100%;border:0;border-radius:10px;background:#166534;color:#fff;font-weight:800;padding:12px 16px;transition:.16s}
+  .submit-btn:hover{background:#14532d}.submit-btn:disabled{background:#cbd5e1;cursor:not-allowed}
+  .safe-note{text-align:center;font-size:11px;color:#64748b;margin:10px 0 0}
+  .loading{display:flex;gap:9px;align-items:center;justify-content:center;min-height:150px;color:#64748b}
+  @media(max-width:960px){.workflow{grid-template-columns:1fr}.summary-card{position:static}.resolution-grid{grid-template-columns:1fr}}
+  @media(max-width:600px){.return-shell{padding:16px 10px 30px}.return-head{display:block}.back-link{margin-top:14px}.return-title{font-size:23px}.step-body{padding:15px}.item-table{min-width:650px}}
+</style>
+
+<div class="return-shell">
+  <div class="return-head">
+    <div>
+      <div class="return-eyebrow">After-sales</div>
+      <h1 class="return-title">Create return</h1>
+      <p class="return-subtitle">Select the invoice and books. The system will handle refund, replacement and inventory movement automatically.</p>
+    </div>
+    <a href="{% url 'sales:return_list' %}" class="back-link"><i class="bi bi-arrow-left"></i> Return register</a>
   </div>
-  <form method="post" id="returnForm">{% csrf_token %}
-    <div class="row g-4">
-      <div class="col-lg-8">
-        <div class="card border-0 shadow-sm mb-4"><div class="card-body p-4">
-          <label class="form-label fw-semibold" for="invoice">Invoice</label>
-          <select class="form-select" name="invoice" id="invoice" required>
-            <option value="">Choose an invoice…</option>
-            {% for inv in invoices %}<option value="{{ inv.pk }}">{{ inv.number }} · {{ inv.customer.name|default:"Customer" }} · {{ inv.date|date:"d M Y" }}</option>{% endfor %}
-          </select>
-        </div></div>
-        <div class="card border-0 shadow-sm"><div class="card-body p-4">
-          <div class="d-flex justify-content-between mb-3"><h5 class="mb-0">Books being returned</h5><span class="badge text-bg-light">Condition-aware stock</span></div>
-          <div id="returnItems" class="text-muted">Select an invoice to load its items.</div>
-        </div></div>
-      </div>
-      <div class="col-lg-4">
-        <div class="card border-0 shadow-sm"><div class="card-body p-4">
-          <label class="form-label fw-semibold">Resolution</label>
-          <select class="form-select mb-3" name="resolution" id="resolution" required>
-            <option value="replacement">Replace books</option>
-            <option value="refund">Refund amount</option>
-            <option value="credit">Store credit</option>
-          </select>
-          <div id="refundMethodWrap" class="d-none">
-            <label class="form-label">Refund method</label>
-            <select class="form-select mb-3" name="refund_method"><option>Bank Transfer</option><option>Cash</option><option>UPI</option><option>Card</option></select>
+
+  <form method="post" id="returnForm" novalidate>{% csrf_token %}
+    <div class="workflow">
+      <main>
+        <section class="step-card">
+          <div class="step-header">
+            <div class="step-no">1</div>
+            <div class="step-copy"><h3>Select invoice</h3><p>Choose the original sale to load eligible books.</p></div>
           </div>
-          <label class="form-label">Return date</label>
-          <input class="form-control mb-3" type="date" name="date" value="{{ today|date:'Y-m-d' }}" required>
-          <label class="form-label">Reason</label>
-          <select class="form-select mb-3" name="reason"><option>Damaged in transit</option><option>Printing defect</option><option>Wrong book supplied</option><option>Customer return</option><option>Other</option></select>
-          <label class="form-label">Notes</label>
-          <textarea class="form-control mb-4" name="notes" rows="3" placeholder="Optional inspection or courier details"></textarea>
-          <button class="btn btn-primary w-100" type="submit">Complete return</button>
-        </div></div>
-      </div>
+          <div class="step-body">
+            <label class="field-label" for="invoice">Invoice / customer</label>
+            <select class="form-select" name="invoice" id="invoice" required>
+              <option value="">Search and choose an invoice...</option>
+              {% for inv in invoices %}
+                <option value="{{ inv.pk }}" {% if selected_invoice == inv.pk|stringformat:"s" %}selected{% endif %}>{{ inv.number }} | {{ inv.customer.name|default:"Customer" }} | {{ inv.date|date:"d M Y" }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </section>
+
+        <section class="step-card">
+          <div class="step-header">
+            <div class="step-no">2</div>
+            <div class="step-copy"><h3>Select books and condition</h3><p>Enter only the quantity physically received from the customer.</p></div>
+          </div>
+          <div class="step-body" id="returnItems">
+            <div class="invoice-empty"><div><i class="bi bi-receipt"></i><div><strong>Select an invoice first</strong></div><small>Eligible books and remaining quantities will appear here.</small></div></div>
+          </div>
+        </section>
+
+        <section class="step-card">
+          <div class="step-header">
+            <div class="step-no">3</div>
+            <div class="step-copy"><h3>Choose customer resolution</h3><p>Decide what the customer receives against this return.</p></div>
+          </div>
+          <div class="step-body">
+            <div class="resolution-grid mb-4">
+              <div class="resolution-option">
+                <input type="radio" name="resolution" id="resolutionReplacement" value="replacement" checked>
+                <label class="resolution-label" for="resolutionReplacement"><i class="bi bi-arrow-repeat"></i><span><strong>Replacement</strong><small>Issue the same books from available stock.</small></span></label>
+              </div>
+              <div class="resolution-option">
+                <input type="radio" name="resolution" id="resolutionRefund" value="refund">
+                <label class="resolution-label" for="resolutionRefund"><i class="bi bi-cash-coin"></i><span><strong>Amount refund</strong><small>Refund eligible value from paid amount.</small></span></label>
+              </div>
+              <div class="resolution-option">
+                <input type="radio" name="resolution" id="resolutionCredit" value="credit">
+                <label class="resolution-label" for="resolutionCredit"><i class="bi bi-wallet2"></i><span><strong>Store credit</strong><small>Record value for adjustment in a future sale.</small></span></label>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="field-label" for="returnDate">Return date</label>
+                <input class="form-control" id="returnDate" type="date" name="date" value="{{ today|date:'Y-m-d' }}" required>
+              </div>
+              <div class="col-md-4">
+                <label class="field-label" for="reason">Reason</label>
+                <select class="form-select" id="reason" name="reason">
+                  <option>Damaged in transit</option>
+                  <option>Printing defect</option>
+                  <option>Wrong book supplied</option>
+                  <option>Incorrect quantity supplied</option>
+                  <option>Customer return</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="col-md-4 d-none" id="refundMethodWrap">
+                <label class="field-label" for="refundMethod">Refund method</label>
+                <select class="form-select" id="refundMethod" name="refund_method">
+                  <option>Bank Transfer</option><option>UPI</option><option>Cash</option><option>Card</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="field-label" for="notes">Notes <span class="fw-normal text-muted">(optional)</span></label>
+                <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Courier reference, inspection note, approval or any other detail"></textarea>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <aside class="summary-card">
+        <div class="summary-top"><h3>Return summary</h3><p>Review before completing this transaction.</p></div>
+        <div class="summary-body">
+          <div class="summary-row"><span>Invoice</span><strong id="summaryInvoice">Not selected</strong></div>
+          <div class="summary-row"><span>Customer</span><strong id="summaryCustomer">-</strong></div>
+          <div class="summary-row"><span>Books selected</span><strong id="summaryQty">0</strong></div>
+          <div class="summary-row"><span>Return value</span><strong id="summaryValue">&#8377;0.00</strong></div>
+          <div class="summary-row"><span>Resolution</span><strong id="summaryResolution">Replacement</strong></div>
+          <div class="impact-box" id="impactBox"><i class="bi bi-info-circle"></i> Select books to see inventory impact.</div>
+          <button class="submit-btn" id="submitBtn" type="submit" disabled><i class="bi bi-check2-circle me-1"></i> Complete return</button>
+          <p class="safe-note"><i class="bi bi-shield-check"></i> Quantity and stock are validated before saving.</p>
+        </div>
+      </aside>
     </div>
   </form>
 </div>
+
 <script>
 (() => {
-  const invoice = document.getElementById('invoice'), wrap = document.getElementById('returnItems');
-  const resolution = document.getElementById('resolution'), refundWrap = document.getElementById('refundMethodWrap');
-  function toggleRefund(){ refundWrap.classList.toggle('d-none', resolution.value !== 'refund'); }
-  resolution.addEventListener('change', toggleRefund); toggleRefund();
+  const form = document.getElementById('returnForm');
+  const invoice = document.getElementById('invoice');
+  const itemsWrap = document.getElementById('returnItems');
+  const submitBtn = document.getElementById('submitBtn');
+  const refundWrap = document.getElementById('refundMethodWrap');
+  const money = value => '\u20b9' + Number(value || 0).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+  let invoiceData = null;
+
+  function selectedResolution() {
+    return document.querySelector('input[name="resolution"]:checked');
+  }
+
+  function updateSummary() {
+    let qty = 0, value = 0, saleable = 0, damaged = 0;
+    document.querySelectorAll('.return-qty').forEach(input => {
+      const currentQty = Number(input.value || 0);
+      qty += currentQty;
+      value += currentQty * Number(input.dataset.rate || 0);
+      const condition = input.closest('tr').querySelector('.condition-select').value;
+      if (condition === 'damaged') damaged += currentQty; else saleable += currentQty;
+    });
+    const resolution = selectedResolution();
+    document.getElementById('summaryQty').textContent = qty;
+    document.getElementById('summaryValue').textContent = money(value);
+    document.getElementById('summaryResolution').textContent = resolution ? resolution.nextElementSibling.querySelector('strong').textContent : '-';
+    submitBtn.disabled = !invoice.value || qty <= 0;
+    refundWrap.classList.toggle('d-none', !resolution || resolution.value !== 'refund');
+
+    let impact = 'Select books to see inventory impact.';
+    if (qty > 0) {
+      const parts = [];
+      if (saleable) parts.push(`${saleable} saleable book(s) will return to stock`);
+      if (damaged) parts.push(`${damaged} damaged book(s) will stay out of saleable stock`);
+      if (resolution && resolution.value === 'replacement') parts.push(`${qty} replacement book(s) will be issued`);
+      if (resolution && resolution.value === 'refund') parts.push(`${money(value)} is the calculated return value; refund is capped by paid amount`);
+      if (resolution && resolution.value === 'credit') parts.push(`${money(value)} will be recorded as return value for future adjustment`);
+      impact = parts.join('. ') + '.';
+    }
+    document.getElementById('impactBox').innerHTML = `<i class="bi bi-info-circle"></i> ${impact}`;
+  }
+
+  document.querySelectorAll('input[name="resolution"]').forEach(input => input.addEventListener('change', updateSummary));
+
   invoice.addEventListener('change', async () => {
-    if (!invoice.value) { wrap.textContent = 'Select an invoice to load its items.'; return; }
-    wrap.innerHTML = '<div class="spinner-border spinner-border-sm"></div> Loading items…';
+    invoiceData = null;
+    document.getElementById('summaryInvoice').textContent = 'Not selected';
+    document.getElementById('summaryCustomer').textContent = '-';
+    if (!invoice.value) {
+      itemsWrap.innerHTML = '<div class="invoice-empty"><div><i class="bi bi-receipt"></i><div><strong>Select an invoice first</strong></div><small>Eligible books and remaining quantities will appear here.</small></div></div>';
+      updateSummary(); return;
+    }
+    itemsWrap.innerHTML = '<div class="loading"><span class="spinner-border spinner-border-sm"></span> Loading invoice books...</div>';
     try {
       const urlTemplate = "{% url 'sales:return_items_api' 0 %}";
-      const response = await fetch(urlTemplate.replace("/0/", `/${invoice.value}/`));
-      const data = await response.json();
-      const rows = data.items.map(item => `<tr>
-        <td><input type="hidden" name="item_id[]" value="${item.id}"><strong>${item.description}</strong><div class="small text-muted">Sold ${item.quantity} · already returned ${item.returned}</div></td>
-        <td style="width:130px"><input class="form-control" type="number" name="quantity[]" min="0" max="${item.available}" value="0" ${item.available ? '' : 'disabled'}></td>
-        <td style="width:190px"><select class="form-select" name="condition[]"><option value="saleable">Good / saleable</option><option value="damaged">Damaged</option></select></td>
+      const response = await fetch(urlTemplate.replace('/0/', `/${invoice.value}/`), {headers:{'X-Requested-With':'XMLHttpRequest'}});
+      if (!response.ok) throw new Error('Unable to load items');
+      invoiceData = await response.json();
+      document.getElementById('summaryInvoice').textContent = invoiceData.invoice;
+      document.getElementById('summaryCustomer').textContent = invoiceData.customer;
+      const eligible = invoiceData.items.filter(item => item.available > 0);
+      if (!eligible.length) {
+        itemsWrap.innerHTML = '<div class="invoice-empty"><div><i class="bi bi-check2-circle"></i><div><strong>No books available to return</strong></div><small>All quantities on this invoice have already been returned.</small></div></div>';
+        updateSummary(); return;
+      }
+      const rows = eligible.map(item => `<tr>
+        <td><input type="hidden" name="item_id[]" value="${item.id}"><div class="book-title">${item.description}</div><div class="book-meta">Sold: ${item.quantity} &nbsp;|&nbsp; Previously returned: ${item.returned} &nbsp;|&nbsp; Available: ${item.available}</div></td>
+        <td><input class="form-control qty-input return-qty" type="number" name="quantity[]" min="0" max="${item.available}" value="0" inputmode="numeric" data-rate="${item.rate}" aria-label="Return quantity for ${item.description}"></td>
+        <td><select class="form-select condition-select" name="condition[]" aria-label="Book condition"><option value="saleable">Good / saleable</option><option value="damaged">Damaged / defective</option></select></td>
+        <td class="text-end fw-semibold">${money(item.rate)}</td>
       </tr>`).join('');
-      wrap.innerHTML = rows ? `<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Book</th><th>Return qty</th><th>Condition</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<div class="alert alert-info">No items on this invoice.</div>';
-    } catch (error) { wrap.innerHTML = '<div class="alert alert-danger">Could not load invoice items. Please retry.</div>'; }
+      itemsWrap.innerHTML = `<div class="table-responsive"><table class="table item-table"><thead><tr><th>Book</th><th>Return qty</th><th>Condition</th><th class="text-end">Rate</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      itemsWrap.querySelectorAll('.return-qty').forEach(input => input.addEventListener('input', () => {
+        const max = Number(input.max); let value = Number(input.value || 0);
+        if (value < 0) input.value = 0;
+        if (value > max) input.value = max;
+        updateSummary();
+      }));
+      itemsWrap.querySelectorAll('.condition-select').forEach(select => select.addEventListener('change', updateSummary));
+      updateSummary();
+    } catch (error) {
+      itemsWrap.innerHTML = '<div class="alert alert-danger mb-0"><strong>Invoice items could not be loaded.</strong> Please retry or refresh the page.</div>';
+      updateSummary();
+    }
   });
+
+  form.addEventListener('submit', event => {
+    const qty = [...document.querySelectorAll('.return-qty')].reduce((sum, input) => sum + Number(input.value || 0), 0);
+    if (!invoice.value || qty <= 0) {
+      event.preventDefault();
+      alert('Please select an invoice and enter at least one return quantity.');
+      return;
+    }
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving return...';
+  });
+  updateSummary();
+  if (invoice.value) invoice.dispatchEvent(new Event('change'));
 })();
 </script>
 {% endblock %}

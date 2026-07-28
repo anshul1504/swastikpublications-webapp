@@ -123,6 +123,10 @@ def invoice_list(request):
     q = request.GET.get("q", "").strip()
     status = request.GET.get("status", "").strip()
     export = request.GET.get("export", "").strip()
+    date_from = request.GET.get("date_from", "").strip()
+    date_to = request.GET.get("date_to", "").strip()
+    sort = request.GET.get("sort", "newest").strip()
+    page_size_raw = request.GET.get("page_size", "25").strip()
 
     # ---------- SEARCH ----------
     if q:
@@ -138,13 +142,66 @@ def invoice_list(request):
     if status in ["paid", "partial", "unpaid"]:
         invoices = invoices.filter(status=status)
 
+    if date_from:
+        invoices = invoices.filter(date__gte=date_from)
+    if date_to:
+        invoices = invoices.filter(date__lte=date_to)
+
+    sort_options = {
+        "newest": ("-date", "-id"),
+        "oldest": ("date", "id"),
+        "amount_high": ("-grand_total", "-date"),
+        "amount_low": ("grand_total", "-date"),
+        "balance_high": ("-balance_due", "-date"),
+        "customer": ("customer__name", "-date"),
+    }
+    invoices = invoices.order_by(*sort_options.get(sort, sort_options["newest"]))
+
     # ---------- EXPORT ----------
     if export == "csv":
         return export_invoices_csv(invoices)
     elif export == "xlsx":
         return export_invoices_excel(invoices)
 
-    return render(request, "sales/invoice_list.html", {"invoices": invoices})
+    summary = invoices.aggregate(
+        invoice_count=Count("id"),
+        total_billed=Coalesce(Sum("grand_total"), Decimal("0.00")),
+        total_received=Coalesce(Sum("paid_amount"), Decimal("0.00")),
+        total_outstanding=Coalesce(Sum("balance_due"), Decimal("0.00")),
+    )
+
+    try:
+        page_size = int(page_size_raw)
+    except (TypeError, ValueError):
+        page_size = 25
+    if page_size not in {25, 50, 100}:
+        page_size = 25
+
+    paginator = Paginator(invoices, page_size)
+    page_obj = paginator.get_page(request.GET.get("page"))
+    page_range = paginator.get_elided_page_range(
+        page_obj.number, on_each_side=2, on_ends=1
+    )
+    query_params = request.GET.copy()
+    query_params.pop("page", None)
+    query_params.pop("export", None)
+
+    return render(
+        request,
+        "sales/invoice_list.html",
+        {
+            "invoices": page_obj.object_list,
+            "page_obj": page_obj,
+            "paginator": paginator,
+            "page_range": page_range,
+            "summary": summary,
+            "query_params": query_params.urlencode(),
+            "page_size": page_size,
+            "sort": sort,
+            "date_from": date_from,
+            "date_to": date_to,
+        },
+    )
 
 
 def export_invoices_csv(invoices_qs):
@@ -2974,21 +3031,9 @@ def bulk_invoice_action(request):
 
                     # create payment
                     Payment.objects.create(**payment_kwargs)
-
-                    # update invoice using F() to avoid race issues
-                    try:
-                        Invoice.objects.filter(pk=inv.pk).update(
-                            paid_amount=F('paid_amount') + balance,
-                            balance_due=Decimal('0.00'),
-                            status='paid'  # adapt status value to your choices if needed
-                        )
-                        inv.refresh_from_db()
-                    except Exception:
-                        # fallback: set attributes and save (if model fields differ)
-                        inv.paid_amount = (getattr(inv, 'paid_amount', Decimal('0.00')) or Decimal('0.00')) + balance
-                        inv.balance_due = Decimal('0.00')
-                        inv.status = 'paid'
-                        inv.save()
+                    # Payment.save() already recalculates the invoice. Recalculate
+                    # explicitly for clarity without incrementing paid_amount twice.
+                    inv.recalc_payments_and_status()
 
                     created_count += 1
 
@@ -3120,16 +3165,33 @@ def sales_return_list(request):
         .prefetch_related("items", "items__invoice_item")
     )
     query = request.GET.get("q", "").strip()
+    resolution_filter = request.GET.get("resolution", "").strip()
     if query:
         returns = returns.filter(
             Q(return_number__icontains=query)
             | Q(invoice__number__icontains=query)
             | Q(invoice__customer__name__icontains=query)
         )
+    if resolution_filter in dict(SalesReturn.RESOLUTION_CHOICES):
+        returns = returns.filter(resolution=resolution_filter)
+
+    returns = list(returns)
+    total_quantity = sum(item.total_quantity for item in returns)
+    total_value = sum(
+        (item.total_value for item in returns),
+        Decimal("0.00"),
+    )
     return render(
         request,
         "sales/return_list.html",
-        {"returns": returns, "query": query},
+        {
+            "returns": returns,
+            "query": query,
+            "resolution_filter": resolution_filter,
+            "return_count": len(returns),
+            "total_quantity": total_quantity,
+            "total_value": total_value,
+        },
     )
 
 
@@ -3158,7 +3220,15 @@ def sales_return_items_api(request, invoice_id):
                 "tracked": bool(item.product_id),
             }
         )
-    return JsonResponse({"ok": True, "invoice": invoice.number, "items": items})
+    return JsonResponse(
+        {
+            "ok": True,
+            "invoice": invoice.number,
+            "customer": invoice.customer.name if invoice.customer else "Customer",
+            "paid_amount": str(invoice.paid_amount or 0),
+            "items": items,
+        }
+    )
 
 
 @login_required
@@ -3172,7 +3242,11 @@ def sales_return_add(request):
         return render(
             request,
             "sales/return_add.html",
-            {"invoices": invoices, "today": timezone.localdate()},
+            {
+                "invoices": invoices,
+                "today": timezone.localdate(),
+                "selected_invoice": request.GET.get("invoice", ""),
+            },
         )
 
     invoice_id = request.POST.get("invoice")
