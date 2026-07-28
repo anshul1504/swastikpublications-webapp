@@ -106,6 +106,7 @@ def render_pdf_response(request, html, filename):
 # INVOICE LIST + EXPORT
 # ============================================================
 
+@login_required
 def invoice_list(request):
     """
     Invoice listing with:

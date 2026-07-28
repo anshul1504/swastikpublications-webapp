@@ -41,6 +41,12 @@ class InvoiceListExperienceTests(TestCase):
         self.assertEqual(len(response.context["invoices"]), 6)
         self.assertContains(response, "Showing <strong>26-31</strong>")
 
+    def test_invoice_list_requires_login(self):
+        self.client.logout()
+        response = self.client.get(reverse("sales:invoice_list"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("accounts:login"), response["Location"])
+
     def test_bulk_mark_paid_does_not_double_count_payment(self):
         invoice = Invoice.objects.create(
             number="BULK-PAID-1",
